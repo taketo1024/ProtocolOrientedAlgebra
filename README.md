@@ -51,7 +51,7 @@ let τ = 𝔖_5([0: 2, 1: 3, 2: 4, 3: 0, 4: 1]) // two-line notation
 ### Polynominal
 
 ```swift
-typealias ℚx = Polynominal<ℚ>
+typealias ℚx = Polynomial<Q>
 
 let f = ℚx(0, 2, -3, 1) // f(x) = x^3 − 3x^2 + 2x
 let g = ℚx(6, -5, 1)    // g(x) = x^2 − 5x + 6
