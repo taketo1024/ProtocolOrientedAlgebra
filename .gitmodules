@@ -1,3 +1,0 @@
-[submodule "Submodules/Eigen"]
-	path = Submodules/Eigen
-	url = git@github.com:RLovelett/eigen.git

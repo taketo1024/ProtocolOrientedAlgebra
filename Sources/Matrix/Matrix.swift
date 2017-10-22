@@ -22,19 +22,20 @@ public struct Matrix<R: Ring, n: _Int, m: _Int>: Module, Sequence {
     public let cols: Int
     public let type: MatrixType
     
-    internal var grid: [R] {
+    public var grid: [R] {
         willSet {
             clearCache()
         }
     }
     
-    internal var smithNormalFormCache: Cache<MatrixEliminator<R, n, m>> = Cache()
-    internal func clearCache() {
+    public var smithNormalFormCache: Cache<MatrixEliminator<R, n, m>> = Cache()
+    public func clearCache() {
         smithNormalFormCache.value = nil
     }
 
     // Root Initializer.
-    private init(_ rows: Int, _ cols: Int, _ type: MatrixType, _ grid: [R]) {
+    @_inlineable
+    public init(_ rows: Int, _ cols: Int, _ type: MatrixType, _ grid: [R]) {
         self.rows = rows
         self.cols = cols
         self.type = type
@@ -53,6 +54,17 @@ public struct Matrix<R: Ring, n: _Int, m: _Int>: Module, Sequence {
         let grid = (0 ..< rows * cols).map { (index: Int) -> R in
             let (i, j) = index /% cols
             return g(i, j)
+        }
+        self.init(rows, cols, type, grid)
+    }
+    
+    @_inlineable
+    public init(rows2 r: Int?, cols c: Int?, type: MatrixType, generator g: (Int, Int) -> R) {
+        let (rows, cols) = Matrix.determineSize(r, c, nil)
+        var grid: [R] = []
+        for index in 0..<(rows*cols) {
+            let (i, j) = index /% cols
+            grid.append(g(i, j))
         }
         self.init(rows, cols, type, grid)
     }
@@ -81,7 +93,8 @@ public struct Matrix<R: Ring, n: _Int, m: _Int>: Module, Sequence {
         self.init(grid: grid)
     }
     
-    private static func determineSize(_ rows: Int?, _ cols: Int?, _ grid: [R]?) -> (rows: Int, cols: Int) {
+    @_inlineable
+    public static func determineSize(_ rows: Int?, _ cols: Int?, _ grid: [R]?) -> (rows: Int, cols: Int) {
         func ceilDiv(_ a: Int, _ b: Int) -> Int {
             return (a + b - 1) / b
         }
@@ -138,10 +151,12 @@ public struct Matrix<R: Ring, n: _Int, m: _Int>: Module, Sequence {
         }
     }
     
-    internal func gridIndex(_ i: Int, _ j: Int) -> Int {
+    @_inlineable
+    public func gridIndex(_ i: Int, _ j: Int) -> Int {
         return (i * cols) + j
     }
     
+    @_inlineable
     public subscript(i: Int, j: Int) -> R {
         get {
             return grid[gridIndex(i, j)]
@@ -187,12 +202,76 @@ public struct Matrix<R: Ring, n: _Int, m: _Int>: Module, Sequence {
     
     public static func * <p>(a: Matrix<R, n, m>, b: Matrix<R, m, p>) -> Matrix<R, n, p> {
         assert(a.cols == b.rows, "Mismatching matrix size.")
+
+        // TODO improve performance
+        return Matrix<R, n, p>(rows: a.rows, cols: b.cols, type: (a.type == b.type) ? a.type : .Default) { (i, k) -> R in
+            return (0 ..< a.cols)
+                .map({j in a[i, j] * b[j, k]})
+                .reduce(0) {$0 + $1}
+        }
+    }
+    
+    public static func multiply1<p>(a: Matrix<R, n, m>, b: Matrix<R, m, p>) -> Matrix<R, n, p> {
+        assert(a.cols == b.rows, "Mismatching matrix size.")
         
         // TODO improve performance
         return Matrix<R, n, p>(rows: a.rows, cols: b.cols, type: (a.type == b.type) ? a.type : .Default) { (i, k) -> R in
             return (0 ..< a.cols)
                 .map({j in a[i, j] * b[j, k]})
                 .reduce(0) {$0 + $1}
+        }
+    }
+    
+    public static func multiply2<p>(a: Matrix<R, n, m>, b: Matrix<R, m, p>) -> Matrix<R, n, p> {
+        assert(a.cols == b.rows, "Mismatching matrix size.")
+
+        // 行列の1次元グリッドを生成して Matrix を作る
+        var grid = Array(repeating: R.zero, count: a.rows * b.cols)
+        var p = UnsafeMutablePointer(&grid)
+
+        for c in 0 ..< a.rows * b.cols {
+            let (i, j) = (c / b.cols, c % b.cols)
+
+            var (q, r) = (UnsafePointer(a.grid), UnsafePointer(b.grid))
+            q += a.gridIndex(i, 0)
+            r += b.gridIndex(0, j)
+
+            var x = R.zero
+            for _ in 0 ..< a.cols {
+                x = x + q.pointee * r.pointee
+                q += 1
+                r += b.cols
+            }
+
+            p.pointee = x
+            p += 1
+        }
+
+        return Matrix<R, n, p>(rows: a.rows, cols: b.cols, grid: grid)
+    }
+    
+    public static func multiply3<p>(a: Matrix<R, n, m>, b: Matrix<R, m, p>) -> Matrix<R, n, p> {
+        assert(a.cols == b.rows, "Mismatching matrix size.")
+        
+        return Matrix<R, n, p>(rows: a.rows, cols: b.cols, type: (a.type == b.type) ? a.type : .Default) { (i, k) -> R in
+            var x = R.zero
+            for j in 0..<a.cols {
+               x = x + a[i, j] * b[j, k]
+            }
+            return x
+        }
+    }
+    
+    @_inlineable
+    public static func multiply4<p>(a: Matrix<R, n, m>, b: Matrix<R, m, p>) -> Matrix<R, n, p> {
+        assert(a.cols == b.rows, "Mismatching matrix size.")
+        
+        return Matrix<R, n, p>(rows2: a.rows, cols: b.cols, type: (a.type == b.type) ? a.type : .Default) { (i, k) -> R in
+            var x = R.zero
+            for j in 0..<a.cols {
+                x = x + a[i, j] * b[j, k]
+            }
+            return x
         }
     }
     
@@ -351,6 +430,7 @@ public struct Matrix<R: Ring, n: _Int, m: _Int>: Module, Sequence {
         return e
     }
     
+    @_inlineable
     public var smithNormalForm: MatrixEliminator<R, n, m> {
         if let e = smithNormalFormCache.value {
             return e
