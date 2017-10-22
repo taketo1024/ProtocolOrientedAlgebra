@@ -3,3 +3,4 @@ xcuserdata
 *.swiftmodule
 *.dylib
 profile-result.txt
+.DS_Store

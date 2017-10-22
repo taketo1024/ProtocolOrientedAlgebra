@@ -22,19 +22,22 @@ public struct Matrix<R: Ring, n: _Int, m: _Int>: Module, Sequence {
     public let cols: Int
     public let type: MatrixType
     
+    @_versioned
     internal var grid: [R] {
         willSet {
             clearCache()
         }
     }
     
+    @_versioned
     internal var smithNormalFormCache: Cache<MatrixEliminator<R, n, m>> = Cache()
-    internal func clearCache() {
+    private func clearCache() {
         smithNormalFormCache.value = nil
     }
 
     // Root Initializer.
-    private init(_ rows: Int, _ cols: Int, _ type: MatrixType, _ grid: [R]) {
+    @_versioned
+    internal init(_ rows: Int, _ cols: Int, _ type: MatrixType, _ grid: [R]) {
         self.rows = rows
         self.cols = cols
         self.type = type
@@ -48,6 +51,7 @@ public struct Matrix<R: Ring, n: _Int, m: _Int>: Module, Sequence {
     }
     
     // 2. Initialize by Generator.
+    @_inlineable
     public init(rows r: Int? = nil, cols c: Int? = nil, type: MatrixType = .Default, generator g: (Int, Int) -> R) {
         let (rows, cols) = Matrix.determineSize(r, c, nil)
         let grid = (0 ..< rows * cols).map { (index: Int) -> R in
@@ -81,7 +85,8 @@ public struct Matrix<R: Ring, n: _Int, m: _Int>: Module, Sequence {
         self.init(grid: grid)
     }
     
-    private static func determineSize(_ rows: Int?, _ cols: Int?, _ grid: [R]?) -> (rows: Int, cols: Int) {
+    @_versioned
+    internal static func determineSize(_ rows: Int?, _ cols: Int?, _ grid: [R]?) -> (rows: Int, cols: Int) {
         func ceilDiv(_ a: Int, _ b: Int) -> Int {
             return (a + b - 1) / b
         }
@@ -138,10 +143,12 @@ public struct Matrix<R: Ring, n: _Int, m: _Int>: Module, Sequence {
         }
     }
     
-    internal func gridIndex(_ i: Int, _ j: Int) -> Int {
+    @_inlineable
+    public func gridIndex(_ i: Int, _ j: Int) -> Int {
         return (i * cols) + j
     }
     
+    @_inlineable
     public subscript(i: Int, j: Int) -> R {
         get {
             return grid[gridIndex(i, j)]
@@ -187,12 +194,66 @@ public struct Matrix<R: Ring, n: _Int, m: _Int>: Module, Sequence {
     
     public static func * <p>(a: Matrix<R, n, m>, b: Matrix<R, m, p>) -> Matrix<R, n, p> {
         assert(a.cols == b.rows, "Mismatching matrix size.")
+
+        // TODO improve performance
+        return Matrix<R, n, p>(rows: a.rows, cols: b.cols, type: (a.type == b.type) ? a.type : .Default) { (i, k) -> R in
+            return (0 ..< a.cols)
+                .map({j in a[i, j] * b[j, k]})
+                .reduce(0) {$0 + $1}
+        }
+    }
+    
+    @_inlineable
+    public static func multiply1<p>(a: Matrix<R, n, m>, b: Matrix<R, m, p>) -> Matrix<R, n, p> {
+        assert(a.cols == b.rows, "Mismatching matrix size.")
         
         // TODO improve performance
         return Matrix<R, n, p>(rows: a.rows, cols: b.cols, type: (a.type == b.type) ? a.type : .Default) { (i, k) -> R in
             return (0 ..< a.cols)
                 .map({j in a[i, j] * b[j, k]})
                 .reduce(0) {$0 + $1}
+        }
+    }
+    
+    @_inlineable
+    public static func multiply2<p>(a: Matrix<R, n, m>, b: Matrix<R, m, p>) -> Matrix<R, n, p> {
+        assert(a.cols == b.rows, "Mismatching matrix size.")
+
+        // 行列の1次元グリッドを生成して Matrix を作る
+        var grid = Array(repeating: R.zero, count: a.rows * b.cols)
+        var p = UnsafeMutablePointer(&grid)
+
+        for c in 0 ..< a.rows * b.cols {
+            let (i, j) = (c / b.cols, c % b.cols)
+
+            var (q, r) = (UnsafePointer(a.grid), UnsafePointer(b.grid))
+            q += a.gridIndex(i, 0)
+            r += b.gridIndex(0, j)
+
+            var x = R.zero
+            for _ in 0 ..< a.cols {
+                x = x + q.pointee * r.pointee
+                q += 1
+                r += b.cols
+            }
+
+            p.pointee = x
+            p += 1
+        }
+
+        return Matrix<R, n, p>(rows: a.rows, cols: b.cols, grid: grid)
+    }
+    
+    @_inlineable
+    public static func multiply3<p>(a: Matrix<R, n, m>, b: Matrix<R, m, p>) -> Matrix<R, n, p> {
+        assert(a.cols == b.rows, "Mismatching matrix size.")
+        
+        return Matrix<R, n, p>(rows: a.rows, cols: b.cols, type: (a.type == b.type) ? a.type : .Default) { (i, k) -> R in
+            var x = R.zero
+            for j in 0..<a.cols {
+               x = x + a[i, j] * b[j, k]
+            }
+            return x
         }
     }
     
