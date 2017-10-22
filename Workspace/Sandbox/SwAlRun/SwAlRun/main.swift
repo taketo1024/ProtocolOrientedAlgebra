@@ -28,15 +28,16 @@ func main() {
     let a = Matrix<RealNumber, _100, _100>{ (i, j) in i == j ? 1 : 0 }
     let b = Matrix<RealNumber, _100, _100>{ (i, j) in i == j ? 1 : 0 }
     
-    let n = 1000
-//    timeRun {
-//        var x = 0
-//        for _ in 0..<n {
-//            let c = Matrix<RealNumber, _100, _100>.multiply1(a: a, b: b)
-//            x += c.rows
-//        }
-//        print(x)
-//    }
+    let n = 100
+    
+    timeRun {
+        var x = 0
+        for _ in 0..<n {
+            let c = Matrix<RealNumber, _100, _100>.multiply1(a: a, b: b)
+            x += c.rows
+        }
+        print(x)
+    }
 
     timeRun {
         var x = 0
@@ -47,14 +48,14 @@ func main() {
         print(x)
     }
 
-//    timeRun {
-//        var x = 0
-//        for _ in 0..<n {
-//            let c = Matrix<RealNumber, _100, _100>.multiply3(a: a, b: b)
-//            x += c.rows
-//        }
-//        print(x)
-//    }
+    timeRun {
+        var x = 0
+        for _ in 0..<n {
+            let c = Matrix<RealNumber, _100, _100>.multiply3(a: a, b: b)
+            x += c.rows
+        }
+        print(x)
+    }
 
     timeRun {
         var x = 0
