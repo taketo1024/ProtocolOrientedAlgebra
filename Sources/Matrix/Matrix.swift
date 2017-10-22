@@ -61,17 +61,6 @@ public struct Matrix<R: Ring, n: _Int, m: _Int>: Module, Sequence {
         self.init(rows, cols, type, grid)
     }
     
-//    @_inlineable
-//    public init(rows2 r: Int?, cols c: Int?, type: MatrixType, generator g: (Int, Int) -> R) {
-//        let (rows, cols) = Matrix.determineSize(r, c, nil)
-//        var grid: [R] = []
-//        for index in 0..<(rows*cols) {
-//            let (i, j) = index /% cols
-//            grid.append(g(i, j))
-//        }
-//        self.init(rows, cols, type, grid)
-//    }
-    
     // 3. Initialize by Components (good for Sparce Matrix).
     public init(rows r: Int? = nil, cols c: Int? = nil, type: MatrixType = .Default, components: [MatrixComponent<R>]) {
         let (rows, cols) = Matrix.determineSize(r, c, nil)
@@ -263,19 +252,6 @@ public struct Matrix<R: Ring, n: _Int, m: _Int>: Module, Sequence {
             var x = R.zero
             for j in 0..<a.cols {
                x = x + a[i, j] * b[j, k]
-            }
-            return x
-        }
-    }
-    
-    @_inlineable
-    public static func multiply4<p>(a: Matrix<R, n, m>, b: Matrix<R, m, p>) -> Matrix<R, n, p> {
-        assert(a.cols == b.rows, "Mismatching matrix size.")
-        
-        return Matrix<R, n, p>(rows: a.rows, cols: b.cols, type: (a.type == b.type) ? a.type : .Default) { (i, k) -> R in
-            var x = R.zero
-            for j in 0..<a.cols {
-                x = x + a[i, j] * b[j, k]
             }
             return x
         }

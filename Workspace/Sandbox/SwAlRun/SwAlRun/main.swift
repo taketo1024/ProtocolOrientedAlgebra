@@ -39,33 +39,24 @@ func main() {
         print(x)
     }
 
-    timeRun {
-        var x = 0
-        for _ in 0..<n {
-            let c = Matrix<RealNumber, _100, _100>.multiply2(a: a, b: b)
-            x += c.rows
-        }
-        print(x)
-    }
+//    timeRun {
+//        var x = 0
+//        for _ in 0..<n {
+//            let c = Matrix<RealNumber, _100, _100>.multiply2(a: a, b: b)
+//            x += c.rows
+//        }
+//        print(x)
+//    }
 
-    timeRun {
-        var x = 0
-        for _ in 0..<n {
-            let c = Matrix<RealNumber, _100, _100>.multiply3(a: a, b: b)
-            x += c.rows
-        }
-        print(x)
-    }
+//    timeRun {
+//        var x = 0
+//        for _ in 0..<n {
+//            let c = Matrix<RealNumber, _100, _100>.multiply3(a: a, b: b)
+//            x += c.rows
+//        }
+//        print(x)
+//    }
 
-    timeRun {
-        var x = 0
-        for _ in 0..<n {
-            let c = Matrix<RealNumber, _100, _100>.multiply4(a: a, b: b)
-            x += c.rows
-        }
-        print(x)
-    }
-    
 }
 
 main()
