@@ -15,7 +15,7 @@ public extension IntegerNumber {
         }
         return (self == 0) ? 1 : self * (self - 1).factorial
     }
-    
+
     public var permutations: [[IntegerNumber]] {
         let n = self
         switch n {
@@ -42,7 +42,7 @@ public extension IntegerNumber {
             return (n - 1).choose(k) + (n - 1).choose(k - 1).map{ $0 + [n - 1] }
         }
     }
-    
+
     public func multichoose(_ k: Int) -> [[Int]] {
         let n = self
         switch (n, k) {

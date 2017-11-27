@@ -7,29 +7,29 @@ import Foundation
 public struct Polynomial<K: Field>: EuclideanRing, Module {
     public typealias CoeffRing = K
     public let coeffs: [K]
-    
+
     public init(intValue n: Int) {
         let a = K(intValue: n)
         self.init([a])
     }
-    
+
     public init(degree: Int, gen: ((Int) -> K)) {
         let coeffs = (0 ... degree).map(gen)
         self.init(coeffs)
     }
-    
+
     public init(_ coeffs: K...) {
         self.init(coeffs)
     }
-    
+
     public init(_ coeffs: [K]) {
         self.coeffs = coeffs
     }
-    
+
     public var normalizeUnit: Polynomial<K> {
         return Polynomial(leadCoeff.inverse!)
     }
-    
+
     public var degree: Int {
         let n = coeffs.count - 1
         for i in 0 ..< n {
@@ -39,52 +39,52 @@ public struct Polynomial<K: Field>: EuclideanRing, Module {
         }
         return 0
     }
-    
+
     public var inverse: Polynomial<K>? {
         return (degree == 0 && self != 0) ? Polynomial<K>(coeff(0).inverse!) : nil
     }
-    
+
     public var leadCoeff: K {
         return coeffs[degree]
     }
-    
+
     public func coeff(_ i: Int) -> K {
         return i < coeffs.count ? coeffs[i] : 0
     }
-    
+
     public func apply(_ x: K) -> K {
         return (0 ... degree).reduce(0) { (sum, i) -> K in
             sum + (coeffs[i] * (x ** i))
         }
     }
-    
+
     public func map(_ f: ((K) -> K)) -> Polynomial<K> {
         return Polynomial<K>.init(coeffs.map(f))
     }
-    
+
     public var derivative: Polynomial<K> {
         return Polynomial<K>.init(degree: degree - 1) {
             K(intValue: $0 + 1) * coeff($0 + 1)
         }
     }
-    
+
     public func toMonic() -> Polynomial<K> {
         let a = leadCoeff
         return self.map{ $0 / a }
     }
-    
+
     public static var indeterminate: Polynomial<K> {
         return Polynomial<K>(0, 1)
     }
-    
+
     public static func eucDiv<K>(_ f: Polynomial<K>, _ g: Polynomial<K>) -> (q: Polynomial<K>, r: Polynomial<K>) {
         if g == 0 {
             fatalError("divide by 0")
         }
-        
+
         func eucDivMonomial(_ f: Polynomial<K>, _ g: Polynomial<K>) -> (q: Polynomial<K>, r: Polynomial<K>) {
             let n = f.degree - g.degree
-            
+
             if n < 0 {
                 return (0, f)
             } else {
@@ -94,7 +94,7 @@ public struct Polynomial<K: Field>: EuclideanRing, Module {
                 return (q, r)
             }
         }
-        
+
         return (0 ... max(0, f.degree - g.degree))
             .reversed()
             .reduce( (0, f) ) { (result: (Polynomial<K>, Polynomial<K>), degree: Int) in
@@ -103,20 +103,20 @@ public struct Polynomial<K: Field>: EuclideanRing, Module {
                 return (q + m.q, m.r)
         }
     }
-    
+
     public static func == (f: Polynomial<K>, g: Polynomial<K>) -> Bool {
         return (f.degree == g.degree) &&
             (0 ... f.degree).reduce(true) { $0 && (f.coeff($1) == g.coeff($1)) }
     }
-    
+
     public static func + (f: Polynomial<K>, g: Polynomial<K>) -> Polynomial<K> {
         return Polynomial<K>(degree: max(f.degree, g.degree)) { f.coeff($0) + g.coeff($0) }
     }
-    
+
     public static prefix func - (f: Polynomial<K>) -> Polynomial<K> {
         return f.map { -$0 }
     }
-    
+
     public static func * (f: Polynomial<K>, g: Polynomial<K>) -> Polynomial<K> {
         return Polynomial<K>(degree: f.degree + g.degree) {
             (k: Int) in
@@ -125,15 +125,15 @@ public struct Polynomial<K: Field>: EuclideanRing, Module {
             }
         }
     }
-    
+
     public static func * (r: K, f: Polynomial<K>) -> Polynomial<K> {
         return f.map { r * $0 }
     }
-    
+
     public static func * (f: Polynomial<K>, r: K) -> Polynomial<K> {
         return f.map { $0 * r }
     }
-    
+
     public var description: String {
         let res = coeffs.enumerated().flatMap {
             (n: Int, a: K) -> String? in
@@ -150,11 +150,11 @@ public struct Polynomial<K: Field>: EuclideanRing, Module {
             }.reversed().joined(separator: " + ")
         return res.isEmpty ? "0" : res
     }
-    
+
     public static var symbol: String {
         return "\(K.symbol)[x]"
     }
-    
+
     public var hashValue: Int {
         return leadCoeff.hashValue
     }

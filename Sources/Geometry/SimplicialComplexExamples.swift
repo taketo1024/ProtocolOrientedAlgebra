@@ -13,40 +13,40 @@ public extension SimplicialComplex {
         let v = Vertex("pt")
         return SimplicialComplex(name: "pt", allCells: Simplex([v]))
     }
-    
+
     static func interval(vertices n: Int = 2) -> SimplicialComplex {
         assert(n >= 2)
         let V = Vertex.generate(n)
         let segments = (0 ..< n - 1).map { i in Simplex(vertexSet: V, indices: [i, i + 1]) }
         return SimplicialComplex(name: "I", maximalCells: segments)
     }
-    
+
     static func circle(vertices n: Int = 3) -> SimplicialComplex {
         assert(n >= 3)
         let V = Vertex.generate(n)
         let segments = (0 ..< n).map { i in Simplex(vertexSet: V, indices: [i, (i + 1) % n]) }
         return SimplicialComplex(name: "S^1", maximalCells: segments)
     }
-    
+
     static func sphere(dim: Int) -> SimplicialComplex {
         let V = Vertex.generate(dim + 2)
         let faces = Simplex(vertexSet: V, indices: 0 ... (dim + 1)).faces()
         return SimplicialComplex(name: "S^\(dim)", maximalCells: faces)
     }
-    
+
     static func ball(dim: Int) -> SimplicialComplex {
         let V = Vertex.generate(dim + 1)
         let s = Simplex(vertexSet: V, indices: 0...dim)
         return SimplicialComplex(name: "D^\(dim)", maximalCells: [s])
     }
-    
+
     static func torus(dim: Int) -> SimplicialComplex {
         let S = SimplicialComplex.circle()
         var T = (1 ..< dim).reduce(S) { (K, _) in K × S }
         T.name = "T^\(dim)"
         return T
     }
-    
+
     // ref: Minimal Triangulations of Manifolds https://arxiv.org/pdf/math/0701735.pdf
     static func realProjectiveSpace(dim: Int) -> SimplicialComplex {
         switch dim {
@@ -66,12 +66,12 @@ public extension SimplicialComplex {
             fatalError("RP^n (n >= 4) not yet supported.")
         }
     }
-    
+
     static func lensSpace(_ n: Int) -> SimplicialComplex {
         let (p, q) = (n, 1) // TODO: q > 1
         let k = 3 // #vertices of a circle
         let kp = k * p
-        
+
         let B1 = SimplicialComplex.circle(vertices: k * p)
         let B2 = SimplicialComplex.circle(vertices: k * p)
         let D1 = Vertex().join(B1)
@@ -79,14 +79,14 @@ public extension SimplicialComplex {
 
         let S = SimplicialComplex.circle(vertices: k) // the fiber S^1
         let K1 = (D1 × S) + (D2 × S) // disjoint union
-        
+
         let L = K1.identifyVertices(B1.vertices.enumerated().flatMap { (i, b1) -> [(Vertex, Vertex)] in
             let b2 = B2.vertices[(kp - i) % kp]
             return S.vertices.enumerated().map { (j, v) -> (Vertex, Vertex) in
                 let w = S.vertices[((kp - i) * q + j) % k]
                 return (b2 × w, b1 × v)
             }}).named("L(\(p),\(q))")
-        
+
         return L
     }
 }
