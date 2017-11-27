@@ -157,7 +157,7 @@ public class MatrixEliminator<R: EuclideanRing>: CustomStringConvertible {
                 return r
             case let .MulCol(at: _, by: r):
                 return r
-            case .SwapRows(_, _), .SwapCols(_, _):
+            case .SwapRows, .SwapCols:
                 return -.identity
             }
         }
@@ -172,7 +172,7 @@ public class MatrixEliminator<R: EuclideanRing>: CustomStringConvertible {
                 return .MulRow(at: i, by: r.inverse!)
             case let .MulCol(at: i, by: r):
                 return .MulCol(at: i, by: r.inverse!)
-            case .SwapRows(_, _), .SwapCols(_, _):
+            case .SwapRows, .SwapCols:
                 return self
             }
         }
