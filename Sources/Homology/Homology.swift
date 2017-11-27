@@ -24,15 +24,15 @@ public typealias Cohomology<A: FreeModuleBase, R: EuclideanRing> = _Homology<Asc
 public final class _Homology<chainType: ChainType, A: FreeModuleBase, R: EuclideanRing>: Structure {
     public typealias Summand = FinitelyGeneratedModuleStructure<A, R>
     public typealias Cycle = FreeModule<A, R>
-    
+
     public let chainComplex: _ChainComplex<chainType, A, R>
     private var _summands: [Summand?]
-    
+
     public subscript(i: Int) -> Summand {
         guard (offset ... topDegree).contains(i) else {
             fatalError() // TODO return empty info
         }
-        
+
         if let g = _summands[i - offset] {
             return g
         } else {
@@ -41,28 +41,28 @@ public final class _Homology<chainType: ChainType, A: FreeModuleBase, R: Euclide
             return g
         }
     }
-    
+
     public init(_ chainComplex: _ChainComplex<chainType, A, R>) {
         self.chainComplex = chainComplex
         self._summands = Array(repeating: nil, count: chainComplex.topDegree - chainComplex.offset + 1) // lazy init
     }
-    
+
     public var offset: Int {
         return chainComplex.offset
     }
-    
+
     public var topDegree: Int {
         return chainComplex.topDegree
     }
-    
+
     public static func ==(a: _Homology<chainType, A, R>, b: _Homology<chainType, A, R>) -> Bool {
         return a.chainComplex == b.chainComplex
     }
-    
+
     public var description: String {
         return (chainType.descending ? "H" : "cH") + "(\(chainComplex.name); \(R.symbol))"
     }
-    
+
     public var detailDescription: String {
         return (chainType.descending ? "H" : "cH") + "(\(chainComplex.name); \(R.symbol)) = {\n"
             + (offset ... topDegree).map{ i in (i, self[i]) }
@@ -70,7 +70,7 @@ public final class _Homology<chainType: ChainType, A: FreeModuleBase, R: Euclide
                 .joined(separator: ",\n")
             + "\n}"
     }
-    
+
     private func generateSummand(_ i: Int) -> Summand {
         let C = chainComplex
         let basis = C.chainBasis(i)
@@ -84,7 +84,7 @@ public extension Homology where chainType == Descending {
     public func bettiNumer(i: Int) -> Int {
         return self[i].filter{ $0.isFree }.count
     }
-    
+
     public var eulerNumber: Int {
         return (0 ... chainComplex.topDegree).reduce(0){ $0 + (-1).pow($1) * bettiNumer(i: $1) }
     }

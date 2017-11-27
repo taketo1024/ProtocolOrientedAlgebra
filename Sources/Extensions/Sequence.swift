@@ -12,7 +12,7 @@ public extension Sequence {
     var anyElement: Element? {
         return first { _ in true }
     }
-    
+
     func forAll(_ f: (Element) -> Bool) -> Bool {
         for e in self {
             if !f(e) {
@@ -21,11 +21,11 @@ public extension Sequence {
         }
         return true
     }
-    
+
     func exists(_ f: (Element) -> Bool) -> Bool {
         return contains(where: f)
     }
-    
+
     func toArray() -> [Element] {
         return Array(self)
     }
@@ -36,7 +36,7 @@ public extension Sequence where Element: Hashable {
         var alreadyAdded = Set<Element>()
         return self.filter { alreadyAdded.insert($0).inserted }
     }
-    
+
     func subtract(_ b: Self) -> [Element] {
         let set = Set(b)
         return self.filter{ !set.contains($0) }
@@ -47,7 +47,7 @@ public extension Sequence {
     func group<U: Hashable>(by keyGenerator: (Element) -> U) -> [U: [Element]] {
         return Dictionary(grouping: self, by: keyGenerator)
     }
-    
+
     func allCombinations<S: Sequence>(with s2: S) -> [(Self.Element, S.Element)] {
         typealias X = Self.Element
         typealias Y = S.Element
