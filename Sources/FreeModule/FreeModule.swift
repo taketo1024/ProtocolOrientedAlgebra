@@ -100,7 +100,7 @@ public struct FreeModule<A: FreeModuleBase, R: Ring>: Module, Sequence {
     }
     
     public var hashValue: Int {
-        return (self == FreeModule.zero) ? 0 : 1
+        return self == .zero ? 0 : 1
     }
 }
 

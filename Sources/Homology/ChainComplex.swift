@@ -49,7 +49,7 @@ public struct _ChainComplex<chainType: ChainType, A: FreeModuleBase, R: Ring>: E
     }
     
     public func boundaryMap(_ i: Int) -> BoundaryMap {
-        return (offset ... topDegree).contains(i) ? chain[i - offset].map : BoundaryMap.zero
+        return (offset ... topDegree).contains(i) ? chain[i - offset].map : .zero
     }
     
     public func boundaryMatrix(_ i: Int) -> BoundaryMatrix {
@@ -58,13 +58,13 @@ public struct _ChainComplex<chainType: ChainType, A: FreeModuleBase, R: Ring>: E
             return chain[i - offset].matrix
             
         case topDegree + 1 where chainType.descending:
-            return BoundaryMatrix.zero(rows: chainBasis(topDegree).count, cols: 0)
+            return .zero(rows: chainBasis(topDegree).count, cols: 0)
             
         case offset - 1 where !chainType.descending:
-            return BoundaryMatrix.zero(rows: chainBasis(offset).count, cols: 0)
+            return .zero(rows: chainBasis(offset).count, cols: 0)
             
         default:
-            return BoundaryMatrix.zero(rows: 0, cols: 0)
+            return .zero(rows: 0, cols: 0)
         }
     }
     

@@ -153,9 +153,9 @@ public extension SimplicialChain where A == Simplex {
     public func cap(_ d: SimplicialCochain<R>) -> SimplicialChain<R> {
         typealias C = SimplicialChain<R>
         
-        return self.reduce(C.zero) { (res, next) -> C in
+        return self.reduce(.zero) { (res, next) -> C in
             let (s, r1) = next
-            let eval = d.reduce(C.zero) { (res, next) -> C in
+            let eval = d.reduce(.zero) { (res, next) -> C in
                 let (f, r2) = next
                 let (i, j) = (s.dim, f.base.dim)
                 assert(i >= j)

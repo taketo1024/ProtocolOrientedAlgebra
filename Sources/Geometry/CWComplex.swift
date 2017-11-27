@@ -66,7 +66,7 @@ public struct CWComplex: GeometricComplex {
     }
     
     @discardableResult
-    public mutating func appendCell(ofDim i: Int, attachedTo boundary: CWCellChain = CWCellChain.zero) -> CWCell {
+    public mutating func appendCell(ofDim i: Int, attachedTo boundary: CWCellChain = .zero) -> CWCell {
         assert(boundary.basis.forAll{ $0.dim == i - 1 }, "only attatching to 1-dim lower cells is supported.")
         
         while cells.count - 1 < i {

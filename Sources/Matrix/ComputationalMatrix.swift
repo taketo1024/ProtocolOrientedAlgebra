@@ -366,7 +366,7 @@ public final class ComputationalMatrix<R: Ring>: Equatable, CustomStringConverti
         
         return (0 ..< cols).map { j -> FreeModule<A, R> in
             guard let v = table[j] else {
-                return FreeModule.zero
+                return .zero
             }
             return FreeModule( v.map{ (i, r) in (basis[i], r)} )
         }

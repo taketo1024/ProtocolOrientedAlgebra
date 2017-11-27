@@ -32,13 +32,13 @@ public struct _HomologyClass<chainType: ChainType, A: FreeModuleBase, R: Euclide
     }
     
     private init() {
-        self.z = Cycle.zero
+        self.z = .zero
         self.factors = [:]
         self.structure = nil
     }
     
     public subscript(_ i: Int) -> Cycle {
-        return factors[i] ?? Cycle.zero
+        return factors[i] ?? .zero
     }
     
     public var representative: Cycle {
@@ -106,11 +106,11 @@ public struct _HomologyClass<chainType: ChainType, A: FreeModuleBase, R: Euclide
     }
     
     public var hashValue: Int {
-        return (z == Cycle.zero) ? 0 : 1
+        return z == .zero ? 0 : 1
     }
     
     public var description: String {
-        return (z != Cycle.zero) ? "[\(z)]" : "0"
+        return z != .zero ? "[\(z)]" : "0"
     }
     
     public var detailDescription: String {
