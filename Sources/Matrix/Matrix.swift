@@ -69,7 +69,7 @@ public struct Matrix<n: _Int, m: _Int, R: Ring>: Module, Sequence {
     }
     
     // Convenience Initializer 2.
-    public init(rows r: Int? = nil, cols c: Int? = nil, fill: R = R.zero) {
+    public init(rows r: Int? = nil, cols c: Int? = nil, fill: R = .zero) {
         let (rows, cols) = Matrix.determineSize(r, c)
         let grid = Array(repeating: fill, count: rows * cols)
         self.init(rows, cols, grid)

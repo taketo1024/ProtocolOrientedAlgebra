@@ -93,7 +93,7 @@ public final class FinitelyGeneratedModuleStructure<A: FreeModuleBase, R: Euclid
         }
         
         public var isFree: Bool {
-            return factor == R.zero
+            return factor == .zero
         }
         
         public static func ==(a: Summand, b: Summand) -> Bool {

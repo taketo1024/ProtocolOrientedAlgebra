@@ -36,7 +36,7 @@ public final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
                     continue
                 }
                 
-                if a % a0 != R.zero {
+                if a % a0 != .zero {
                     diagonalGCD((i0, a0), (i, a))
                     return false
                 }

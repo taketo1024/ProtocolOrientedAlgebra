@@ -112,15 +112,15 @@ public extension _QuotientRing where Base == Sub.Super {
     }
     
     public static var zero: Self {
-        return Self.init(Base.zero)
+        return Self(.zero)
     }
     
     public static var identity: Self {
-        return Self.init(Base.identity)
+        return Self(.identity)
     }
     
     public static func * (a: Self, b: Self) -> Self {
-        return Self.init(a.representative * b.representative)
+        return Self(a.representative * b.representative)
     }
     
     public var hashValue: Int {

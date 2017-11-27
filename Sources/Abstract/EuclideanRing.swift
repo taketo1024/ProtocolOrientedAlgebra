@@ -65,7 +65,7 @@ public extension EuclideanIdeal {
     }
     
     static func contains(_ a: Super) -> Bool {
-        return a % generator == Super.zero
+        return a % generator == .zero
     }
     
     static func inverseInQuotient(_ r: Super) -> Super? {

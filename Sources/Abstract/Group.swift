@@ -89,7 +89,7 @@ public protocol Subgroup: Submonoid where Super: Group {}
 
 public extension Subgroup {
     public var inverse: Self {
-        return Self.init(self.asSuper.inverse)
+        return Self(self.asSuper.inverse)
     }
 }
 
@@ -98,7 +98,7 @@ public protocol _ProductGroup: Group, _ProductMonoid where Left: Group, Right: G
 
 public extension _ProductGroup {
     public var inverse: Self {
-        return Self.init(_1.inverse, _2.inverse)
+        return Self(_1.inverse, _2.inverse)
     }
 }
 
@@ -136,7 +136,7 @@ public extension _QuotientGroup where Base == Sub.Super {
     }
     
     public static func * (a: Self, b: Self) -> Self {
-        return Self.init(a.representative * b.representative)
+        return Self(a.representative * b.representative)
     }
 
     public static var symbol: String {

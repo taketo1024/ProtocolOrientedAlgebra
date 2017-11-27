@@ -40,7 +40,7 @@ public struct FreeModule<A: FreeModuleBase, R: Ring>: Module, Sequence {
     }
     
     public subscript(a: A) -> R {
-        return elements[a] ?? R.zero
+        return elements[a] ?? .zero
     }
     
     public var basis: Basis {
@@ -52,7 +52,7 @@ public struct FreeModule<A: FreeModuleBase, R: Ring>: Module, Sequence {
     }
     
     public static var zero: FreeModule<A, R> {
-        return FreeModule<A, R>.init([])
+        return FreeModule([])
     }
     
     public func mapValues<R2: Ring>(_ f: (R) -> R2) -> FreeModule<A, R2> {
@@ -70,7 +70,7 @@ public struct FreeModule<A: FreeModuleBase, R: Ring>: Module, Sequence {
     public static func + (a: FreeModule<A, R>, b: FreeModule<A, R>) -> FreeModule<A, R> {
         var d: [A : R] = a.elements
         for (a, r) in b {
-            d[a] = d[a, default: R.zero] + r
+            d[a] = d[a, default: .zero] + r
         }
         return FreeModule<A, R>(d)
     }
@@ -88,7 +88,7 @@ public struct FreeModule<A: FreeModuleBase, R: Ring>: Module, Sequence {
     }
     
     public var description: String {
-        let sum: String = self.filter{ (_, r) in r != R.zero }
+        let sum: String = self.filter{ (_, r) in r != .zero }
             .map { (a, r) in (r == R.identity) ? "\(a)" : "\(r)\(a)" }
             .joined(separator: " + ")
         
@@ -152,7 +152,7 @@ public struct Dual<A: FreeModuleBase>: FreeModuleBase {
 
 public extension FreeModule {
     public func evaluate(_ f: FreeModule<Dual<A>, R>) -> R {
-        return self.reduce(R.zero) { (res, next) -> R in
+        return self.reduce(.zero) { (res, next) -> R in
             let (a, r) = next
             return res + r * f[Dual(a)]
         }

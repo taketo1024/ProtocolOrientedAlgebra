@@ -8,7 +8,7 @@ public extension Field {
     }
     
     public var degree: Int {
-        return self == Self.zero ? 0 : 1
+        return self == .zero ? 0 : 1
     }
     
     public static func / (a: Self, b: Self) -> Self {

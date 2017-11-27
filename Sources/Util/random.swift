@@ -48,7 +48,7 @@ public extension Matrix where R: Randomable {
     }
     
     public static func rand(rank r: Int, shuffle s: Int = 50) -> Matrix<n, m, R> {
-        let A = Matrix<n, m, R>{ (i, j) in (i == j && i < r) ? R.identity : R.zero }
+        let A = Matrix<n, m, R>{ (i, j) in (i == j && i < r) ? .identity : .zero }
         let P = Matrix<n, n, R>.randRegular(shuffle: s)
         let Q = Matrix<m, m, R>.randRegular(shuffle: s)
         return P * A * Q
