@@ -321,10 +321,7 @@ public final class ComputationalMatrix<R: Ring>: Equatable, CustomStringConverti
         
         return (Set(a.table.keys) == Set(b.table.keys)) && a.table.keys.forAll{ i in
             let (x, y) = (a.table[i]!, b.table[i]!)
-            if x.count != y.count {
-                return false
-            }
-            return (0 ..< x.count).forAll { i in x[i] == y[i] }
+            return x.elementsEqual(y) { $0 == $1 }
         }
     }
     
