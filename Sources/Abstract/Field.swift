@@ -22,7 +22,7 @@ public extension Field {
         case let n where n < 0:
             return a.inverse! * (a ** (n + 1))
         default:
-            return Self.identity
+            return .identity
         }
     }
 
