@@ -70,7 +70,7 @@ public extension Group where Self: FiniteSetType {
         
         for k in 2...cyclics.count {
             n.choose(k).forEach { c in
-                let union: Set<Self> = c.map{ cyclics[$0] }.reduce(Set()){ $0.union($1.allElements) }
+                let union: Set<Self> = c.map{ cyclics[$0] }.reduce([]){ $0.union($1.allElements) }
                 
                 // TODO improve algorithm
                 if !unions.contains(union) && (n % union.count == 0) && formsSubgroup(union) {
