@@ -110,11 +110,11 @@ public struct Permutation<n: _Int>: Group, FiniteSetType {
         return n.intValue.factorial
     }
     
-    public static func == (a: Permutation<n>, b: Permutation<n>) -> Bool {
+    public static func == (a: Permutation, b: Permutation) -> Bool {
         return a.elements == b.elements
     }
     
-    public static func * (a: Permutation<n>, b: Permutation<n>) -> Permutation<n> {
+    public static func * (a: Permutation, b: Permutation) -> Permutation<n> {
         return Permutation{ a[b[$0]] }
     }
     
