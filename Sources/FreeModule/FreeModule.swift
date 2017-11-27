@@ -159,7 +159,7 @@ public extension FreeModule {
     }
     
     public func evaluate<B>(_ b: FreeModule<B, R>) -> R where A == Dual<B> {
-        return b.reduce(R.zero) { (res, next) -> R in
+        return b.reduce(.zero) { (res, next) -> R in
             let (a, r) = next
             return res + r * self[Dual(a)]
         }

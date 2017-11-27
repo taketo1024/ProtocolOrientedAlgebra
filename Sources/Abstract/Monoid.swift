@@ -7,7 +7,7 @@ public protocol Monoid: SetType {
 
 public extension Monoid {
     public static func ** (a: Self, b: Int) -> Self {
-        return b == 0 ? Self.identity : a * (a ** (b - 1))
+        return b == 0 ? .identity : a * (a ** (b - 1))
     }
 }
 

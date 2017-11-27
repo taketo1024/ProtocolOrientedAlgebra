@@ -28,7 +28,7 @@ public struct FreeModuleHom<A: FreeModuleBase, B: FreeModuleBase, R: Ring>: Modu
         var d: [B : R] = [:]
         for (a, r) in m {
             for (b, s) in self.appliedTo(a) {
-                d[b] = d[b, default: R.zero] + r * s
+                d[b] = d[b, default: .zero] + r * s
             }
         }
         return Codomain(d)
