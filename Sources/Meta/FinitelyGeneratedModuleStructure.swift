@@ -143,7 +143,7 @@ public final class FinitelyGeneratedModuleStructure<A: FreeModuleBase, R: Euclid
         //
         
         let E  = R1.eliminate(form: .Smith)
-        let factors = (E.diagonal + Array(repeating: .zero, count: k - l)).filter{ $0 != R.identity }
+        let factors = (E.diagonal + Array(repeating: .zero, count: k - l)).filter{ $0 != .identity }
         let s = factors.count
         
         let A2 = A * E.leftInverse.submatrix(colRange: (k - s) ..< k)

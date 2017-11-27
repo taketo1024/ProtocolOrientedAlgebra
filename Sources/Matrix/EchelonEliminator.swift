@@ -44,7 +44,7 @@ public final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         }
         
         // final step
-        if a0.normalizeUnit != R.identity {
+        if a0.normalizeUnit != .identity {
             apply(.MulRow(at: i0, by: a0.normalizeUnit))
         }
         

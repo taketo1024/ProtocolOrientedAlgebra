@@ -89,7 +89,7 @@ public struct FreeModule<A: FreeModuleBase, R: Ring>: Module, Sequence {
     
     public var description: String {
         let sum: String = self.filter{ (_, r) in r != .zero }
-            .map { (a, r) in (r == R.identity) ? "\(a)" : "\(r)\(a)" }
+            .map { (a, r) in (r == .identity) ? "\(a)" : "\(r)\(a)" }
             .joined(separator: " + ")
         
         return sum.isEmpty ? "0" : sum

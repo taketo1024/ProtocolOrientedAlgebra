@@ -41,7 +41,7 @@ public final class DiagonalEliminationResult<R: EuclideanRing>: MatrixEliminatio
     
     public override lazy var determinant: R = { [unowned self] in
         assert(result.rows == result.cols)
-        assert(diagonal.forAll{ $0 == R.identity })
+        assert(diagonal.forAll{ $0 == .identity })
         
         if rank == result.rows {
             return rowOps.multiply { $0.determinant }.inverse!

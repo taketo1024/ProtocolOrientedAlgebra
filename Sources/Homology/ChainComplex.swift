@@ -126,8 +126,8 @@ public extension ChainComplex {
             let map = (offset ... k).sum { i -> C.BoundaryMap in
                 let j = k - i
                 let (d1, d2) = (C1.boundaryMap(i), C2.boundaryMap(j))
-                let (I1, I2) = (FreeModuleHom<A, A, R>{ a in (a.degree == i) ? [(a, R.identity)] : [] },
-                                FreeModuleHom<B, B, R>{ b in (b.degree == j) ? [(b, R.identity)] : [] })
+                let (I1, I2) = (FreeModuleHom<A, A, R>{ a in (a.degree == i) ? [(a, .identity)] : [] },
+                                FreeModuleHom<B, B, R>{ b in (b.degree == j) ? [(b, .identity)] : [] })
                 let e = R(intValue: (-1).pow(i))
                 return d1 ⊗ I2 + e * I1 ⊗ d2
             }

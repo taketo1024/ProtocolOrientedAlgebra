@@ -33,7 +33,7 @@ public extension ChainMap where chainType == Descending {
         typealias Cell = F.ComplexType.Cell
         self.init { s -> [(Cell, R)] in
             let t = f.appliedTo(s)
-            return (s.dim == t.dim) ? [(t, R.identity)] : []
+            return (s.dim == t.dim) ? [(t, .identity)] : []
         }
     }
 }
@@ -50,7 +50,7 @@ public extension CochainMap where chainType == Ascending {
             let ss = f.domain.cells(ofDim: i)
             return ss.flatMap { (s: Cell) -> (Dual<Cell>, R)? in
                 let t = f.appliedTo(s)
-                return (g.pair(t) == 1) ? (Dual(s), R.identity) : nil
+                return (g.pair(t) == 1) ? (Dual(s), .identity) : nil
             }
         }
     }

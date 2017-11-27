@@ -39,7 +39,7 @@ public struct FreeModuleHom<A: FreeModuleBase, B: FreeModuleBase, R: Ring>: Modu
     }
     
     public static var identity: FreeModuleHom<A, A, R> {
-        return FreeModuleHom<A, A, R> { a in [(a, R.identity)] }
+        return FreeModuleHom<A, A, R> { a in [(a, .identity)] }
     }
     
     public static func ==(lhs: FreeModuleHom<A, B, R>, rhs: FreeModuleHom<A, B, R>) -> Bool {
