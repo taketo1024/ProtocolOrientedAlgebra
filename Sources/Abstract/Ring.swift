@@ -24,11 +24,11 @@ public extension Ring {
     }
     
     public static var zero: Self {
-        return Self.init(intValue: 0)
+        return Self(intValue: 0)
     }
     
     public static var identity: Self {
-        return Self.init(intValue: 1)
+        return Self(intValue: 1)
     }
     
     public static func **(a: Self, n: Int) -> Self {
@@ -52,15 +52,15 @@ public protocol Ideal: AdditiveSubgroup where Super: Ring {
 
 public extension Ideal {
     public static func * (a: Self, b: Self) -> Self {
-        return Self.init(a.asSuper * b.asSuper)
+        return Self(a.asSuper * b.asSuper)
     }
     
     public static func * (r: Super, a: Self) -> Self {
-        return Self.init(r * a.asSuper)
+        return Self(r * a.asSuper)
     }
     
     public static func * (a: Self, r: Super) -> Self {
-        return Self.init(a.asSuper * r)
+        return Self(a.asSuper * r)
     }
 }
 

@@ -16,15 +16,15 @@ public protocol AdditiveSubgroup: AdditiveGroup, SubsetType where Super: Additiv
 
 public extension AdditiveSubgroup {
     public static var zero: Self {
-        return Self.init(Super.zero)
+        return Self(Super.zero)
     }
     
     public static func + (a: Self, b: Self) -> Self {
-        return Self.init(a.asSuper + b.asSuper)
+        return Self(a.asSuper + b.asSuper)
     }
     
     prefix static func - (a: Self) -> Self {
-        return Self.init(a.asSuper)
+        return Self(a.asSuper)
     }
 }
 
@@ -54,15 +54,15 @@ public extension AdditiveQuotientGroup where Base == Sub.Super {
     }
     
     public static var zero: Self {
-        return Self.init(Base.zero)
+        return Self(Base.zero)
     }
     
     public static func + (a: Self, b: Self) -> Self {
-        return Self.init(a.representative + b.representative)
+        return Self(a.representative + b.representative)
     }
     
     public static prefix func - (a: Self) -> Self {
-        return Self.init(-a.representative)
+        return Self(-a.representative)
     }
     
     public static var symbol: String {

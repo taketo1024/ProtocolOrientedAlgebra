@@ -15,11 +15,11 @@ public protocol Submonoid: Monoid, SubsetType where Super: Monoid {}
 
 public extension Submonoid {
     static var identity: Self {
-        return Self.init(Super.identity)
+        return Self(Super.identity)
     }
     
     public static func * (a: Self, b: Self) -> Self {
-        return Self.init(a.asSuper * b.asSuper)
+        return Self(a.asSuper * b.asSuper)
     }
 }
 
@@ -27,11 +27,11 @@ public protocol _ProductMonoid: Monoid, ProductSetType where Left: Monoid, Right
 
 public extension _ProductMonoid {
     public static var identity: Self {
-        return Self.init(Left.identity, Right.identity)
+        return Self(Left.identity, Right.identity)
     }
     
     public static func * (a: Self, b: Self) -> Self {
-        return Self.init(a._1 * b._1, a._2 * b._2)
+        return Self(a._1 * b._1, a._2 * b._2)
     }
 }
 

@@ -10,11 +10,11 @@ public protocol Submodule: Module, AdditiveSubgroup where Super: Module {}
 
 public extension Submodule where CoeffRing == Super.CoeffRing {
     static func * (r: CoeffRing, a: Self) -> Self {
-        return Self.init(r * a.asSuper)
+        return Self(r * a.asSuper)
     }
     
     static func * (a: Self, r: CoeffRing) -> Self {
-        return Self.init(a.asSuper * r)
+        return Self(a.asSuper * r)
     }
 }
 
@@ -22,11 +22,11 @@ public protocol _ProductModule: Module, AdditiveProductGroup where Left: Module,
 
 public extension _ProductModule where Left.CoeffRing == CoeffRing, Right.CoeffRing == CoeffRing {
     static func * (r: CoeffRing, a: Self) -> Self {
-        return Self.init(r * a._1, r * a._2)
+        return Self(r * a._1, r * a._2)
     }
     
     static func * (a: Self, r: CoeffRing) -> Self {
-        return Self.init(a._1 * r, a._2 * r)
+        return Self(a._1 * r, a._2 * r)
     }
     
     public static var symbol: String {
@@ -56,11 +56,11 @@ public extension _QuotientModule where Base == Sub.Super, CoeffRing == Sub.Coeff
     }
     
     static func * (r: CoeffRing, a: Self) -> Self {
-        return Self.init(r * a.representative)
+        return Self(r * a.representative)
     }
     
     static func * (a: Self, r: CoeffRing) -> Self {
-        return Self.init(a.representative * r)
+        return Self(a.representative * r)
     }
     
     public var hashValue: Int {
