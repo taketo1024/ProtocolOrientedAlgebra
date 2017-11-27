@@ -23,12 +23,7 @@ public extension Sequence {
     }
     
     func exists(_ f: (Element) -> Bool) -> Bool {
-        for e in self {
-            if f(e) {
-                return true
-            }
-        }
-        return false
+        return contains(where: f)
     }
     
     func toArray() -> [Element] {
@@ -70,7 +65,7 @@ public extension Sequence where Element: AdditiveGroup {
 
 public extension Sequence {
     @_inlineable public func sum<G: AdditiveGroup>(mapping f: (Element) -> G) -> G {
-        return self.reduce(G.zero){ $0 + f($1)}
+        return self.reduce(.zero){ $0 + f($1)}
     }
 }
 
@@ -82,6 +77,6 @@ public extension Sequence where Element: Monoid {
 
 public extension Sequence {
     @_inlineable public func multiply<G: Monoid>(mapping f: (Element) -> G) -> G {
-        return self.reduce(G.identity){ $0 * f($1) }
+        return self.reduce(.identity){ $0 * f($1) }
     }
 }
