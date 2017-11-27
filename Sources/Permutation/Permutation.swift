@@ -49,7 +49,7 @@ public struct Permutation<n: _Int>: Group, FiniteSetType {
     }
     
     public static var identity: Permutation<n> {
-        return Permutation<n>{ $0 }
+        return Permutation{ $0 }
     }
     
     public var inverse: Permutation<n> {
@@ -90,7 +90,7 @@ public struct Permutation<n: _Int>: Group, FiniteSetType {
     }
     
     public var cyclicDecomposition: [Permutation<n>] {
-        return rawCyclicDecomposition.map{ Permutation<n>(cyclic: $0) }
+        return rawCyclicDecomposition.map{ Permutation(cyclic: $0) }
     }
     
     public func asMatrix() -> Matrix<n, n, IntegerNumber> {

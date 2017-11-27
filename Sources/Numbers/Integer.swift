@@ -78,7 +78,7 @@ public struct IntegerQuotientRing<n: _Int>: _QuotientRing, FiniteSetType {
     }
     
     public static var allElements: [IntegerQuotientRing<n>] {
-        return (0 ..< n.intValue).map{ IntegerQuotientRing<n>($0) }
+        return (0 ..< n.intValue).map{ IntegerQuotientRing($0) }
     }
     
     public static var countElements: Int {
@@ -105,7 +105,7 @@ public struct IntegerQuotientField<n: _Prime>: Field, _QuotientRing, FiniteSetTy
     }
     
     public static var allElements: [IntegerQuotientField<n>] {
-        return (0 ..< n.intValue).map{ IntegerQuotientField<n>($0) }
+        return (0 ..< n.intValue).map{ IntegerQuotientField($0) }
     }
     
     public static var countElements: Int {
