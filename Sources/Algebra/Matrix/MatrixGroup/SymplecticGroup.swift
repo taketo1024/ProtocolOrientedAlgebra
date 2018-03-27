@@ -16,17 +16,17 @@ public struct SymplecticGroup<n: _Int, K: Field>: MatrixGroup {
         assert(n.intValue.isEven)
         self.matrix = matrix
     }
-    
+
     public static var standardSymplecticMatrix: SymplecticGroup<n, K> {
         assert(n.intValue.isEven)
         return SymplecticGroup( SquareMatrix<n, K>.standardSymplecticMatrix )
     }
-    
+
     public static func contains(_ g: GeneralLinearGroup<n, K>) -> Bool {
         let J = standardSymplecticMatrix.asGL
         return g.transposed * J * g == J
     }
-    
+
     public static var symbol: String  {
         return "Sp(\(n.intValue), \(K.symbol))"
     }
@@ -42,15 +42,15 @@ public struct UnitarySymplecticGroup<n: _Int>: MatrixGroup {
         assert(n.intValue.isEven)
         self.matrix = matrix
     }
-    
+
     public static var standardSymplecticMatrix: UnitarySymplecticGroup<n> {
         return UnitarySymplecticGroup(SymplecticGroup.standardSymplecticMatrix.matrix)
     }
-    
+
     public static func contains(_ g: GeneralLinearGroup<n, 𝐂>) -> Bool {
         return SymplecticGroup.contains(g) && UnitaryGroup<n>.contains(g)
     }
-    
+
     public static var symbol: String  {
         return "USp(\(n.intValue))"
     }

@@ -12,7 +12,7 @@ public extension Dictionary {
     public init<S: Sequence>(pairs: S) where S.Element == (Key, Value) {
         self.init(uniqueKeysWithValues: pairs)
     }
-    
+
     public init<S: Sequence>(keys: S, generator: (Key) -> Value) where S.Element == Key {
         self.init(pairs: keys.map{ ($0, generator($0))} )
     }

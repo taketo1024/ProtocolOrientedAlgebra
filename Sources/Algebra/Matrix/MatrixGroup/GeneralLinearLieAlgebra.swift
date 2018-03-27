@@ -16,11 +16,11 @@ public struct GeneralLinearLieAlgebra<n: _Int, K: Field>: MatrixLieAlgebra {
     public init(_ matrix: SquareMatrix<n, K>) {
         self.matrix = matrix
     }
-    
+
     public static func contains(_ g: GeneralLinearLieAlgebra<n, K>) -> Bool {
         return true
     }
-    
+
     public static var symbol: String  {
         return "gl(\(n.intValue), \(K.symbol))"
     }
@@ -34,11 +34,11 @@ public struct SpecialLinearLieAlgebra<n: _Int, K: Field>: MatrixLieAlgebra {
     public init(_ matrix: SquareMatrix<n, K>) {
         self.matrix = matrix
     }
-    
+
     public static func contains(_ g: GeneralLinearLieAlgebra<n, K>) -> Bool {
         return g.matrix.trace == .zero
     }
-    
+
     public static var symbol: String  {
         return "sl(\(n.intValue), \(K.symbol))"
     }

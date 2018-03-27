@@ -10,7 +10,7 @@ import Foundation
 
 public struct MultiplicativeSequence<K: Field>: CustomStringConvertible {
     internal let map: (Int) -> MPolynomial<K>
-    
+
     public init(belongingTo f: PowerSeries<K>) {
         self.map = { n in
             let Is = n.partitions
@@ -21,11 +21,11 @@ public struct MultiplicativeSequence<K: Field>: CustomStringConvertible {
             }
         }
     }
-    
+
     public subscript(n: Int) -> MPolynomial<K> {
         return map(n)
     }
-    
+
     public var description: String {
         return (0 ..< 5).map{ self[$0].description }.joined(separator: " + ") + " ..."
     }

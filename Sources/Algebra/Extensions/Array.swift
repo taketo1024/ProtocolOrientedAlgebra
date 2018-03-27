@@ -12,12 +12,12 @@ public extension Array {
     public func binarySearch<T: Comparable>(_ needle: T, _ indexer: (Element) -> T) -> (index: Int, element: Element)? {
         var l = 0
         var u = self.count - 1
-        
+
         while l <= u {
             let i = (l + u) / 2
             let a = self[i]
             let x = indexer(a)
-            
+
             if(needle == x) {
                 return (i, a)
             } else {

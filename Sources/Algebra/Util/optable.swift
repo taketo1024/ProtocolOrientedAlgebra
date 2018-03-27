@@ -31,7 +31,7 @@ public extension Monoid {
     public static func printMulTable(values: [Self]) {
         printTable("*", rows: values, cols: values) { $0 * $1 }
     }
-    
+
     public static func printExpTable(values: [Self], upTo n: Int) {
         printTable("^", rows: values, cols: Array(0 ... n)) { $0 ** $1 }
     }
@@ -41,7 +41,7 @@ public extension Monoid where Self: FiniteSetType {
     public static func printMulTable() {
         printMulTable(values: allElements)
     }
-    
+
     public static func printExpTable() {
         let all = allElements
         printExpTable(values: all, upTo: all.count - 1)

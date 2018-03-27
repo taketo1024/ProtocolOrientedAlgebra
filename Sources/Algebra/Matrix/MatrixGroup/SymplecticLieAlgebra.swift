@@ -19,20 +19,20 @@ public struct SymplecticLieAlgebra<n: _Int, K: Field>: MatrixLieAlgebra {
         assert(n.intValue.isEven)
         self.matrix = matrix
     }
-    
+
     public static func contains(_ X: GeneralLinearLieAlgebra<n, K>) -> Bool {
         if !n.intValue.isEven {
             return false
         }
-        
+
         let J = SquareMatrix<n, K>.standardSymplecticMatrix
         let A = X.matrix.transposed * J
         let B = -J * X.matrix
         return A == B
-        
+
         // return X.matrix.transposed * J == (-J) * X.matrix // expression was too complex? wtf...
     }
-    
+
     public static var symbol: String  {
         return "sp(\(n.intValue), \(K.symbol))"
     }
@@ -45,17 +45,17 @@ public struct SymplecticLieAlgebra<n: _Int, K: Field>: MatrixLieAlgebra {
 public struct UnitarySymplecticLieAlgebra<n: _Int>: MatrixLieAlgebra {
     public typealias CoeffRing = 𝐑
     public typealias ElementRing = 𝐂
-    
+
     public let matrix: SquareMatrix<n, 𝐂>
     public init(_ matrix: SquareMatrix<n, 𝐂>) {
         assert(n.intValue.isEven)
         self.matrix = matrix
     }
-    
+
     public static func contains(_ X: GeneralLinearLieAlgebra<n, 𝐂>) -> Bool {
         return SymplecticLieAlgebra<n, 𝐂>.contains(X) && UnitaryLieAlgebra<n>.contains(X)
     }
-    
+
     public static var symbol: String  {
         return "usp(\(n.intValue))"
     }

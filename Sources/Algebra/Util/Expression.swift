@@ -26,7 +26,7 @@ public struct Expression {
             }
         } )
     }
-    
+
     public static func sub(_ i: Int) -> String {
         return String( String(i).map { c in
             switch c {
@@ -44,11 +44,11 @@ public struct Expression {
             }
         } )
     }
-    
+
     public static func symbol(_ x: String, sub i: Int? = nil, sup j: Int? = nil) -> String {
         return "\(x)\(i.flatMap{ sub($0) } ?? "")\(j.flatMap{ sup($0) } ?? "")"
     }
-    
+
     public static func term<R: Ring>(_ a: R, _ x: String, _ n: Int = 1) -> String {
         switch (a, n) {
         case ( 0, _): return "0"
@@ -60,7 +60,7 @@ public struct Expression {
         default:      return "\(a)\(x)\(sup(n))"
         }
     }
-    
+
     public static func terms<R: Ring>(_ op: String, _ terms: [(R, String, Int)]) -> String {
         return terms.map{ (a, x, n) in term(a, x, n) }.joined(separator: " \(op) ")
     }

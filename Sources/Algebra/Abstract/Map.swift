@@ -15,7 +15,7 @@ public extension Map {
     public var description: String {
         return "(map: \(Domain.symbol) -> \(Codomain.symbol))"
     }
-    
+
     public static var symbol: String {
         return "Map(\(Domain.symbol), \(Codomain.symbol))"
     }
