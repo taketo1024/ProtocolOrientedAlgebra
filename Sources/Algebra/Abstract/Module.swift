@@ -12,7 +12,7 @@ public extension Submodule where CoeffRing == Super.CoeffRing {
     static func * (r: CoeffRing, a: Self) -> Self {
         return Self(r * a.asSuper)
     }
-    
+
     static func * (a: Self, r: CoeffRing) -> Self {
         return Self(a.asSuper * r)
     }
@@ -24,11 +24,11 @@ public extension _ProductModule where Left.CoeffRing == CoeffRing, Right.CoeffRi
     static func * (r: CoeffRing, a: Self) -> Self {
         return Self(r * a._1, r * a._2)
     }
-    
+
     static func * (a: Self, r: CoeffRing) -> Self {
         return Self(a._1 * r, a._2 * r)
     }
-    
+
     public static var symbol: String {
         return "\(Left.symbol)⊕\(Right.symbol)"
     }
@@ -38,10 +38,10 @@ public struct ProductModule<M1: Module, M2: Module>: _ProductModule where M1.Coe
     public typealias Left = M1
     public typealias Right = M2
     public typealias CoeffRing = M1.CoeffRing
-    
+
     public let _1: M1
     public let _2: M2
-    
+
     public init(_ m1: M1, _ m2: M2) {
         self._1 = m1
         self._2 = m2
@@ -54,15 +54,15 @@ public extension _QuotientModule where Base == Sub.Super, CoeffRing == Sub.Coeff
     public static func isEquivalent(_ a: Base, _ b: Base) -> Bool {
         return Sub.contains( a - b )
     }
-    
+
     static func * (r: CoeffRing, a: Self) -> Self {
         return Self(r * a.representative)
     }
-    
+
     static func * (a: Self, r: CoeffRing) -> Self {
         return Self(a.representative * r)
     }
-    
+
     public var hashValue: Int {
         return representative.hashValue // must assure `representative` is unique.
     }
@@ -71,13 +71,13 @@ public extension _QuotientModule where Base == Sub.Super, CoeffRing == Sub.Coeff
 public struct QuotientModule<M, N>: _QuotientModule where N: Submodule, M == N.Super, M.CoeffRing == N.CoeffRing {
     public typealias CoeffRing = M.CoeffRing
     public typealias Sub = N
-    
+
     internal let m: M
-    
+
     public init(_ m: M) {
         self.m = m // TODO reduce
     }
-    
+
     public var representative: M {
         return m
     }

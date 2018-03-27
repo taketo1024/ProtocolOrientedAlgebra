@@ -14,21 +14,21 @@ public extension SimplicialComplex {
     public var eulerClass: CohomologyClass<Dual<Simplex>, 𝐙>? {
         return eulerClass(𝐙.self)
     }
-    
+
     public func eulerClass<R: EuclideanRing>(_ type: R.Type) -> CohomologyClass<Dual<Simplex>, R>? {
         fatalError("not working")
-        
+
         // See [Milnor-Stasheff: Characteristic Classes §11]
-        
+
         let M = self
         let d = SimplicialMap.diagonal(from: M)
-        
+
         let MxM = M × M
         let ΔM = d.image
-        
+
         let cH = Cohomology(MxM, MxM - ΔM, R.self) // TODO this
         let top = cH[dim]
-        
+
         if top.isFree && top.rank == 1 {
             let u = top.generator(0).representative
             let e = d.asCochainMap(R.self).appliedTo(u)  // the Euler class of M

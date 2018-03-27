@@ -20,7 +20,7 @@ public struct OrthogonalLieAlgebra<n: _Int>: MatrixLieAlgebra {
     public static func contains(_ X: GeneralLinearLieAlgebra<n, 𝐑>) -> Bool {
         return X.matrix.isSkewSymmetric
     }
-    
+
     public static var symbol: String  {
         return "o(\(n.intValue))"
     }

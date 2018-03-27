@@ -15,23 +15,23 @@ public extension SquareMatrix where n == m {
     public static var identity: Matrix<n, n, R> {
         return Matrix<n, n, R> { $0 == $1 ? 1 : 0 }
     }
-    
+
     public var size: Int {
         return rows
     }
-    
+
     public var trace: R {
         return (0 ..< rows).sum { i in self[i, i] }
     }
-    
+
     public var isZero: Bool {
         return self.forAll{ (_, _, r) in r == .zero }
     }
-    
+
     public var isDiagonal: Bool {
         return self.forAll{ (i, j, r) in (i == j) || r == .zero }
     }
-    
+
     public var isSymmetric: Bool {
         if size <= 1 {
             return true
@@ -42,7 +42,7 @@ public extension SquareMatrix where n == m {
             }
         }
     }
-    
+
     public var isSkewSymmetric: Bool {
         if size <= 1 {
             return isZero
@@ -53,7 +53,7 @@ public extension SquareMatrix where n == m {
             }
         }
     }
-    
+
     public var isOrthogonal: Bool {
         return self.transposed * self == .identity
     }
@@ -72,11 +72,11 @@ public extension SquareMatrix where n == m, R: EuclideanRing {
         default: return eliminate().determinant
         }
     }
-    
+
     public var isInvertible: Bool {
         return determinant.isInvertible
     }
-    
+
     public var inverse: Matrix<n, n, R>? {
         switch size {
         case 0: return .identity
@@ -102,7 +102,7 @@ public extension SquareMatrix where n == m, R == 𝐂 {
             }
         }
     }
-    
+
     public var isSkewHermitian: Bool {
         if size <= 1 {
             return isZero
@@ -113,7 +113,7 @@ public extension SquareMatrix where n == m, R == 𝐂 {
             }
         }
     }
-    
+
     public var isUnitary: Bool {
         return self.adjoint * self == .identity
     }
@@ -122,7 +122,7 @@ public extension SquareMatrix where n == m, R == 𝐂 {
 public extension SquareMatrix where n == m {
     public static var standardSymplecticMatrix: SquareMatrix<n, R> {
         assert(n.intValue.isEven)
-        
+
         let m = n.intValue / 2
         return SquareMatrix { (i, j) in
             if i < m, j >= m, i == (j - m) {
@@ -142,18 +142,18 @@ public func exp<n, K>(_ A: SquareMatrix<n, K>) -> SquareMatrix<n, K> where K: Fi
     if A == .zero {
         return .identity
     }
-    
+
     var X = SquareMatrix<n, K>.identity
     var n = 0
     var cn = K.identity
     var An = X
     let e = A.maxNorm.error
-    
+
     while true {
         n  = n + 1
         An = An * A
         cn = cn / K(from: n)
-        
+
         let Bn = cn * An
         if Bn.maxNorm.value < e {
             break
@@ -161,6 +161,6 @@ public func exp<n, K>(_ A: SquareMatrix<n, K>) -> SquareMatrix<n, K> where K: Fi
             X = X + Bn
         }
     }
-    
+
     return X
 }

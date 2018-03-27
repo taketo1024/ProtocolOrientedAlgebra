@@ -14,7 +14,7 @@ public class Debug {
     public static func measure<T>(_ f: () -> T) -> T {
         return measure("", f)
     }
-    
+
     public static func measure<T>(_ label: String, _ f: () -> T) -> T {
         let date = Date()
         defer {
@@ -27,7 +27,7 @@ public class Debug {
         }
         return f()
     }
-    
+
     public static func log(_ msg: @autoclosure () -> String, _ b: Bool) {
         if b { print(msg()) }
     }

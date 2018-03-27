@@ -17,7 +17,7 @@ public struct UnitaryGroup<n: _Int>: MatrixGroup {
     public static func contains(_ g: GeneralLinearGroup<n, 𝐂>) -> Bool {
         return g.matrix.isUnitary
     }
-    
+
     public static var symbol: String  {
         return "U(\(n.intValue))"
     }

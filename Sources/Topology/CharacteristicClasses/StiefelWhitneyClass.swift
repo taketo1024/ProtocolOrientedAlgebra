@@ -15,15 +15,15 @@ public extension SimplicialComplex {
             v[i].Sq(k - i)
         }
     }
-    
+
     public func StiefelWhitneyClass(_ k: Int) -> CohomologyClass<Dual<Simplex>, 𝐙₂>? {
         return StiefelWhitneyClass(k, WuClasses)
     }
-    
+
     public var StiefelWhitneyClasses: [CohomologyClass<Dual<Simplex>, 𝐙₂>] {
         return validDims.flatMap { k in StiefelWhitneyClass(k, WuClasses) }
     }
-    
+
     public var totalStiefelWhitneyClass: CohomologyClass<Dual<Simplex>, 𝐙₂> {
         return StiefelWhitneyClasses.sumAll()
     }

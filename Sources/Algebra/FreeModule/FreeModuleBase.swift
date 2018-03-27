@@ -28,23 +28,23 @@ public struct Dual<A: FreeModuleBase>: FreeModuleBase {
     public init(_ a: A) {
         base = a
     }
-    
+
     public var degree: Int {
         return base.degree
     }
-    
+
     public var hashValue: Int {
         return base.hashValue
     }
-    
+
     public func pair(_ s: A) -> Int {
         return (base == s) ? 1 : 0
     }
-    
+
     public static func ==(a: Dual<A>, b: Dual<A>) -> Bool {
         return a.base == b.base
     }
-    
+
     public var description: String {
         return "\(base)*"
     }
@@ -57,7 +57,7 @@ public extension FreeModule {
             return res + r * f[Dual(a)]
         }
     }
-    
+
     public func evaluate<B>(_ b: FreeModule<B, R>) -> R where A == Dual<B> {
         return b.reduce(.zero) { (res, next) -> R in
             let (a, r) = next
@@ -73,24 +73,24 @@ public typealias DirectSumFreeModule<A: FreeModuleBase, B: FreeModuleBase, R: Ri
 public enum Sum<A: FreeModuleBase, B: FreeModuleBase>: FreeModuleBase {
     case _1(_: A)
     case _2(_: B)
-    
+
     public init(_ a: A) { self = ._1(a) }
     public init(_ b: B) { self = ._2(b) }
-    
+
     public var degree: Int {
         switch self {
         case let ._1(a): return a.degree
         case let ._2(b): return b.degree
         }
     }
-    
+
     public var hashValue: Int {
         switch self {
         case let ._1(a): return a.hashValue
         case let ._2(b): return b.hashValue
         }
     }
-    
+
     public static func ==(s1: Sum<A, B>, s2: Sum<A, B>) -> Bool {
         switch (s1, s2) {
         case let (._1(a1), ._1(a2)): return a1 == a2
@@ -98,7 +98,7 @@ public enum Sum<A: FreeModuleBase, B: FreeModuleBase>: FreeModuleBase {
         default: return false
         }
     }
-    
+
     public var description: String {
         switch self {
         case let ._1(a): return a.description
@@ -114,7 +114,7 @@ public func ⊕<A, B, R>(x: FreeModule<A, R>, y: FreeModule<B, R>) -> DirectSumF
         } + y.map { (b, r) -> (Sum<A, B>, R) in
             (Sum._2(b), r)
         }
-    
+
     return FreeModule(elements)
 }
 
@@ -147,19 +147,19 @@ public struct Tensor<A: FreeModuleBase, B: FreeModuleBase>: FreeModuleBase {
         _1 = a
         _2 = b
     }
-    
+
     public var degree: Int {
         return _1.degree + _2.degree
     }
-    
+
     public var hashValue: Int {
         return _1.hashValue &* 31 &+ _2.hashValue % 31
     }
-    
+
     public static func ==(t1: Tensor<A, B>, t2: Tensor<A, B>) -> Bool {
         return t1._1 == t2._1 && t1._2 == t2._2
     }
-    
+
     public var description: String {
         return "\(_1)⊗\(_2)"
     }

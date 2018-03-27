@@ -14,7 +14,7 @@ public extension SimplicialComplex {
         guard let μ = orientationClass(𝐙₂.self) else {
             return nil
         }
-        
+
         // Let H^p =: <a_1, ..., a_k>,
         //     v_p =: Σ x_i a_i ∈ H^p
         //
@@ -22,15 +22,15 @@ public extension SimplicialComplex {
         //
         // Let p + q = n,
         //     H^q =: <b_1, ..., b_k> ( H^q ~= (H^q)^* ~= H^p, since 𝐙₂: field)
-        
+
         let cH = Cohomology(self, 𝐙₂.self)
         let n = cH.topDegree
         let q = n - p
-        
+
         let a = cH[p].generators
         let b = cH[q].generators
         let k = a.count
-        
+
         // F: H^p --> (H^q)^*  lin. isom. is defined as:
         //     x  --> (y -> <x ∪ y, μ>)
         //
@@ -39,13 +39,13 @@ public extension SimplicialComplex {
         //   F_ij = F(a_j)(b_i) = <a_j ∪ b_i, μ>
         //
         // G := F^-1
-        
+
         let F = DynamicMatrix(rows: k, cols: k) { (i, j) in
             pair(a[j] ∪ b[i], μ)
         }
-        
+
         let G = F.inverse!
-        
+
         // v_p ∈ H^p is the unique class s.t.
         //
         //   <v_p ∪ y, μ> = <Sq^p(y), μ> (y ∈ H^q)
@@ -59,19 +59,19 @@ public extension SimplicialComplex {
         //   y_i = f_p(b_i) = <Sq^p(b_i), μ>
         //
         // Thus we have (x) = G(y).
-        
+
         let y = DynamicColVector(rows: k) { (i, _) in
             pair(b[i].Sq(p), μ)
         }
-        
+
         let x = G * y
         return x.sum { (i, _, x_i) in x_i * a[i] }
     }
-    
+
     public var WuClasses: [CohomologyClass<Dual<Simplex>, 𝐙₂>] {
         return validDims.flatMap { i in WuClass(i) }
     }
-    
+
     public var totalWuClass: CohomologyClass<Dual<Simplex>, 𝐙₂> {
         return WuClasses.sumAll()
     }

@@ -18,15 +18,15 @@ public extension SetType {
         assert(S.contains(self), "\(S.self) does not contain \(self).")
         return S.init(self)
     }
-    
+
     public func asQuotient<Q: QuotientSetType>(in: Q.Type) -> Q where Q.Base == Self {
         return Q.init(self)
     }
-    
+
     public var detailDescription: String {
         return description
     }
-    
+
     public static var symbol: String {
         return String(describing: self)
     }
@@ -48,11 +48,11 @@ public extension SubsetType {
     public static func == (a: Self, b: Self) -> Bool {
         return a.asSuper == b.asSuper
     }
-    
+
     public var hashValue: Int {
         return asSuper.hashValue
     }
-    
+
     public var description: String {
         return asSuper.description
     }
@@ -70,15 +70,15 @@ public extension ProductSetType {
     public static func == (a: Self, b: Self) -> Bool {
         return (a._1 == b._1) && (a._2 == b._2)
     }
-    
+
     public var hashValue: Int {
         return (_1.hashValue &* 31) &+ _2.hashValue
     }
-    
+
     public var description: String {
         return "(\(_1), \(_2))"
     }
-    
+
     public static var symbol: String {
         return "\(Left.symbol)×\(Right.symbol)"
     }
@@ -87,10 +87,10 @@ public extension ProductSetType {
 public struct ProductSet<S1: SetType, S2: SetType>: ProductSetType {
     public typealias Left = S1
     public typealias Right = S2
-    
+
     public let _1: S1
     public let _2: S2
-    
+
     public init(_ s1: S1, _ s2: S2) {
         self._1 = s1
         self._2 = s2
@@ -99,7 +99,7 @@ public struct ProductSet<S1: SetType, S2: SetType>: ProductSetType {
 
 public protocol QuotientSetType: SetType {
     associatedtype Base: SetType
-    
+
     init(_ g: Base)
     var representative: Base { get }
     static func isEquivalent(_ a: Base, _ b: Base) -> Bool
@@ -113,7 +113,7 @@ public extension QuotientSetType {
     public var description: String {
         return "\(representative)"
     }
-    
+
     public static var symbol: String {
         return "\(Base.symbol)/~"
     }
