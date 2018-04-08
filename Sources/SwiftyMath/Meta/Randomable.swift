@@ -22,7 +22,12 @@ public extension Randomable {
 extension 𝐙: Randomable {
     public static func rand(_ lowerBound: Int, _ upperBound: Int) -> 𝐙 {
         if lowerBound < upperBound {
+#if os(Linux)
+            srandom(UInt32(time(nil)))
+            return 𝐙(random()) % (upperBound - lowerBound) + lowerBound
+#else
             return 𝐙(arc4random()) % (upperBound - lowerBound) + lowerBound
+#endif
         } else {
             return 0
         }
