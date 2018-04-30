@@ -16,7 +16,7 @@ public extension LinearMapType where Domain: FiniteDimVectorSpace, Codomain: Fin
             return zip(y.grid, Codomain.standardBasis).sum { (a, w) in a * w }
         }
     }
-    
+
     public var asMatrix: Matrix<CoeffRing> {
         let comps = Domain.standardBasis.enumerated().flatMap { (j, v) -> [MatrixComponent<CoeffRing>] in
             let w = self.applied(to: v)
@@ -24,11 +24,11 @@ public extension LinearMapType where Domain: FiniteDimVectorSpace, Codomain: Fin
         }
         return Matrix(rows: Codomain.dim, cols: Domain.dim, components: comps)
     }
-    
+
     public var trace: CoeffRing {
         return asMatrix.trace
     }
-    
+
     public var determinant: CoeffRing {
         return asMatrix.determinant
     }

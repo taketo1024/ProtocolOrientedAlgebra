@@ -58,7 +58,7 @@ public extension _Matrix where R: Randomable {
     public static func random(_ lowerBound: Int, _ upperBound: Int) -> _Matrix<n, m, R> {
         return _Matrix { (_, _) in  R.random(lowerBound, upperBound) }
     }
-    
+
     public static func random(rank r: Int, shuffle s: Int = 50) -> _Matrix<n, m, R> {
         let A = _Matrix<n, m, R>{ (i, j) in (i == j && i < r) ? .identity : .zero }
         let P = _Matrix<n, n, R>.randRegular(shuffle: s)
@@ -71,14 +71,14 @@ public extension _Matrix where R: Randomable, n == m {
     public static func randRegular(_ size: Int? = nil, shuffle: Int = 50) -> _Matrix<n, n, R> {
         let s = size ?? n.intValue
         let A = MatrixImpl<R>.identity(s)
-        
+
         for _ in 0 ..< shuffle {
             let i = Int.random(0, A.rows)
             let j = Int.random(0, A.cols)
             if i == j {
                 continue
             }
-            
+
             switch Int.random(6) {
             case 0: A.addRow(at: i, to: j, multipliedBy: R.random(1, 2))
             case 1: A.addCol(at: i, to: j, multipliedBy: R.random(1, 2))
@@ -89,7 +89,7 @@ public extension _Matrix where R: Randomable, n == m {
             default: ()
             }
         }
-        
+
         return _Matrix(A)
     }
 }

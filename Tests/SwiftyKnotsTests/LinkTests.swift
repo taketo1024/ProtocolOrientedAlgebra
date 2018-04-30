@@ -10,9 +10,9 @@ import SwiftyMath
 @testable import SwiftyKnots
 
 class LinkTests: XCTestCase {
-    
+
     typealias A = LaurentPolynomial<𝐙>
-    
+
     func testEmpty() {
         let e = Link.empty
         XCTAssertEqual(e.components.count, 0)
@@ -34,7 +34,7 @@ class LinkTests: XCTestCase {
         XCTAssertEqual(L.writhe, -2)
         XCTAssertEqual(L.JonesPolynomial, A(symbol: "q", coeffs: [-5: 1, -1: 1]) )
     }
-    
+
     func testHopfLinkReversed() {
         let L = Link.HopfLink.reversed
         XCTAssertEqual(L.components.count, 2)
@@ -42,7 +42,7 @@ class LinkTests: XCTestCase {
         XCTAssertEqual(L.writhe, -2)
         XCTAssertEqual(L.JonesPolynomial, A(symbol: "q", coeffs: [-5: 1, -1: 1]) )
     }
-    
+
     func testHopfLinkMirrored() {
         let L = Link.HopfLink.mirrored
         XCTAssertEqual(L.components.count, 2)
@@ -50,7 +50,7 @@ class LinkTests: XCTestCase {
         XCTAssertEqual(L.writhe, 2)
         XCTAssertEqual(L.JonesPolynomial, A(symbol: "q", coeffs: [5: 1, 1: 1]) )
     }
-    
+
     func testTrefoil() {
         let K = Link.trefoil
         XCTAssertEqual(K.components.count, 1)
@@ -58,7 +58,7 @@ class LinkTests: XCTestCase {
         XCTAssertEqual(K.writhe, -3)
         XCTAssertEqual(K.JonesPolynomial, A(symbol: "q", coeffs: [-8: -1, -6: 1, -2: 1]))
     }
-    
+
     func testTrefoilReversed() {
         let K = Link.trefoil.reversed
         XCTAssertEqual(K.components.count, 1)
@@ -66,7 +66,7 @@ class LinkTests: XCTestCase {
         XCTAssertEqual(K.writhe, -3)
         XCTAssertEqual(K.JonesPolynomial, A(symbol: "q", coeffs: [-8: -1, -6: 1, -2: 1]))
     }
-    
+
     func testTrefoilMirrored() {
         let K = Link.trefoil.mirrored
         XCTAssertEqual(K.components.count, 1)
@@ -74,7 +74,7 @@ class LinkTests: XCTestCase {
         XCTAssertEqual(K.writhe, 3)
         XCTAssertEqual(K.JonesPolynomial, A(symbol: "q", coeffs: [8: -1, 6: 1, 2: 1]))
     }
-    
+
     func testCoding() {
         let K = Link.trefoil
         let d = try! JSONEncoder().encode(K)

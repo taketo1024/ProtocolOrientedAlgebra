@@ -17,11 +17,11 @@ private var flags = Set<DebugFlag>()
 
 public class Debug {
     private static let precision = 1000.0
-    
+
     public static func measure<T>(_ f: () -> T) -> T {
         return measure("", f)
     }
-    
+
     public static func measure<T>(_ label: String, _ f: () -> T) -> T {
         let date = Date()
         defer {
@@ -34,15 +34,15 @@ public class Debug {
         }
         return f()
     }
-    
+
     public static func setFlag(_ flag: DebugFlag) {
         flags.insert(flag)
     }
-    
+
     public static func unsetFlag(_ flag: DebugFlag) {
         flags.remove(flag)
     }
-    
+
     public static func log(_ flag: DebugFlag, _ msg: @autoclosure () -> String) {
         if flags.contains(flag) {
             print(msg())

@@ -22,7 +22,7 @@ public extension _Matrix where m == _1 {
     public subscript(index: Int) -> R {
         @_transparent
         get { return self[index, 0] }
-        
+
         @_transparent
         set { self[index, 0] = newValue }
     }
@@ -32,7 +32,7 @@ public extension _Matrix where n == _1 {
     public subscript(index: Int) -> R {
         @_transparent
         get { return self[0, index] }
-        
+
         @_transparent
         set { self[0, index] = newValue }
     }

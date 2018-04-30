@@ -20,11 +20,11 @@ public extension ChainComplex where T == Descending {
         }
         self.init(name: name, chain: chain)
     }
-    
+
     public convenience init<C: GeometricComplex>(_ K: C, _ type: R.Type) where A == C.Cell {
         self.init(geometricComplex: K, relativeTo: nil, R.self)
     }
-    
+
     public convenience init<C: GeometricComplex>(_ K: C, _ L: C, _ type: R.Type) where A == C.Cell {
         self.init(geometricComplex: K, relativeTo: L, R.self)
     }
@@ -52,7 +52,7 @@ public extension Homology where T == Descending {
         let name = "H(\(K.name)\( L != nil ? ", \(L!.name)" : ""); \(R.symbol))"
         self.init(name: name, chainComplex: ChainComplex(geometricComplex: K, relativeTo: L, R.self))
     }
-    
+
     public convenience init<C: GeometricComplex>(_ K: C, _ type: R.Type) where A == C.Cell {
         self.init(geometricComplex: K, relativeTo: nil, R.self)
     }
@@ -67,11 +67,11 @@ public extension Cohomology where T == Ascending {
         let name = "cH(\(K.name)\( L != nil ? ", \(L!.name)" : ""); \(R.symbol))"
         self.init(name: name, chainComplex: ChainComplex(geometricComplex: K, relativeTo: L, R.self).dual)
     }
-    
+
     public convenience init<C: GeometricComplex>(_ K: C, _ type: R.Type) where A == Dual<C.Cell> {
         self.init(geometricComplex: K, relativeTo: nil, R.self)
     }
-    
+
     public convenience init<C: GeometricComplex>(_ K: C, _ L: C, _ type: R.Type) where A == Dual<C.Cell> {
         self.init(geometricComplex: K, relativeTo: L, R.self)
     }

@@ -11,31 +11,31 @@ import Foundation
 public extension ChainComplex {
     public static func ⊕<B>(C1: _ChainComplex<T, A, R>, C2: _ChainComplex<T, B, R>) -> _ChainComplex<T, Sum<A, B>, R> {
         typealias C = _ChainComplex<T, Sum<A, B>, R>
-        
+
         let offset = min(C1.offset, C2.offset)
         let degree = max(C1.topDegree, C2.topDegree)
-        
+
         let chain = (offset ... degree).map { i -> (C.ChainBasis, C.BoundaryMap) in
             let basis: C.ChainBasis = C1.chainBasis(i).map{ a in ._1(a) } + C2.chainBasis(i).map{ b in ._2(b) }
             let map = C1.boundaryMap(i) ⊕ C2.boundaryMap(i)
             return (basis, map)
         }
-        
+
         return _ChainComplex<T, Sum<A, B>, R>(name: "\(C1.name) ⊕ \(C2.name)", chain: chain)
     }
-    
+
     public static func ⊗<B>(C1: _ChainComplex<T, A, R>, C2: _ChainComplex<T, B, R>) -> _ChainComplex<T, Tensor<A, B>, R> {
         typealias C = _ChainComplex<T, Tensor<A, B>, R>
-        
+
         let offset = C1.offset + C2.offset
         let degree = C1.topDegree + C2.topDegree
-        
+
         let bases = (offset ... degree).map{ (k) -> C.ChainBasis in
             (offset ... k).flatMap{ i in
                 C1.chainBasis(i).allCombinations(with: C2.chainBasis(k - i)).map{ $0 ⊗ $1 }
             }
         }
-        
+
         let chain = (offset ... degree).map{ (k) -> (C.ChainBasis, C.BoundaryMap) in
             let from = bases[k - offset]
             let map = (offset ... k).sum { i -> C.BoundaryMap in
@@ -48,7 +48,7 @@ public extension ChainComplex {
             }
             return (from, map)
         }
-        
+
         return _ChainComplex<T, Tensor<A, B>, R>(name: "\(C1.name) ⊗ \(C2.name)", chain: chain)
     }
 }

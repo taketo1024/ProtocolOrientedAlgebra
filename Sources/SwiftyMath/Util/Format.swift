@@ -13,7 +13,7 @@ public struct Format {
     public static func sup(_ i: Int) -> String {
         return sup(String(i))
     }
-    
+
     public static func sup(_ s: String) -> String {
         return String( s.map { c in
             switch c {
@@ -36,11 +36,11 @@ public struct Format {
             }
         } )
     }
-    
+
     public static func sub(_ i: Int) -> String {
         return sub(String(i))
     }
-    
+
     public static func sub(_ s: String) -> String {
         return String( s.map { c in
             switch c {
@@ -62,11 +62,11 @@ public struct Format {
             }
         } )
     }
-    
+
     public static func symbol(_ x: String, _ i: Int) -> String {
         return "\(x)\(sub(i))"
     }
-    
+
     public static func term<R: Ring>(_ a: R, _ x: String, _ n: Int = 1, skipZero: Bool = false) -> String {
         let (o, e) = (R.zero, R.identity)
         switch (a, n) {
@@ -80,7 +80,7 @@ public struct Format {
         default:      return "\(a)\(x)\(sup(n))"
         }
     }
-    
+
     public static func terms<R: Ring>(_ op: String, _ terms: [(R, String, Int)], skipZero: Bool = false) -> String {
         let ts = terms.compactMap{ (a, x, n) -> String? in
             let t = term(a, x, n, skipZero: skipZero)
@@ -88,7 +88,7 @@ public struct Format {
         }.joined(separator: " \(op) ")
         return ts.isEmpty ? "0" : ts
     }
-    
+
     public static func printTable<T1, T2, T3>(_ symbol: String, rows: [T1], cols: [T2], op: (T1, T2) -> T3) {
         let head = ([symbol] + (0 ..< cols.count).map{ j in "\(cols[j])" })
         let body = (0 ..< rows.count).map { i in
@@ -117,7 +117,7 @@ public extension Monoid {
     public static func printMulTable(values: [Self]) {
         Format.printTable("*", rows: values, cols: values) { $0 * $1 }
     }
-    
+
     public static func printExpTable(values: [Self], upTo n: Int) {
         Format.printTable("^", rows: values, cols: Array(0 ... n)) { $0.pow($1) }
     }
@@ -127,7 +127,7 @@ public extension Monoid where Self: FiniteSetType {
     public static func printMulTable() {
         printMulTable(values: allElements)
     }
-    
+
     public static func printExpTable() {
         let all = allElements
         printExpTable(values: all, upTo: all.count - 1)

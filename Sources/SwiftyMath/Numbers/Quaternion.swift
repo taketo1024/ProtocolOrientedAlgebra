@@ -14,7 +14,7 @@ public typealias 𝐇 = Quaternion
 public struct Quaternion: Ring, NormedSpace, ExpressibleByIntegerLiteral, ExpressibleByFloatLiteral {
     public typealias IntegerLiteralType = 𝐙
     public typealias FloatLiteralType = Double
-    
+
     private let x: 𝐑
     private let y: 𝐑
     private let z: 𝐑
@@ -23,70 +23,70 @@ public struct Quaternion: Ring, NormedSpace, ExpressibleByIntegerLiteral, Expres
     public init(integerLiteral n: Int) {
         self.init(n)
     }
-    
+
     public init(floatLiteral x: Double) {
         self.init(𝐑(x))
     }
-    
+
     public init(from x: 𝐙) {
         self.init(x)
     }
-    
+
     public init(_ x: 𝐙) {
         self.init(𝐑(x), 0, 0, 0)
     }
-    
+
     public init(_ x: 𝐐) {
         self.init(𝐑(x), 0, 0, 0)
     }
-    
+
     public init(_ x: 𝐑) {
         self.init(x, 0, 0, 0)
     }
-    
+
     public init(_ z: 𝐂) {
         self.init(z.realPart, z.imaginaryPart, 0, 0)
     }
-    
+
     public init(_ z: 𝐂, _ w: 𝐂) {
         self.init(z.realPart, z.imaginaryPart, w.realPart, w.imaginaryPart)
     }
-    
+
     public init(_ x: 𝐑, _ y: 𝐑, _ z: 𝐑, _ w: 𝐑) {
         self.x = x
         self.y = y
         self.z = z
         self.w = w
     }
-    
+
     public static var i: 𝐇 {
         return 𝐇(0, 1, 0, 0)
     }
-    
+
     public static var j: 𝐇 {
         return 𝐇(0, 0, 1, 0)
     }
-    
+
     public static var k: 𝐇 {
         return 𝐇(0, 0, 0, 1)
     }
-    
+
     public var realPart: 𝐑 {
         return x
     }
-    
+
     public var imaginaryPart: 𝐇 {
         return 𝐇(0, y, z, w)
     }
-    
+
     public var abs: 𝐑 {
         return √(x * x + y * y + z * z + w * w)
     }
-    
+
     public var norm: 𝐑 {
         return abs
     }
-    
+
     public var conjugate: 𝐇 {
         return 𝐇(x, -y, -z, -w)
     }
@@ -95,19 +95,19 @@ public struct Quaternion: Ring, NormedSpace, ExpressibleByIntegerLiteral, Expres
         let r2 = x * x + y * y + z * z + w * w
         return r2 == 0 ? nil : 𝐇(x / r2, -y / r2, -z / r2, -w / r2)
     }
-    
+
     public static func ==(lhs: 𝐇, rhs: 𝐇) -> Bool {
         return (lhs.x == rhs.x) && (lhs.y == rhs.y)
     }
-    
+
     public static func +(a: 𝐇, b: 𝐇) -> 𝐇 {
         return 𝐇(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w)
     }
-    
+
     public static prefix func -(a: 𝐇) -> 𝐇 {
         return 𝐇(-a.x, -a.y, -a.z, -a.w)
     }
-    
+
     public static func *(a: 𝐇, b: 𝐇) -> 𝐇 {
         let x = a.x * b.x - (a.y * b.y + a.z * b.z + a.w * b.w)
         let y = a.x * b.y +  a.y * b.x + a.z * b.w - a.w * b.z
@@ -115,14 +115,14 @@ public struct Quaternion: Ring, NormedSpace, ExpressibleByIntegerLiteral, Expres
         let w = a.x * b.w +  a.y * b.z - a.z * b.y - a.w * b.x
         return 𝐇(x, y, z, w)
     }
-    
+
     public var hashValue: Int {
         let p = 31
         return [x, y, z, w].reduce(0) { (res, r) in
             res &* p &+ (r.hashValue % p)
         }
     }
-    
+
     public var description: String {
         if self == .zero {
             return "0"
@@ -133,7 +133,7 @@ public struct Quaternion: Ring, NormedSpace, ExpressibleByIntegerLiteral, Expres
                 .joined(separator: " + ")
         }
     }
-    
+
     public static var symbol: String {
         return "𝐇"
     }

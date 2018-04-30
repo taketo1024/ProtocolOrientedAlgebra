@@ -20,15 +20,15 @@ public extension AdditiveSubgroup {
     public static var zero: Self {
         return Self(Super.zero)
     }
-    
+
     public static func + (a: Self, b: Self) -> Self {
         return Self(a.asSuper + b.asSuper)
     }
-    
+
     prefix static func - (a: Self) -> Self {
         return Self(-a.asSuper)
     }
-    
+
     public static func normalizedInQuotient(_ a: Super) -> Super {
         return a
     }
@@ -40,11 +40,11 @@ extension AdditiveProductGroup: AdditiveGroup where Left: AdditiveGroup, Right: 
     public static var zero: AdditiveProductGroup<Left, Right> {
         return AdditiveProductGroup(.zero, .zero)
     }
-    
+
     public static func + (a: AdditiveProductGroup<Left, Right>, b: AdditiveProductGroup<Left, Right>) -> AdditiveProductGroup<Left, Right> {
         return AdditiveProductGroup(a.left + b.left, a.right + b.right)
     }
-    
+
     public static prefix func - (a: AdditiveProductGroup<Left, Right>) -> AdditiveProductGroup<Left, Right> {
         return AdditiveProductGroup(-a.left, -a.right)
     }
@@ -58,19 +58,19 @@ public extension AdditiveQuotientGroupType {
     public static var zero: Self {
         return Self(Base.zero)
     }
-    
+
     public static func + (a: Self, b: Self) -> Self {
         return Self(a.representative + b.representative)
     }
-    
+
     public static prefix func - (a: Self) -> Self {
         return Self(-a.representative)
     }
-    
+
     public static func isEquivalent(_ a: Base, _ b: Base) -> Bool {
         return Sub.contains( a - b )
     }
-    
+
     public static var symbol: String {
         return "\(Base.symbol)/\(Sub.symbol)"
     }
@@ -81,7 +81,7 @@ public struct AdditiveQuotientGroup<Base, Sub: AdditiveSubgroup>: AdditiveQuotie
     public init(_ x: Base) {
         self.x = Sub.normalizedInQuotient(x)
     }
-    
+
     public var representative: Base {
         return x
     }
@@ -92,23 +92,23 @@ public struct AsMulGroup<G: AdditiveGroup>: Group {
     public init(_ g: G) {
         self.g = g
     }
-    
+
     public var inverse: AsMulGroup<G> {
         return AsMulGroup(-g)
     }
-    
+
     public static func * (a: AsMulGroup<G>, b: AsMulGroup<G>) -> AsMulGroup<G> {
         return AsMulGroup(a.g + b.g)
     }
-    
+
     public static var identity: AsMulGroup<G> {
         return AsMulGroup(G.zero)
     }
-    
+
     public var description: String {
         return g.description
     }
-    
+
     public static var symbol: String {
         return G.symbol
     }
@@ -127,11 +127,11 @@ public extension AdditiveGroupHomType {
     public static var zero: Self {
         return Self { _ in .zero }
     }
-    
+
     public static func + (f: Self, g: Self) -> Self {
         return Self { x in f.applied(to: x) + g.applied(to: x) }
     }
-    
+
     public prefix static func - (f: Self) -> Self {
         return Self { x in -f.applied(to: x) }
     }

@@ -10,15 +10,15 @@ public extension MapType {
     public static func ==(f: Self, g: Self) -> Bool {
         fatalError("cannot equate general maps.")
     }
-    
+
     public var hashValue: Int {
         return 0
     }
-    
+
     public var description: String {
         return "\(Domain.symbol) -> \(Codomain.symbol)"
     }
-    
+
     public static var symbol: String {
         return "Map(\(Domain.symbol), \(Codomain.symbol))"
     }
@@ -29,11 +29,11 @@ public struct Map<Domain: SetType, Codomain: SetType>: MapType {
     public init(_ fnc: @escaping (Domain) -> Codomain) {
         self.fnc = fnc
     }
-    
+
     public func applied(to x: Domain) -> Codomain {
         return fnc(x)
     }
-    
+
     public func composed<X>(with f: Map<X, Domain>) -> Map<X, Codomain> {
         return Map<X, Codomain> { x in self.applied(to: f.applied(to: x) ) }
     }
@@ -82,15 +82,15 @@ public extension AutType {
     public static func *(g: Self, f: Self) -> Self {
         return g.composed(with: f)
     }
-    
+
     public static func == (a: Self, b: Self) -> Bool {
         return a.asSuper == b.asSuper
     }
-    
+
     public var hashValue: Int {
         return asSuper.hashValue
     }
-    
+
     public var description: String {
         return asSuper.description
     }
@@ -99,32 +99,32 @@ public extension AutType {
 public struct Aut<Domain: SetType>: AutType {
     public typealias Codomain = Domain
     public typealias Super = End<Domain>
-    
+
     private let map: End<Domain>
     public init(_ map: Map<Domain, Domain>) {
         self.map = map
     }
-    
+
     public init(_ fnc: @escaping (Domain) -> Domain) {
         self.init(End(fnc))
     }
-    
+
     public var asSuper: End<Domain> {
         return map
     }
-    
+
     public static func contains(_ g: Map<Domain, Domain>) -> Bool {
         fatalError()
     }
-    
+
     public var inverse: Aut<Domain> {
         fatalError()
     }
-    
+
     public func applied(to x: Domain) -> Domain {
         return map.fnc(x)
     }
-    
+
     public func composed(with f: Aut<Domain>) -> Aut<Domain> {
         return Aut( { x in self.applied(to: f.applied(to: x)) } )
     }

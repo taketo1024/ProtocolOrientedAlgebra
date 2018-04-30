@@ -19,7 +19,7 @@ public extension 𝐙 {
             return (n - 1).choose(k) + (n - 1).choose(k - 1).map{ $0 + [n - 1] }
         }
     }
-    
+
     // TODO use IntList
     public func multichoose(_ k: Int) -> [[Int]] {
         let n = self
@@ -34,7 +34,7 @@ public extension 𝐙 {
             }
         }
     }
-    
+
     public var partitions: [IntList] {
         assert(self >= 0)
         if self == 0 {
@@ -43,7 +43,7 @@ public extension 𝐙 {
             return self.partitions(lowerBound: 1)
         }
     }
-    
+
     internal func partitions(lowerBound: Int) -> [IntList] {
         let n = self
         if lowerBound > n {

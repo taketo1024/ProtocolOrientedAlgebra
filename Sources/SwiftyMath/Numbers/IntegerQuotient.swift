@@ -30,7 +30,7 @@ extension IntegerQuotientRing: FiniteSetType where Base == 𝐙, Sub: _IntegerId
     public static var allElements: [QuotientRing<Base, Sub>] {
         return (0 ..< Sub.mod).map{ QuotientRing($0) }
     }
-    
+
     public static var countElements: Int {
         return Sub.mod
     }

@@ -10,21 +10,21 @@ internal class MatrixEliminator<R: EuclideanRing>: CustomStringConvertible {
     var target: MatrixImpl<R>
     var rowOps: [ElementaryOperation]
     var colOps: [ElementaryOperation]
-    
+
     required init(_ target: MatrixImpl<R>) {
         self.target = target
         self.rowOps = []
         self.colOps = []
     }
-    
+
     var rows: Int {
         return target.rows
     }
-    
+
     var cols: Int {
         return target.cols
     }
-    
+
     var resultType: MatrixEliminationResultImpl<R>.Type {
         return MatrixEliminationResultImpl.self
     }
@@ -32,45 +32,45 @@ internal class MatrixEliminator<R: EuclideanRing>: CustomStringConvertible {
     var result: MatrixEliminationResultImpl<R> {
         return resultType.init(target, rowOps, colOps, .Default)
     }
-    
+
     @discardableResult
     final func run() -> MatrixEliminationResultImpl<R> {
         log("-----Start:\(self)-----")
-        
+
         prepare()
         while !isDone() {
             iteration()
         }
         finish()
-        
+
         log("-----Done:\(self), \(rowOps.count + colOps.count) steps)-----")
-        
+
         return result
     }
-    
+
     func prepare() {
         // override in subclass
     }
-    
+
     func isDone() -> Bool {
         fatalError("override in subclass")
     }
-    
+
     func iteration() {
         fatalError("override in subclass")
     }
-    
+
     func finish() {
         // override in subclass
     }
-    
+
     func run(_ eliminator: MatrixEliminator.Type) {
         let e = eliminator.init(target)
         e.run()
         rowOps += e.rowOps
         colOps += e.colOps
     }
-    
+
     func runTranpose(_ eliminator: MatrixEliminator.Type) {
         transpose()
         let e = eliminator.init(target)
@@ -79,28 +79,28 @@ internal class MatrixEliminator<R: EuclideanRing>: CustomStringConvertible {
         colOps += e.rowOps.map{ s in s.transpose }
         transpose()
     }
-    
+
     func apply(_ s: ElementaryOperation) {
         s.apply(to: target)
         s.isRowOperation ? rowOps.append(s) : colOps.append(s)
         log("\(s)")
     }
-    
+
     func transpose() {
         target.transpose()
         log("Transpose")
     }
-    
+
     func log(_ msg: @autoclosure () -> String) {
         Debug.log(.MatrixElim, msg)
 //        Debug.log(.MatrixElim, target.detailDescription)
 //        Debug.log(.MatrixElim, "\n")
     }
-    
+
     var description: String {
         return "\(type(of: self))"
     }
-    
+
     enum ElementaryOperation {
         case AddRow(at: Int, to: Int, mul: R)
         case MulRow(at: Int, by: R)
@@ -108,21 +108,21 @@ internal class MatrixEliminator<R: EuclideanRing>: CustomStringConvertible {
         case AddCol(at: Int, to: Int, mul: R)
         case MulCol(at: Int, by: R)
         case SwapCols(Int, Int)
-        
+
         var isRowOperation: Bool {
             switch self {
             case .AddRow, .MulRow, .SwapRows: return true
             default: return false
             }
         }
-        
+
         var isColOperation: Bool {
             switch self {
             case .AddCol, .MulCol, .SwapCols: return true
             default: return false
             }
         }
-        
+
         var determinant: R {
             switch self {
             case .AddRow(_, _, _), .AddCol(_, _, _):
@@ -135,7 +135,7 @@ internal class MatrixEliminator<R: EuclideanRing>: CustomStringConvertible {
                 return -.identity
             }
         }
-        
+
         var inverse: ElementaryOperation {
             switch self {
             case let .AddRow(i, j, r):
@@ -150,7 +150,7 @@ internal class MatrixEliminator<R: EuclideanRing>: CustomStringConvertible {
                 return self
             }
         }
-        
+
         var transpose: ElementaryOperation {
             switch self {
             case let .AddRow(i, j, r):
@@ -167,7 +167,7 @@ internal class MatrixEliminator<R: EuclideanRing>: CustomStringConvertible {
                 return .SwapRows(i, j)
             }
         }
-        
+
         @_specialize(where R == ComputationSpecializedRing)
         func apply(to A: MatrixImpl<R>) {
             switch self {

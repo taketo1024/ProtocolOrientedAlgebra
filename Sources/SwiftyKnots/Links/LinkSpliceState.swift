@@ -10,15 +10,15 @@ public struct LinkSpliceState: Equatable, Comparable, Hashable, CustomStringConv
     public init(_ bits: [UInt8]) {
         self.bits = bits
     }
-    
+
     public var length: Int {
         return bits.count
     }
-    
+
     public var degree: Int {
         return bits.count { $0 == 1 }
     }
-    
+
     public var next: [(sign: Int, state: LinkSpliceState)] {
         return (0 ..< length).compactMap { i -> (Int, LinkSpliceState)? in
             if bits[i] == 0 {
@@ -30,25 +30,25 @@ public struct LinkSpliceState: Equatable, Comparable, Hashable, CustomStringConv
             }
         }
     }
-    
+
     public static func all(_ n: Int) -> [LinkSpliceState] {
         return (0 ..< n).reduce([[]]) { (res, _) -> [[UInt8]] in
             res.map{ $0 + [0] } + res.map{ $0 + [1] }
         }.map{ LinkSpliceState($0) }.sorted()
     }
-    
+
     public static func ==(a: LinkSpliceState, b: LinkSpliceState) -> Bool {
         return a.bits == b.bits
     }
-    
+
     public static func <(a: LinkSpliceState, b: LinkSpliceState) -> Bool {
         return a.degree < b.degree || (a.degree == b.degree && b.bits.lexicographicallyPrecedes(a.bits))
     }
-    
+
     public var hashValue: Int {
         return bits.reduce(0) { (res, b) in 2 &* res &+ Int(b) }
     }
-    
+
     public var description: String {
         return bits.map{ "\($0)" }.joined()
     }
@@ -73,7 +73,7 @@ extension LinkSpliceState: Codable {
         let c = try decoder.singleValueContainer()
         self.bits = try c.decode([UInt8].self)
     }
-    
+
     public func encode(to encoder: Encoder) throws {
         var c = encoder.singleValueContainer()
         try c.encode(bits)

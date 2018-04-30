@@ -10,12 +10,12 @@ public extension Array {
     public func binarySearch<T: Comparable>(_ needle: T, _ compare: (Element) -> T) -> (index: Int, element: Element)? {
         var l = 0
         var u = self.count - 1
-        
+
         while l <= u {
             let i = (l + u) / 2
             let a = self[i]
             let x = compare(a)
-            
+
             if(needle == x) {
                 return (i, a)
             } else {
@@ -28,7 +28,7 @@ public extension Array {
         }
         return nil
     }
-    
+
     public func dropLast(while predicate: (Element) throws -> Bool) rethrows -> ArraySlice<Element> {
         let rev = self.reversed().enumerated()
         for (i, a) in rev {
@@ -44,7 +44,7 @@ public extension Array {
         }
         return ArraySlice([])
     }
-    
+
     public func replaced(at i: Int, with e: Element) -> [Element] {
         var a = self
         a[i] = e

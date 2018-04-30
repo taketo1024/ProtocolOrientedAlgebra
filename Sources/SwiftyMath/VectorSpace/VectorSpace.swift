@@ -23,11 +23,11 @@ extension AsVectorSpace: VectorSpace, FiniteDimVectorSpace where R: Field {
     public static var dim: Int {
         return 1
     }
-    
+
     public static var standardBasis: [AsVectorSpace<R>] {
         return [AsVectorSpace(.identity)]
     }
-    
+
     public var standardCoordinates: [R] {
         return [value]
     }

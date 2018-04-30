@@ -10,15 +10,15 @@ public struct AbstractBasisElement: BasisElementType {
     public init(_ index: Int) {
         self.index = index
     }
-    
+
     public static func generateBasis(_ size: Int) -> [AbstractBasisElement] {
         return (0 ..< size).map{ AbstractBasisElement($0) }
     }
-    
+
     public static func < (e1: AbstractBasisElement, e2: AbstractBasisElement) -> Bool {
         return e1.index < e2.index
     }
-    
+
     public var description: String {
         return "e\(Format.sub(index))"
     }
@@ -30,15 +30,15 @@ extension AbstractFreeModule where A == AbstractBasisElement {
     public init(_ components: [CoeffRing]) {
         self.init(basis: AbstractBasisElement.generateBasis(components.count), components: components)
     }
-    
+
     public init(_ components: CoeffRing ...) {
         self.init(components)
     }
-    
+
     public var asTensor: AbstractTensorModule<CoeffRing> {
         return AbstractTensorModule( self.map{ (e, a) in (Tensor(e), a) } )
     }
-    
+
     public static func standardBasis(dim: Int) -> [AbstractFreeModule<CoeffRing>] {
         let basis = AbstractBasisElement.generateBasis(dim)
         return basis.map { e in AbstractFreeModule(e) }
@@ -64,7 +64,7 @@ public extension AbstractFreeModuleHom where A == AbstractBasisElement, A == B {
             AbstractFreeModule(matrix.colVector(e.index).grid)
         }
     }
-    
+
     public var asTensor: AbstractTensorModuleHom<R> {
         return AbstractTensorModuleHom { (e: Tensor<AbstractBasisElement>) -> AbstractTensorModule<R> in
             (e.factors.count == 1) ? self.applied(to: e.factors[0]).asTensor : .zero

@@ -11,11 +11,11 @@ public extension EuclideanRing {
     public static func /% (_ a: Self, b: Self) -> (q: Self, r: Self) {
         return a.eucDiv(by: b)
     }
-    
+
     public static func / (_ a: Self, b: Self) -> Self {
         return a.eucDiv(by: b).q
     }
-    
+
     public static func % (_ a: Self, b: Self) -> Self {
         return a.eucDiv(by: b).r
     }
@@ -36,7 +36,7 @@ public func lcm<R: EuclideanRing>(_ a: R, _ b: R) -> R {
 
 public func bezout<R: EuclideanRing>(_ a: R, _ b: R) -> (x: R, y: R, r: R) {
     typealias M = SquareMatrix<_2, R>
-    
+
     func euclid(_ a: R, _ b: R, _ qs: [R]) -> (qs: [R], r: R) {
         switch b {
         case .zero:
@@ -46,13 +46,13 @@ public func bezout<R: EuclideanRing>(_ a: R, _ b: R) -> (x: R, y: R, r: R) {
             return euclid(b, r, [q] + qs)
         }
     }
-    
+
     let (qs, r) = euclid(a, b, [])
-    
+
     let m = qs.reduce(M.identity) { (m: M, q: R) -> M in
         m * M(.zero, .identity, .identity, -q)
     }
-    
+
     return (x: m[.zero, .zero], y: m[.zero, .identity], r: r)
 }
 
@@ -64,18 +64,18 @@ public extension EuclideanIdeal {
     static func normalizedInQuotient(_ a: Super) -> Super {
         return a % mod
     }
-    
+
     static func contains(_ a: Super) -> Bool {
         return a % mod == .zero
     }
-    
+
     static func inverseInQuotient(_ r: Super) -> Super? {
         // find: a * r + b * m = u (u: unit)
         // then: r^-1 = u^-1 * a (mod m)
         let (a, _, u) = bezout(r, mod)
         return u.inverse.map{ inv in inv * a }
     }
-    
+
     static var symbol: String {
         return "(\(mod))"
     }

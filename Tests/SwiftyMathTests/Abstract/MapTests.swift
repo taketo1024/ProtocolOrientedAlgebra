@@ -20,7 +20,7 @@ class MapTests: XCTestCase {
             return value.description
         }
     }
-    
+
     private struct B: SetType {
         let value: Int
         init(_ a: Int) {
@@ -30,7 +30,7 @@ class MapTests: XCTestCase {
             return value.description
         }
     }
-    
+
     private struct C: SetType {
         let value: Int
         init(_ a: Int) {
@@ -40,7 +40,7 @@ class MapTests: XCTestCase {
             return value.description
         }
     }
-    
+
     func testApplyTo() {
         typealias F = Map<A, B>
         let f = F { a in B(a.value + 1) }
@@ -63,7 +63,7 @@ class MapTests: XCTestCase {
         let a = A(1)
         XCTAssertEqual((g ∘ f).applied(to: a), C(6))
     }
-    
+
     func testEnd() {
         typealias F = End<A>
         let f = F { a in A(a.value + 1)}
@@ -72,7 +72,7 @@ class MapTests: XCTestCase {
         XCTAssertEqual((g ∘ f).applied(to: a), A(6))
         XCTAssertEqual((f ∘ g).applied(to: a), A(4))
     }
-    
+
     func testAut() {
         typealias F = Aut<A>
         let f = F { a in A(a.value + 1)}

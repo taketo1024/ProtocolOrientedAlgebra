@@ -32,11 +32,11 @@ public extension SubsetType {
     public static func == (a: Self, b: Self) -> Bool {
         return a.asSuper == b.asSuper
     }
-    
+
     public var hashValue: Int {
         return asSuper.hashValue
     }
-    
+
     public var description: String {
         return asSuper.description
     }
@@ -52,7 +52,7 @@ public extension SetType {
 public protocol ProductSetType: SetType {
     associatedtype Left: SetType
     associatedtype Right: SetType
-    
+
     init(_ x: Left, _ y: Right)
     var left:  Left  { get }
     var right: Right { get }
@@ -62,15 +62,15 @@ public extension ProductSetType {
     public static func == (a: Self, b: Self) -> Bool {
         return (a.left, a.right) == (b.left, b.right)
     }
-    
+
     public var hashValue: Int {
         return (left.hashValue &* 31) &+ right.hashValue
     }
-    
+
     public var description: String {
         return "(\(left), \(right))"
     }
-    
+
     public static var symbol: String {
         return "\(Left.symbol)×\(Right.symbol)"
     }
@@ -79,7 +79,7 @@ public extension ProductSetType {
 public struct ProductSet<Left: SetType, Right: SetType>: ProductSetType {
     public let left : Left
     public let right: Right
-    
+
     public init(_ x: Left, _ y: Right) {
         self.left  = x
         self.right = y
@@ -108,11 +108,11 @@ public extension QuotientSetType {
     public var description: String {
         return representative.description
     }
-    
+
     public static func == (a: Self, b: Self) -> Bool {
         return isEquivalent(a.representative, b.representative)
     }
-    
+
     public static var symbol: String {
         return "\(Base.symbol)/~"
     }

@@ -10,11 +10,11 @@ import XCTest
 @testable import SwiftyMath
 
 class MatrixTests: XCTestCase {
-    
+
     typealias R = 𝐙
     typealias C = MatrixComponent<R>
     typealias M = Matrix2<R>
-    
+
     func testEquality() {
         let a = M(1,2,3,4)
         let b = M(1,2,3,4)
@@ -22,17 +22,17 @@ class MatrixTests: XCTestCase {
         XCTAssertEqual(a, b)
         XCTAssertNotEqual(a, c)
     }
-    
+
     func testInitByGenerator() {
         let a = M { (i, j) in i * 10 + j}
         XCTAssertEqual(a, M(0,1,10,11))
     }
-    
+
     func testInitByComponents() {
         let a = M(components: [C(0,0,3), C(0,1,2), C(1,1,5)])
         XCTAssertEqual(a, M(3,2,0,5))
     }
-    
+
     func testInitWithMissingGrid() {
         let a = M(1,2,3)
         XCTAssertEqual(a, M(1,2,3,0))
@@ -45,7 +45,7 @@ class MatrixTests: XCTestCase {
         XCTAssertEqual(a[1, 0], 0)
         XCTAssertEqual(a[1, 1], 4)
     }
-    
+
     func testSubscriptSet() {
         var a = M(1,2,0,4)
         a[0, 0] = 0
@@ -56,23 +56,23 @@ class MatrixTests: XCTestCase {
         XCTAssertEqual(a[1, 0], 0)
         XCTAssertEqual(a[1, 1], 2)
     }
-    
+
     func testCopyOnMutate() {
         let a = M(1,2,0,4)
         var b = a
-        
+
         b[0, 0] = 0
-        
+
         XCTAssertEqual(a[0, 0], 1)
         XCTAssertEqual(b[0, 0], 0)
     }
-    
+
     func testSum() {
         let a = M(1,2,3,4)
         let b = M(2,3,4,5)
         XCTAssertEqual(a + b, M(3,5,7,9))
     }
-    
+
     func testZero() {
         let a = M(1,2,3,4)
         let o = M.zero
@@ -90,28 +90,28 @@ class MatrixTests: XCTestCase {
         let b = M(2,3,4,5)
         XCTAssertEqual(a * b, M(10,13,22,29))
     }
-    
+
     func testScalarMul() {
         let a = M(1,2,3,4)
         XCTAssertEqual(2 * a, M(2,4,6,8))
         XCTAssertEqual(a * 3, M(3,6,9,12))
     }
-    
+
     func testId() {
         let a = M(1,2,3,4)
         let e = M.identity
         XCTAssertEqual(a * e, a)
         XCTAssertEqual(e * a, a)
     }
-    
+
     func testInv() {
         let a = M(1,2,2,3)
         XCTAssertEqual(a.inverse!, M(-3,2,2,-1))
-        
+
         let b = M(1,2,3,4)
         XCTAssertNil(b.inverse)
     }
-    
+
     func testPow() {
         let a = M(1,2,3,4)
         XCTAssertEqual(a.pow(0), M.identity)
@@ -119,29 +119,29 @@ class MatrixTests: XCTestCase {
         XCTAssertEqual(a.pow(2), M(7,10,15,22))
         XCTAssertEqual(a.pow(3), M(37,54,81,118))
     }
-    
+
     func testTrace() {
         let a = M(1,2,3,4)
         XCTAssertEqual(a.trace, 5)
     }
-    
+
     func testDet() {
         let a = M(1,2,3,4)
         XCTAssertEqual(a.determinant, -2)
     }
-    
+
     func testTransposed() {
         let a = M(1,2,3,4)
         XCTAssertEqual(a.transposed, M(1,3,2,4))
     }
-    
+
     func testCodable() {
         let a = M(1,2,3,4)
         let d = try! JSONEncoder().encode(a)
         let b = try! JSONDecoder().decode(M.self, from: d)
         XCTAssertEqual(a, b)
     }
-    
+
     func testMatrixElim() {
         var a = M(1,2,3,4)
         a.eliminate()
@@ -150,23 +150,23 @@ class MatrixTests: XCTestCase {
 
     func testMatrixElimCache() {
         let a = M(1,2,3,4)
-        
+
         XCTAssertNil(a.elimCache.value?[.Diagonal])
-        
+
         let e1 = a.elimination(form: .Diagonal)
-        
+
         XCTAssertNotNil(a.elimCache.value?[.Diagonal]) // cached
-        
+
         let e2 = a.elimination(form: .Diagonal)
-        
+
         XCTAssertTrue(e1.impl === e2.impl) // cache is used
-        
+
         var b = a
-        
+
         XCTAssertNotNil(b.elimCache.value?[.Diagonal]) // cache is copied
-        
+
         b[0, 0] = 0
-        
+
         XCTAssertNotNil(a.elimCache.value?[.Diagonal]) // cache exists for a
         XCTAssertNil(b.elimCache.value?[.Diagonal]) // cache is released for b
     }

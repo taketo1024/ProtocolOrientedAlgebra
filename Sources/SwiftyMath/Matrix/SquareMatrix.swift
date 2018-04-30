@@ -16,35 +16,35 @@ extension SquareMatrix: Ring where n == m {
     public init(from n : 𝐙) {
         self.init(scalar: R(from: n))
     }
-    
+
     public static var identity: _Matrix<n, n, R> {
         assert(!n.isDynamic)
         return _Matrix<n, n, R> { $0 == $1 ? .identity : .zero }
     }
-    
+
     public var isInvertible: Bool {
         return determinant.isInvertible
     }
-    
+
     public var inverse: _Matrix<n, n, R>? {
         fatalError("matrix-inverse not yet supported for a general ring.")
     }
-    
+
     public var isSquare: Bool {
         return rows == cols
     }
-    
+
     public var isZero: Bool {
         return self.forAll{ (_, _, a) in a == .zero }
     }
-    
+
     public var isDiagonal: Bool {
         return self.forAll{ (i, j, a) in i == j || a == .zero }
     }
-    
+
     public var isSymmetric: Bool {
         if !isSquare { return false }
-        
+
         if rows <= 1 {
             return true
         }
@@ -54,10 +54,10 @@ extension SquareMatrix: Ring where n == m {
             }
         }
     }
-    
+
     public var isSkewSymmetric: Bool {
         if !isSquare { return false }
-        
+
         if rows <= 1 {
             return isZero
         }
@@ -67,22 +67,22 @@ extension SquareMatrix: Ring where n == m {
             }
         }
     }
-    
+
     public var isOrthogonal: Bool {
         return isSquare && self.transposed * self == .identity
     }
-    
+
     public func pow(_ n: 𝐙) -> SquareMatrix<n, R> {
         assert(isSquare)
         assert(n >= 0)
         return (0 ..< n).reduce(.identity){ (res, _) in self * res }
     }
-    
+
     public var trace: R {
         assert(isSquare)
         return (0 ..< rows).sum { i in self[i, i] }
     }
-    
+
     public var determinant: R {
         assert(isSquare)
         print("warn: computing determinant for a general ring.")
@@ -105,7 +105,7 @@ public extension SquareMatrix where n == m, R: EuclideanRing {
         default: return elimination().determinant
         }
     }
-    
+
     public var inverse: _Matrix<n, n, R>? {
         assert(isSquare)
         switch rows {
@@ -124,7 +124,7 @@ public extension SquareMatrix where n == m, R: EuclideanRing {
 public extension SquareMatrix where n == m, R == 𝐂 {
     public var isHermitian: Bool {
         if !isSquare { return false }
-        
+
         if rows <= 1 {
             return true
         }
@@ -134,10 +134,10 @@ public extension SquareMatrix where n == m, R == 𝐂 {
             }
         }
     }
-    
+
     public var isSkewHermitian: Bool {
         if !isSquare { return false }
-        
+
         if rows <= 1 {
             return isZero
         }
@@ -147,7 +147,7 @@ public extension SquareMatrix where n == m, R == 𝐂 {
             }
         }
     }
-    
+
     public var isUnitary: Bool {
         return isSquare && self.adjoint * self == .identity
     }
@@ -157,7 +157,7 @@ public extension SquareMatrix where n == m {
     public static var standardSymplecticMatrix: SquareMatrix<n, R> {
         assert(!n.isDynamic)
         assert(n.intValue.isEven)
-        
+
         let m = n.intValue / 2
         return SquareMatrix { (i, j) in
             if i < m, j >= m, i == (j - m) {
@@ -177,18 +177,18 @@ public func exp<n, K>(_ A: SquareMatrix<n, K>) -> SquareMatrix<n, K> where K: Fi
     if A == .zero {
         return .identity
     }
-    
+
     var X = SquareMatrix<n, K>.identity
     var n = 0
     var cn = K.identity
     var An = X
     let e = A.maxNorm.error
-    
+
     while true {
         n  = n + 1
         An = An * A
         cn = cn / K(from: n)
-        
+
         let Bn = cn * An
         if Bn.maxNorm.value < e {
             break
@@ -196,6 +196,6 @@ public func exp<n, K>(_ A: SquareMatrix<n, K>) -> SquareMatrix<n, K> where K: Fi
             X = X + Bn
         }
     }
-    
+
     return X
 }

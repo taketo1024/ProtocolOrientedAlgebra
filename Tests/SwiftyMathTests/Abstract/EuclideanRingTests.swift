@@ -11,7 +11,7 @@ import XCTest
 
 class EuclideanRingTests: XCTestCase {
     private typealias A = 𝐙
-    
+
     func testEucDiv() {
         let a = 7
         let b = 3
@@ -19,7 +19,7 @@ class EuclideanRingTests: XCTestCase {
         XCTAssertEqual(q, 2)
         XCTAssertEqual(r, 1)
     }
-    
+
     func testEucDivOp() {
         let a = 7
         let b = 3
@@ -27,14 +27,14 @@ class EuclideanRingTests: XCTestCase {
         XCTAssertEqual(q, 2)
         XCTAssertEqual(r, 1)
     }
-    
+
     func testDiv() {
         let a = 7
         let b = 3
         let q = a / b
         XCTAssertEqual(q, 2)
     }
-    
+
     func testRem() {
         let a = 7
         let b = 3

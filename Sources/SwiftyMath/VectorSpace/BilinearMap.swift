@@ -14,7 +14,7 @@ public protocol BilinearMapType: MapType, VectorSpace
         CoeffRing == Domain.Left.CoeffRing,
         CoeffRing == Domain.Right.CoeffRing,
         CoeffRing == Codomain.CoeffRing {
-    
+
     init(_ f: @escaping (Domain.Left, Domain.Right) -> Codomain)
     func applied(to: (Domain.Left, Domain.Right)) -> Codomain
 }
@@ -23,27 +23,27 @@ public extension BilinearMapType {
     public init(_ f: @escaping (Domain.Left, Domain.Right) -> Codomain) {
         self.init { (v: Domain) in f(v.left, v.right) }
     }
-    
+
     public func applied(to v: (Domain.Left, Domain.Right)) -> Codomain {
         return applied(to: Domain(v.0, v.1))
     }
-    
+
     public static var zero: Self {
         return Self{ v in .zero }
     }
-    
+
     public static func +(f: Self, g: Self) -> Self {
         return Self { v in f.applied(to: v) + g.applied(to: v) }
     }
-    
+
     public static prefix func -(f: Self) -> Self {
         return Self { v in -f.applied(to: v) }
     }
-    
+
     public static func *(r: CoeffRing, f: Self) -> Self {
         return Self { v in r * f.applied(to: v) }
     }
-    
+
     public static func *(f: Self, r: CoeffRing) -> Self {
         return Self { v in f.applied(to: v) * r }
     }
@@ -53,12 +53,12 @@ public struct BilinearMap<V1: VectorSpace, V2: VectorSpace, W: VectorSpace>: Bil
     public typealias CoeffRing = V1.CoeffRing
     public typealias Domain = ProductVectorSpace<V1, V2>
     public typealias Codomain = W
-    
+
     private let fnc: (ProductVectorSpace<V1, V2>) -> W
     public init(_ fnc: @escaping (ProductVectorSpace<V1, V2>) -> W) {
         self.fnc = fnc
     }
-    
+
     public func applied(to v: ProductVectorSpace<V1, V2>) -> W {
         return fnc(v)
     }
@@ -73,7 +73,7 @@ public extension BilinearFormType {
     public init(_ f: @escaping (Domain.Left, Domain.Right) -> CoeffRing) {
         self.init{ v in AsVectorSpace( f(v.left, v.right) ) }
     }
-    
+
     public subscript(x: Domain.Left, y: Domain.Right) -> CoeffRing {
         return self.applied(to: (x, y)).value
     }
@@ -82,10 +82,10 @@ public extension BilinearFormType {
 public extension BilinearFormType where Domain.Left: FiniteDimVectorSpace {
     public var asMatrix: Matrix<CoeffRing> {
         typealias V = Domain.Left
-        
+
         let n = V.dim
         let basis = V.standardBasis
-        
+
         return Matrix(rows: n, cols: n) { (i, j) in
             let (v, w) = (basis[i], basis[j])
             return self.applied(to: (v, w)).value

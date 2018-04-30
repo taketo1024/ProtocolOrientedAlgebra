@@ -22,21 +22,21 @@ public extension SimplicialCohomologyClass where T == Ascending, A == Dual<Simpl
         guard let H1 = a.structure, let H2 = b.structure else {
             return SimplicialCohomologyClass.zero
         }
-        
+
         assert(H1 == H2)
-        
+
         let x = a.representative.cup(b.representative)
         return H1.homologyClass(x)
     }
-    
+
     public static func *(a: SimplicialCohomologyClass<R>, b: SimplicialCohomologyClass<R>) -> SimplicialCohomologyClass<R> {
         return a.cup(b)
     }
-    
+
     public static func ∪(a: SimplicialCohomologyClass<R>, b: SimplicialCohomologyClass<R>) -> SimplicialCohomologyClass<R> {
         return a.cup(b)
     }
-    
+
     public func pow(_ n: Int) -> SimplicialCohomologyClass<R> {
         let a = self
         return n == 1 ? a : a * a.pow(n - 1)
@@ -46,13 +46,13 @@ public extension SimplicialCohomologyClass where T == Ascending, A == Dual<Simpl
         guard let _ = self.structure, let H2 = x.structure else {
             return .zero
         }
-        
+
         // TODO check H1, H2 matches.
-        
+
         let y = self.representative.cap(x.representative)
         return H2.homologyClass(y)
     }
-    
+
     public static func ∩(a: SimplicialCohomologyClass<R>, x: SimplicialHomologyClass<R>) -> SimplicialHomologyClass<R> {
         return a.cap(x)
     }

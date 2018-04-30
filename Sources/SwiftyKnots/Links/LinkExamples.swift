@@ -17,18 +17,18 @@ public extension Link {
     public static var trefoil: Link {
         return knot(3, 1)
     }
-    
+
     public static func knot(_ n: Int, _ i: Int) -> Link {
         let name = "\(n)\(Format.sub(i))"
         let code = _Rolfsen[n]![i]!
         return Link(name: name, planarCode: code)
     }
-    
+
     public static func knots(crossing n: Int) -> [(Int, Link)] {
         let nums = _Rolfsen[n]!.keys.sorted()
         return nums.map{ i in (i, knot(n, i)) }
     }
-    
+
     public static var HopfLink: Link {
         return Link(name: "L2a1", planarCode: (4,1,3,2), (2,3,1,4))
     }
