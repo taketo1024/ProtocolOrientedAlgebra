@@ -5,7 +5,6 @@
 //  Created by Taketo Sano on 2018/04/19.
 //
 
-import Foundation
 import SwiftyMath
 
 public enum KhBasisElement: String, BasisElementType, Comparable, Codable {

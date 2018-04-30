@@ -6,8 +6,6 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public protocol LieAlgebra: VectorSpace {
     func bracket(_ Y: Self) -> Self
     static var adjointRepresentation: LieAlgebraRepresentation<Self, Self> { get }

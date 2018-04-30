@@ -1,4 +1,3 @@
-import Foundation
 
 public protocol Field: EuclideanRing {
     init(from r: 𝐐)

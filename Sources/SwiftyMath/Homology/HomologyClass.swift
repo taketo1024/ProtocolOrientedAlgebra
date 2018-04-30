@@ -6,8 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 // A class representing the algebraic Homology group.
 // Each instance corresponds to a homology-class of the given cycle,
 // that lives in the homology-group defined by the given structure.

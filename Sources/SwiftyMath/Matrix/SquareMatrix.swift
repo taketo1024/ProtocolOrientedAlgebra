@@ -6,8 +6,6 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public typealias SquareMatrix<n: _Int, R: Ring> = _Matrix<n, n, R>
 
 public typealias Matrix2<R: Ring> = SquareMatrix<_2, R>

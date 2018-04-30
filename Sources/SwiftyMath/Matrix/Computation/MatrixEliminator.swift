@@ -6,8 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 internal class MatrixEliminator<R: EuclideanRing>: CustomStringConvertible {
     var target: MatrixImpl<R>
     var rowOps: [ElementaryOperation]

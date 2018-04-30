@@ -6,8 +6,6 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public typealias 𝐙₂ = IntegerQuotientRing<_2>
 
 // MEMO waiting for parametrized extension.

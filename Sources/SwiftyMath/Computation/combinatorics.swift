@@ -6,8 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public extension 𝐙 {
     // TODO use IntList
     public func choose(_ k: Int) -> [[Int]] {

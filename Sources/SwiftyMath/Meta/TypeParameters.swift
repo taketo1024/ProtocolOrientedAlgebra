@@ -1,4 +1,3 @@
-import Foundation
 
 public protocol _Int {
     static var intValue: Int { get }

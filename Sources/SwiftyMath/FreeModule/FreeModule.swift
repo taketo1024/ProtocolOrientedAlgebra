@@ -1,4 +1,3 @@
-import Foundation
 
 public struct FreeModule<A: BasisElementType, R: Ring>: Module, Sequence {
     public typealias CoeffRing = R

@@ -6,8 +6,6 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public struct SymmetricPolynomial<K: Field>: Subring, Submodule {
     public typealias Super = MPolynomial<K>
     public typealias CoeffRing = K

@@ -6,8 +6,6 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public protocol VectorSpace: Module where CoeffRing: Field { }
 
 public protocol FiniteDimVectorSpace: VectorSpace {

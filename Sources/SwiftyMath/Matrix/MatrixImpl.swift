@@ -6,8 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 internal typealias ComputationSpecializedRing = 𝐙
 
 internal final class MatrixImpl<R: Ring>: Hashable, CustomStringConvertible {

@@ -5,8 +5,6 @@
 //  Created by Taketo Sano on 2018/04/11.
 //
 
-import Foundation
-
 public struct AbstractBasisElement: BasisElementType {
     public let index: Int
     public init(_ index: Int) {

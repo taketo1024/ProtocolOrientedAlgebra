@@ -5,8 +5,6 @@
 //  Created by Taketo Sano on 2018/04/24.
 //
 
-import Foundation
-
 public struct MatrixComponent<R: Ring>: Hashable {
     public let row: Int
     public let col: Int

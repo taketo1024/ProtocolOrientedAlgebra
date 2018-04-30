@@ -1,4 +1,3 @@
-import Foundation
 
 public protocol EuclideanRing: Ring {
     var degree: Int { get }

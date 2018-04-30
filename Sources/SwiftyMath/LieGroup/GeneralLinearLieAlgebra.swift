@@ -6,8 +6,6 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public struct GeneralLinearLieAlgebra<n: _Int, K: Field>: MatrixLieAlgebra {
     public typealias CoeffRing   = K
     public typealias ElementRing = K

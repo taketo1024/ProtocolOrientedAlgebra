@@ -6,8 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public final class Ref<Value> {
     public var value: Value
     public init(_ value: Value) {

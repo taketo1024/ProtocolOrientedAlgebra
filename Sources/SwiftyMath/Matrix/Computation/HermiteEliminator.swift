@@ -6,8 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 internal final class RowHermiteEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     var targetRow = 0
     var targetCol = 0

@@ -6,8 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public protocol PolynomialTP {
     associatedtype CoeffRing: Ring
     static var value: Polynomial<CoeffRing> { get }

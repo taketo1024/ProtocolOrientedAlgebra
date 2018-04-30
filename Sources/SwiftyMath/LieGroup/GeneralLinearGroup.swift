@@ -6,8 +6,6 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public struct GeneralLinearGroup<n: _Int, K: Field>: MatrixGroup {
     public let matrix: SquareMatrix<n, K>
     public init(_ matrix: SquareMatrix<n, K>) {

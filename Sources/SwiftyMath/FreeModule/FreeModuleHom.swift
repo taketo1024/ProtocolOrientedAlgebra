@@ -1,4 +1,3 @@
-import Foundation
 
 // MEMO: with parametrized extension, replace:
 // public typealias FreeModuleHom<A, B, R> = Map<FreeModule<A, R>, FreeModule<A, R>>

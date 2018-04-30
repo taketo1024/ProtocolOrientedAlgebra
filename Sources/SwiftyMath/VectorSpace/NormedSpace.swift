@@ -6,8 +6,6 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 // MEMO: not made as a subprotocol of VectorSpace
 public protocol NormedSpace {
     var norm: 𝐑 { get }

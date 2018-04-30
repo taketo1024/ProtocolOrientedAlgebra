@@ -6,7 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
 import SwiftyMath
 
 public typealias CellularChain<R: Ring> = FreeModule<CellularCell, R>

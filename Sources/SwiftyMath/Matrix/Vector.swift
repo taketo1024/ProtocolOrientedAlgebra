@@ -6,8 +6,6 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public typealias _ColVector<n: _Int, R: Ring> = _Matrix<n, _1, R>
 public typealias _RowVector<n: _Int, R: Ring> = _Matrix<_1, n, R>
 

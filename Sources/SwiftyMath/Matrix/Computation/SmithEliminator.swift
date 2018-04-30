@@ -6,8 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 internal final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     var targetIndex = 0
     

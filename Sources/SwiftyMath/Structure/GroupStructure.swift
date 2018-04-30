@@ -6,8 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public class GroupStructure: AlgebraicStructure {
     public static func ==(a: GroupStructure, b: GroupStructure) -> Bool {
         fatalError("implement in subclass")

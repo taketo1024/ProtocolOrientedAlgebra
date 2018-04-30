@@ -5,8 +5,6 @@
 //  Created by Taketo Sano on 2018/04/09.
 //
 
-import Foundation
-
 public struct AlgebraicExtension<K: Field, p: IrrPolynomialTP>: QuotientRingType, Field where K == p.CoeffRing {
     public typealias Base = Polynomial<K>
     public typealias Sub = PolynomialIdeal<p>

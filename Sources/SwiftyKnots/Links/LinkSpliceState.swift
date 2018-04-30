@@ -5,8 +5,6 @@
 //  Created by Taketo Sano on 2018/04/04.
 //
 
-import Foundation
-
 public struct LinkSpliceState: Equatable, Comparable, Hashable, CustomStringConvertible {
     public let bits: [UInt8]
     public init(_ bits: [UInt8]) {

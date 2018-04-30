@@ -5,8 +5,6 @@
 //  Created by Taketo Sano on 2018/04/16.
 //
 
-import Foundation
-
 public typealias AbstractVectorSpace<K: Field> = AbstractFreeModule<K>
 public typealias AbstractTensorSpace<K: Field> = AbstractTensorModule<K>
 

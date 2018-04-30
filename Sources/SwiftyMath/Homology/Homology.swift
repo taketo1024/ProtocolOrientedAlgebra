@@ -6,8 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 // A class representing the total (co)Homology group for a given ChainComplex.
 // Consists of the direct-sum of i-th Homology groups:
 //

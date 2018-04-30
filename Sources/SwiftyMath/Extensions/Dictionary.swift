@@ -6,8 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public extension Dictionary {
     public init<S: Sequence>(pairs: S) where S.Element == (Key, Value) {
         self.init(uniqueKeysWithValues: pairs)

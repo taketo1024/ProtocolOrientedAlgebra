@@ -5,8 +5,6 @@
 //  Created by Taketo Sano on 2018/04/26.
 //
 
-import Foundation
-
 public struct MatrixEliminationResult<n: _Int, m: _Int, R: EuclideanRing> {
     internal let impl: MatrixEliminationResultImpl<R>
     

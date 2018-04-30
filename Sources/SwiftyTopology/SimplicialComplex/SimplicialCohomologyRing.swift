@@ -6,7 +6,6 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
 import SwiftyMath
 
 public typealias SimplicialHomology<R: EuclideanRing> = Homology<Simplex, R>

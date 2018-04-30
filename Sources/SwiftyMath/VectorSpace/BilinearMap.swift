@@ -6,8 +6,6 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public protocol BilinearMapType: MapType, VectorSpace
   where Domain: ProductSetType,
         Domain.Left: VectorSpace,

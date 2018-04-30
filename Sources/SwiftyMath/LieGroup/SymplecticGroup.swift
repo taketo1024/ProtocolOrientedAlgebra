@@ -7,8 +7,6 @@
 //
 //  see: https://en.wikipedia.org/wiki/Symplectic_group
 
-import Foundation
-
 // Note <n> is the size of the matrix, thus must be even.
 public struct SymplecticGroup<n: _Int, K: Field>: MatrixGroup {
     public let matrix: SquareMatrix<n, K>

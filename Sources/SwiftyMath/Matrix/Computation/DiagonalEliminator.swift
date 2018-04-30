@@ -6,8 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 internal final class DiagonalEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     override var resultType: MatrixEliminationResultImpl<R>.Type {
         return DiagonalEliminationResult.self

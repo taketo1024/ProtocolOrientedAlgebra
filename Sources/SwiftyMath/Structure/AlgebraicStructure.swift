@@ -6,8 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 // A `Structure` instance expresses a mathematical structure that is determined dynamically.
 // Used when we want a 'dynamic-type', where Swift-types are strictly static.
 //

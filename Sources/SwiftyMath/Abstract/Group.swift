@@ -1,4 +1,3 @@
-import Foundation
 
 public protocol Group: Monoid {
     var inverse: Self { get }

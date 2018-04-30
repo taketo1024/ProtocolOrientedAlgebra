@@ -6,8 +6,6 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public struct AlternatingGroup<n: _Int>: Subgroup, FiniteSetType {
     public typealias Super = SymmetricGroup<n>
     

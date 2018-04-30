@@ -6,8 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 internal class MatrixEliminationResultImpl<R: EuclideanRing> {
     let result: MatrixImpl<R>
     let rowOps: [MatrixEliminator<R>.ElementaryOperation]

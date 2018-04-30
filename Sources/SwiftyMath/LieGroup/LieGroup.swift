@@ -6,6 +6,4 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public protocol LieGroup: Group /*, SmoothManifold */ {}

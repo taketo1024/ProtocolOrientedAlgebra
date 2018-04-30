@@ -6,8 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public typealias   HomologyMap<A: BasisElementType, B: BasisElementType, R: EuclideanRing> = _HomologyMap<Descending, A, B, R>
 public typealias CohomologyMap<A: BasisElementType, B: BasisElementType, R: EuclideanRing> = _HomologyMap<Ascending,  A, B, R>
 

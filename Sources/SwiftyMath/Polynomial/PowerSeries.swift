@@ -6,8 +6,6 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public struct PowerSeries<K: Field>: Ring, Module {
     public typealias CoeffRing = K
     public let coeffs: (Int) -> K

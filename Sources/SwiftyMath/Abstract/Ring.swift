@@ -1,4 +1,3 @@
-import Foundation
 
 public protocol Ring: AdditiveGroup, Monoid {
     init(from: 𝐙)

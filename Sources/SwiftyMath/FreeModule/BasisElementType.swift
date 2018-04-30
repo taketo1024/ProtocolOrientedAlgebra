@@ -6,8 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public protocol BasisElementType: SetType, Comparable {
     var degree: Int { get }
     var dual: Dual<Self> { get }

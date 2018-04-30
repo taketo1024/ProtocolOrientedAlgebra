@@ -1,5 +1,3 @@
-import Foundation
-
 public struct SymmetricGroup<n: _Int>: Group, FiniteSetType {
     
     internal let p: Permutation

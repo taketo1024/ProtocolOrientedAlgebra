@@ -6,8 +6,6 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public typealias 𝐂 = ComplexNumber
 
 public struct ComplexNumber: Field, NormedSpace, ExpressibleByIntegerLiteral, ExpressibleByFloatLiteral {

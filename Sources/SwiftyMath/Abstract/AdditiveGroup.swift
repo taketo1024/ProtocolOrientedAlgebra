@@ -1,4 +1,3 @@
-import Foundation
 
 public protocol AdditiveGroup: SetType {
     static var zero: Self { get }

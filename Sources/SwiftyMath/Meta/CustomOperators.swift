@@ -10,8 +10,6 @@
 //
 // Add CodeSnippets to: ~/Library/Developer/Xcode/UserData/CodeSnippets/
 
-import Foundation
-
 prefix operator √
 
 infix operator ./: MultiplicationPrecedence

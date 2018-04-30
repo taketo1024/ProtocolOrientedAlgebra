@@ -1,4 +1,3 @@
-import Foundation
 
 public protocol MapType: SetType {
     associatedtype Domain: SetType

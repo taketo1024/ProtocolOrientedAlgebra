@@ -6,8 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public class ModuleStructure<R: Ring>: AlgebraicStructure {
     public static func ==(lhs: ModuleStructure<R>, rhs: ModuleStructure<R>) -> Bool {
         fatalError("implement in subclass")

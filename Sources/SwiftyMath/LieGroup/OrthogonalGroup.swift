@@ -6,8 +6,6 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public struct OrthogonalGroup<n: _Int>: MatrixGroup {
     public let matrix: SquareMatrix<n, 𝐑>
     public init(_ matrix: SquareMatrix<n, 𝐑>) {

@@ -6,8 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public protocol ChainType {
     static var descending: Bool { get }
     static var degree: Int { get }
