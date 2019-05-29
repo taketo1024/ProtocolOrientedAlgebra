@@ -15,58 +15,59 @@ class RealTests: XCTestCase {
     
     func testIntLiteral() {
         let a: A = 5
-        XCTAssertEqual(a, A(5))
+        assertApproxEqual(a, A(5))
     }
     
     func testFloatLiteral() {
         let a: A = 0.5
-        XCTAssertEqual(a, A(0.5))
+        assertApproxEqual(a, A(0.5))
     }
     
     func testFromRational() {
         let a = A(from: 𝐐(3, 4))
-        XCTAssertEqual(a, A(0.75))
+        assertApproxEqual(a, A(0.75))
     }
     
     func testSum() {
-        let a = A(0.1)
-        let b = A(0.2)
-        XCTAssertEqual(a + b, A(0.3))
+        let a = A(1)
+        let b = A(2)
+        
+        assertApproxEqual(a + b, 3)
     }
     
     func testZero() {
         let a = A(3.14)
         let o = A.zero
-        XCTAssertEqual(o + o, o)
-        XCTAssertEqual(a + o, a)
-        XCTAssertEqual(o + a, a)
+        assertApproxEqual(o + o, o)
+        assertApproxEqual(a + o, a)
+        assertApproxEqual(o + a, a)
     }
     
     func testNeg() {
         let a = A(4.124)
-        XCTAssertEqual(-a, A(-4.124))
+        assertApproxEqual(-a, A(-4.124))
     }
     
     func testMul() {
         let a = A(0.12)
         let b = A(2.456)
-        XCTAssertEqual(a * b, A(0.29472))
+        assertApproxEqual(a * b, A(0.29472))
     }
     
     func testId() {
         let a = A(3.14)
         let e = A.identity
-        XCTAssertEqual(e * e, e)
-        XCTAssertEqual(a * e, a)
-        XCTAssertEqual(e * a, a)
+        assertApproxEqual(e * e, e)
+        assertApproxEqual(a * e, a)
+        assertApproxEqual(e * a, a)
     }
     
     func testInv() {
         let a = A(0.25)
-        XCTAssertEqual(a.inverse!, A(4.0))
+        assertApproxEqual(a.inverse!, A(4.0))
         
         let b = A(4.0)
-        XCTAssertEqual(b.inverse!, A(0.25))
+        assertApproxEqual(b.inverse!, A(0.25))
         
         let o = A.zero
         XCTAssertNil(o.inverse)
@@ -76,19 +77,19 @@ class RealTests: XCTestCase {
         let a = A(4.2)
         let b = A(0.4)
         
-        XCTAssertEqual(a / b, A(10.5))
+        assertApproxEqual(a / b, A(10.5))
     }
     
     func testPow() {
         let a = A(2.0)
-        XCTAssertEqual(a.pow(0), A(1))
-        XCTAssertEqual(a.pow(1), A(2))
-        XCTAssertEqual(a.pow(2), A(4))
-        XCTAssertEqual(a.pow(3), A(8))
+        assertApproxEqual(a.pow(0), A(1))
+        assertApproxEqual(a.pow(1), A(2))
+        assertApproxEqual(a.pow(2), A(4))
+        assertApproxEqual(a.pow(3), A(8))
         
-        XCTAssertEqual(a.pow(-1), A(0.5))
-        XCTAssertEqual(a.pow(-2), A(0.25))
-        XCTAssertEqual(a.pow(-3), A(0.125))
+        assertApproxEqual(a.pow(-1), A(0.5))
+        assertApproxEqual(a.pow(-2), A(0.25))
+        assertApproxEqual(a.pow(-3), A(0.125))
     }
     
     func testIneq() {
@@ -100,14 +101,25 @@ class RealTests: XCTestCase {
     func testAbs() {
         let a = A(4.1)
         let b = A(-4.1)
-        XCTAssertEqual(a.abs, a)
-        XCTAssertEqual(b.abs, a)
+        assertApproxEqual(a.abs, a)
+        assertApproxEqual(b.abs, a)
     }
     
     func testNorm() {
         let a = A(4.1)
         let b = A(-4.1)
-        XCTAssertEqual(a.norm, 4.1)
-        XCTAssertEqual(b.norm, 4.1)
+        assertApproxEqual(a.norm, 4.1)
+        assertApproxEqual(b.norm, 4.1)
+    }
+    
+    func testApproxEqual() {
+        let a = A(0.1)
+        let b = A(0.2)
+        
+        XCTAssertTrue((a + b).isApproximatelyEqualTo(0.3))
+    }
+    
+    private func assertApproxEqual(_ x: 𝐑, _ y: 𝐑, error e: 𝐑 = 0.0001) {
+        XCTAssertTrue(x.isApproximatelyEqualTo(y, error: e))
     }
 }
