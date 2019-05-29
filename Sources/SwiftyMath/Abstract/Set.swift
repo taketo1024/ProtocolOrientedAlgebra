@@ -62,6 +62,15 @@ public extension ProductSetType {
     }
 }
 
+public struct ProductSet<X: SetType, Y: SetType>: ProductSetType {
+    public let left: X
+    public let right: Y
+    public init(_ x: X, _ y: Y) {
+        self.left = x
+        self.right = y
+    }
+}
+
 public protocol QuotientSetType: SetType {
     associatedtype Base: SetType
     init (_ x: Base)
@@ -80,5 +89,22 @@ public extension QuotientSetType {
     
     static var symbol: String {
         return "\(Base.symbol)/~"
+    }
+}
+
+public protocol EquivalenceRelation {
+    associatedtype Base: SetType
+    static func isEquivalent(_ x: Base, _ y: Base) -> Bool
+}
+
+public struct QuotientSet<X, E: EquivalenceRelation>: QuotientSetType where X == E.Base {
+    public let representative: X
+    
+    public init(_ x: Base) {
+        self.representative = x
+    }
+    
+    public static func isEquivalent(_ x: X, _ y: X) -> Bool {
+        return E.isEquivalent(x, y)
     }
 }
