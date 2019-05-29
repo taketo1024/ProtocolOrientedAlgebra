@@ -120,46 +120,13 @@ public struct PowerSeries<R: Ring>: Ring, Module {
 }
 
 public extension PowerSeries {
-    public static var exponential: PowerSeries<R> {
+    static var exponential: PowerSeries<R> {
         return PowerSeries { n in
             R(from: n.factorial).inverse!
         }
     }
     
-    public static func geometricSeries(_ r: R) -> PowerSeries<R> {
+    static func geometricSeries(_ r: R) -> PowerSeries<R> {
         return PowerSeries { n in r.pow(n) }
-    }
-}
-
-public struct MultiplicativeSequence<R: Ring>: CustomStringConvertible {
-    internal let map: (Int) -> MPolynomial<R>
-    
-    public init(belongingTo f: PowerSeries<R>) {
-        self.map = { n in
-            let Is = n.partitions
-            return Is.sum { I in
-                let c = I.components.multiply { i in f.coeff(i) }
-                let s_I = SymmetricPolynomial<R>.monomial(n, I).elementaryDecomposition()
-                return c * s_I
-            }
-        }
-    }
-    
-    public subscript(n: Int) -> MPolynomial<R> {
-        return map(n)
-    }
-    
-    public var description: String {
-        return (0 ..< 5).map{ self[$0].description }.joined(separator: " + ") + " ..."
-    }
-}
-
-public extension MultiplicativeSequence where R == 𝐐 {
-    public static var HirzebruchL: MultiplicativeSequence<R> {
-        let B = BernoulliNumber
-        let f = PowerSeries<R> { n in
-            (n == 0) ? 1 : R(2.pow(2 * n), (2 * n).factorial) * B(2 * n)
-        }
-        return MultiplicativeSequence(belongingTo: f)
     }
 }

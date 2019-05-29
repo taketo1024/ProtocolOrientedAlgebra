@@ -174,7 +174,7 @@ public struct _Polynomial<T: PolynomialType, R: Ring, x: Indeterminate>: Ring, M
 }
 
 public extension _Polynomial where R: Field {
-    public func toMonic() -> _Polynomial<T, R, x> {
+    func toMonic() -> _Polynomial<T, R, x> {
         let a = leadCoeff
         return self.mapCoeffs{ $0 / a }
     }

@@ -13,7 +13,7 @@ public protocol Indeterminate {
 }
 
 public extension Indeterminate {
-    public static var degree: Int {
+    static var degree: Int {
         return 1
     }
 }
