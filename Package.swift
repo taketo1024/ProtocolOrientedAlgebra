@@ -11,21 +11,9 @@ let package = Package(
             name: "SwiftyMath",
             targets: ["SwiftyMath"]),
         .library(
-            name: "SwiftyHomology",
-            targets: ["SwiftyHomology"]),
-        .library(
-            name: "SwiftyTopology",
-            targets: ["SwiftyTopology"]),
-        .library(
-            name: "SwiftyLieGroups",
-            targets: ["SwiftyLieGroups"]),
-        .library(
-            name: "SwiftyKnots",
-            targets: ["SwiftyKnots"]),
-        .library(
             name: "dSwiftyMath",
 			type: .dynamic,
-            targets: ["SwiftyMath", "SwiftyHomology", "SwiftyTopology", "SwiftyKnots"]),
+            targets: ["SwiftyMath"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -37,52 +25,9 @@ let package = Package(
         .target(
             name: "SwiftyMath",
             dependencies: [],
-			path: "Sources/SwiftyMath"),
-
+            path: "Sources/SwiftyMath"),
         .testTarget(
             name: "SwiftyMathTests",
             dependencies: ["SwiftyMath"]),
-
-        .target(
-            name: "SwiftyHomology",
-            dependencies: ["SwiftyMath"],
-			path: "Sources/SwiftyHomology"),
-
-        .testTarget(
-            name: "SwiftyHomologyTests",
-            dependencies: ["SwiftyHomology"]),
-
-        .target(
-            name: "SwiftyTopology",
-            dependencies: ["SwiftyMath", "SwiftyHomology"],
-			path: "Sources/SwiftyTopology"),
-
-        .testTarget(
-            name: "SwiftyTopologyTests",
-            dependencies: ["SwiftyTopology"]),
-
-        .target(
-            name: "SwiftyLieGroups",
-            dependencies: ["SwiftyMath"],
-			path: "Sources/SwiftyLieGroups"),
-
-        .testTarget(
-            name: "SwiftyLieGroupsTests",
-            dependencies: ["SwiftyLieGroups"]),
-
-        .target(
-            name: "SwiftyKnots",
-            dependencies: ["SwiftyMath", "SwiftyHomology"],
-			path: "Sources/SwiftyKnots"),
-
-        .testTarget(
-            name: "SwiftyKnotsTests",
-            dependencies: ["SwiftyKnots"]),
-
-        .target(
-            name: "Sample",
-            dependencies: ["SwiftyMath", "SwiftyHomology", "SwiftyTopology", "SwiftyKnots"],
-			path: "Sources/Sample"),
-
     ]
 )
