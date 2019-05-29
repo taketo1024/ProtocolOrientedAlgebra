@@ -128,7 +128,7 @@ public struct Permutation: MapType {
 }
 
 public extension Array where Element: Hashable {
-    public func permuted(by p: Permutation) -> [Element] {
+    func permuted(by p: Permutation) -> [Element] {
         return (0 ..< count).map{ i in self[p[i]] }
     }
 }

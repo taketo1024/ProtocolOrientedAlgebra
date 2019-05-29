@@ -8,7 +8,7 @@
 import Foundation
 
 public extension Encodable {
-    public func asJSON(prettyPrint: Bool = false) -> String {
+    func asJSON(prettyPrint: Bool = false) -> String {
         let e = JSONEncoder()
         if prettyPrint {
             e.outputFormatting = .prettyPrinted
@@ -22,7 +22,7 @@ public extension Encodable {
 }
 
 public extension Decodable {
-    public static func loadJSON(_ stringData: String) -> Self? {
+    static func loadJSON(_ stringData: String) -> Self? {
         let data = stringData.data(using: .utf8)!
         return try? JSONDecoder().decode(Self.self, from: data)
     }

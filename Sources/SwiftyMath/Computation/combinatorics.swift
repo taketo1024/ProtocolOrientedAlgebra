@@ -10,7 +10,7 @@ import Foundation
 
 public extension 𝐙 {
     // TODO use IntList
-    public func choose(_ k: Int) -> [[Int]] {
+    func choose(_ k: Int) -> [[Int]] {
         let n = self
         switch (n, k) {
         case _ where n < k:
@@ -23,7 +23,7 @@ public extension 𝐙 {
     }
     
     // TODO use IntList
-    public func multichoose(_ k: Int) -> [[Int]] {
+    func multichoose(_ k: Int) -> [[Int]] {
         let n = self
         switch (n, k) {
         case _ where n < 0:
@@ -37,7 +37,7 @@ public extension 𝐙 {
         }
     }
     
-    public var partitions: [IntList] {
+    var partitions: [IntList] {
         assert(self >= 0)
         if self == 0 {
             return [IntList.empty]

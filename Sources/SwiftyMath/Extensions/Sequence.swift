@@ -9,31 +9,35 @@
 import Foundation
 
 public extension Sequence {
-    public func toArray() -> [Element] {
+    func toArray() -> [Element] {
         return Array(self)
     }
     
-    public var anyElement: Element? {
+    var anyElement: Element? {
         return first { _ in true }
     }
     
-    public func count(where predicate: (Element) -> Bool) -> Int {
+    var count: Int {
+        return toArray().count
+    }
+    
+    func count(where predicate: (Element) -> Bool) -> Int {
         return self.lazy.filter(predicate).count
     }
     
-    public func exclude(_ isExcluded: (Self.Element) throws -> Bool) rethrows -> [Self.Element] {
+    func exclude(_ isExcluded: (Self.Element) throws -> Bool) rethrows -> [Self.Element] {
         return try self.filter{ try !isExcluded($0) }
     }
     
-    public func sorted<C: Comparable>(by indexer: (Element) -> C) -> [Element] {
+    func sorted<C: Comparable>(by indexer: (Element) -> C) -> [Element] {
         return self.sorted{ (e1, e2) in indexer(e1) < indexer(e2) }
     }
     
-    public func group<U: Hashable>(by keyGenerator: (Element) -> U) -> [U: [Element]] {
+    func group<U: Hashable>(by keyGenerator: (Element) -> U) -> [U: [Element]] {
         return Dictionary(grouping: self, by: keyGenerator)
     }
     
-    public func allCombinations<S: Sequence>(with s2: S) -> [(Self.Element, S.Element)] {
+    func allCombinations<S: Sequence>(with s2: S) -> [(Self.Element, S.Element)] {
         typealias X = Self.Element
         typealias Y = S.Element
         return self.flatMap{ (x) -> [(X, Y)] in
@@ -43,26 +47,25 @@ public extension Sequence {
 }
 
 public extension Sequence where Element: Hashable {
-    public var isUnique: Bool {
-        var alreadyAdded = Set<Element>()
-        return self.allSatisfy { alreadyAdded.insert($0).inserted }
+    var isUnique: Bool {
+        return self.count == unique().count
     }
     
-    public func unique() -> [Element] {
+    func unique() -> [Element] {
         var alreadyAdded = Set<Element>()
         return self.filter { alreadyAdded.insert($0).inserted }
     }
     
-    public func subtract(_ b: Self) -> [Element] {
+    func subtract(_ b: Self) -> [Element] {
         let set = Set(b)
         return self.filter{ !set.contains($0) }
     }
     
-    public func isDisjoint<S: Sequence>(with other: S) -> Bool where S.Element == Element {
+    func isDisjoint<S: Sequence>(with other: S) -> Bool where S.Element == Element {
         return Set(self).isDisjoint(with: other)
     }
     
-    public func countMultiplicities() -> [Element : Int] {
+    func countMultiplicities() -> [Element : Int] {
         return self.group{ $0 }.mapValues{ $0.count }
     }
 }

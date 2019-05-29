@@ -9,7 +9,7 @@ import Foundation
 
 public extension String {
     
-    public func substring(_ r: CountableRange<Int>) -> String {
+    func substring(_ r: CountableRange<Int>) -> String {
         
         let length = self.count
         let fromIndex = (r.startIndex > 0) ? self.index(self.startIndex, offsetBy: r.startIndex) : self.startIndex
@@ -22,7 +22,7 @@ public extension String {
         }
     }
     
-    public func substring(_ r: CountableClosedRange<Int>) -> String {
+    func substring(_ r: CountableClosedRange<Int>) -> String {
         
         let from = r.lowerBound
         let to = r.upperBound
@@ -30,7 +30,7 @@ public extension String {
         return self.substring(from ..< to + 1)
     }
     
-    public func substring(_ r: CountablePartialRangeFrom<Int>) -> String {
+    func substring(_ r: CountablePartialRangeFrom<Int>) -> String {
         
         let from = r.lowerBound
         let to = self.count
@@ -38,7 +38,7 @@ public extension String {
         return self.substring(from ..< to)
     }
     
-    public func substring(_ r: PartialRangeThrough<Int>) -> String {
+    func substring(_ r: PartialRangeThrough<Int>) -> String {
         let to = r.upperBound
         
         return self.substring(0 ..< to)
