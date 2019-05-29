@@ -269,47 +269,47 @@ public struct _Matrix<n: _Int, m: _Int, R: Ring>: Module, Sequence {
 }
 
 public extension _Matrix where n == Dynamic, m == Dynamic {
-    public init(rows: Int, cols: Int, grid: [R]) {
+    init(rows: Int, cols: Int, grid: [R]) {
         self.init(MatrixImpl(rows: rows, cols: cols, grid: grid))
     }
     
-    public init(rows: Int, cols: Int, grid: R ...) {
+    init(rows: Int, cols: Int, grid: R ...) {
         self.init(rows: rows, cols: cols, grid: grid)
     }
     
-    public init(rows: Int, cols: Int, generator g: (Int, Int) -> R) {
+    init(rows: Int, cols: Int, generator g: (Int, Int) -> R) {
         self.init(MatrixImpl(rows: rows, cols: cols, generator: g))
     }
     
-    public init(rows: Int, cols: Int, components: [MatrixComponent<R>]) {
+    init(rows: Int, cols: Int, components: [MatrixComponent<R>]) {
         self.init(MatrixImpl(rows: rows, cols: cols, components: components))
     }
     
-    public init(rows: Int, cols: Int, fill a: R) {
+    init(rows: Int, cols: Int, fill a: R) {
         self.init(rows: rows, cols: cols) { (_, _) in a }
     }
     
-    public init(rows: Int, cols: Int, diagonal d: [R]) {
+    init(rows: Int, cols: Int, diagonal d: [R]) {
         self.init(rows: rows, cols: cols) { (i, j) in (i == j && i < d.count) ? d[i] : .zero }
     }
     
-    public init(size n: Int, scalar a: R) {
+    init(size n: Int, scalar a: R) {
         self.init(rows: n, cols: n) { (i, j) in (i == j) ? a : .zero }
     }
     
-    public static func identity(size n: Int) -> Matrix<R> {
+    static func identity(size n: Int) -> Matrix<R> {
         return Matrix(size: n, scalar: .identity)
     }
     
-    public static func zero(size n: Int) -> Matrix<R> {
+    static func zero(size n: Int) -> Matrix<R> {
         return Matrix.zero(rows: n, cols: n)
     }
     
-    public static func zero(rows: Int, cols: Int) -> Matrix<R> {
+    static func zero(rows: Int, cols: Int) -> Matrix<R> {
         return Matrix(rows: rows, cols: cols) { (_, _) in .zero }
     }
     
-    public static func unit(rows: Int, cols: Int, _ coord: (Int, Int)) -> Matrix<R> {
+    static func unit(rows: Int, cols: Int, _ coord: (Int, Int)) -> Matrix<R> {
         return Matrix(rows: rows, cols: cols) { (i, j) in (i, j) == coord ? .identity : .zero }
     }
 }
@@ -335,15 +335,15 @@ extension _Matrix: VectorSpace, FiniteDimVectorSpace where R: Field {
 }
 
 public extension _Matrix where R: EuclideanRing {
-    public typealias EliminationResult = MatrixEliminationResult<n, m, R>
+    typealias EliminationResult = MatrixEliminationResult<n, m, R>
     
     @discardableResult
-    public mutating func eliminate(form: MatrixForm = .Diagonal) -> EliminationResult {
+    mutating func eliminate(form: MatrixForm = .Diagonal) -> EliminationResult {
         let e = impl.eliminate(form: form)
         return EliminationResult(self, e)
     }
     
-    public func elimination(form: MatrixForm = .Diagonal) -> EliminationResult {
+    func elimination(form: MatrixForm = .Diagonal) -> EliminationResult {
         if let res = elimCache.value?[form] as? EliminationResult {
             return res
         }
@@ -367,21 +367,21 @@ extension _Matrix: NormedSpace where R: NormedSpace {
 }
 
 public extension _Matrix where R == 𝐑 {
-    public var asComplex: _Matrix<n, m, 𝐂> {
-        return _Matrix<n, m, 𝐂>(impl.mapValues{ $0.asSuper })
+    var asComplex: _Matrix<n, m, 𝐂> {
+        return _Matrix<n, m, 𝐂>(impl.mapValues{ 𝐂($0) })
     }
 }
 
 public extension _Matrix where R == 𝐂 {
-    public var realPart: _Matrix<n, m, 𝐑> {
+    var realPart: _Matrix<n, m, 𝐑> {
         return _Matrix<n, m, 𝐑>(impl.mapValues{ $0.realPart })
     }
     
-    public var imaginaryPart: _Matrix<n, m, 𝐑> {
+    var imaginaryPart: _Matrix<n, m, 𝐑> {
         return _Matrix<n, m, 𝐑>(impl.mapValues{ $0.imaginaryPart })
     }
     
-    public var adjoint: _Matrix<m, n, R> {
+    var adjoint: _Matrix<m, n, R> {
         return _Matrix<m, n, R>(impl.transposed.mapValues{ $0.conjugate })
     }
 }

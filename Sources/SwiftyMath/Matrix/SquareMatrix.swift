@@ -101,13 +101,13 @@ extension SquareMatrix: Ring where n == m {
 }
 
 public extension SquareMatrix where n == m, n == _1 {
-    public var asScalar: R {
+    var asScalar: R {
         return self[0, 0]
     }
 }
 
 public extension SquareMatrix where n == m, R: EuclideanRing {
-    public var determinant: R {
+    var determinant: R {
         assert(isSquare)
         switch rows {
         case 0: return .identity
@@ -117,7 +117,7 @@ public extension SquareMatrix where n == m, R: EuclideanRing {
         }
     }
     
-    public var inverse: _Matrix<n, n, R>? {
+    var inverse: _Matrix<n, n, R>? {
         assert(isSquare)
         switch rows {
         case 0: return .identity
@@ -133,7 +133,7 @@ public extension SquareMatrix where n == m, R: EuclideanRing {
 }
 
 public extension SquareMatrix where n == m, R == 𝐂 {
-    public var isHermitian: Bool {
+    var isHermitian: Bool {
         if !isSquare { return false }
         
         if rows <= 1 {
@@ -146,7 +146,7 @@ public extension SquareMatrix where n == m, R == 𝐂 {
         }
     }
     
-    public var isSkewHermitian: Bool {
+    var isSkewHermitian: Bool {
         if !isSquare { return false }
         
         if rows <= 1 {
@@ -159,13 +159,13 @@ public extension SquareMatrix where n == m, R == 𝐂 {
         }
     }
     
-    public var isUnitary: Bool {
+    var isUnitary: Bool {
         return isSquare && self.adjoint * self == .identity
     }
 }
 
 public extension SquareMatrix where n == m {
-    public static var standardSymplecticMatrix: SquareMatrix<n, R> {
+    static var standardSymplecticMatrix: SquareMatrix<n, R> {
         assert(!n.isDynamic)
         assert(n.intValue.isEven)
         
@@ -193,7 +193,7 @@ public func exp<n, K>(_ A: SquareMatrix<n, K>) -> SquareMatrix<n, K> where K: Fi
     var n = 0
     var cn = K.identity
     var An = X
-    let e = A.maxNorm.error
+    let e = A.maxNorm.ulp
     
     while true {
         n  = n + 1
@@ -201,7 +201,7 @@ public func exp<n, K>(_ A: SquareMatrix<n, K>) -> SquareMatrix<n, K> where K: Fi
         cn = cn / K(from: n)
         
         let Bn = cn * An
-        if Bn.maxNorm.value < e {
+        if Bn.maxNorm <= e {
             break
         } else {
             X = X + Bn

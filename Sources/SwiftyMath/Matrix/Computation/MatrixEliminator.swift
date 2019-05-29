@@ -9,7 +9,7 @@
 import Foundation
 
 public extension LogFlag {
-    public static var matrixElimination: LogFlag { return LogFlag(id: "Matrix.Elimination", label: "matrix") }
+    static var matrixElimination: LogFlag { return LogFlag(id: "Matrix.Elimination", label: "matrix") }
 }
 
 internal class MatrixEliminator<R: EuclideanRing>: CustomStringConvertible {
@@ -102,7 +102,7 @@ internal class MatrixEliminator<R: EuclideanRing>: CustomStringConvertible {
     }
     
     func log(_ msg: @autoclosure () -> String) {
-        Logger.write(.matrixElimination, msg)
+        Logger.write(.matrixElimination, msg())
     }
     
     enum ElementaryOperation {

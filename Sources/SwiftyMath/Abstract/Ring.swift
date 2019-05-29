@@ -4,7 +4,7 @@ public protocol Ring: AdditiveGroup, Monoid {
     init(from: 𝐙)
     var inverse: Self? { get }
     var isInvertible: Bool { get }
-    @available(*, deprecated) var normalizeUnit: Self { get }
+    var normalizeUnit: Self { get }
     var normalized: Self { get }
     static var isField: Bool { get }
 }
@@ -19,7 +19,7 @@ public extension Ring {
     }
     
     var normalized: Self {
-        return self
+        return normalizeUnit * self
     }
     
     func pow(_ n: Int) -> Self {

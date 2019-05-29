@@ -21,7 +21,7 @@ public typealias Vector4<R: Ring> = _ColVector<_4, R>
 
 
 public extension _Matrix where m == _1 {
-    public subscript(index: Int) -> R {
+    subscript(index: Int) -> R {
         @_transparent
         get { return self[index, 0] }
         
@@ -31,7 +31,7 @@ public extension _Matrix where m == _1 {
 }
 
 public extension _Matrix where n == _1 {
-    public subscript(index: Int) -> R {
+    subscript(index: Int) -> R {
         @_transparent
         get { return self[0, index] }
         
@@ -41,13 +41,13 @@ public extension _Matrix where n == _1 {
 }
 
 public extension _Matrix where n == Dynamic, m == _1 {
-    public init(size: Int, generator g: (Int) -> R) {
+    init(size: Int, generator g: (Int) -> R) {
         self.init(MatrixImpl(rows: size, cols: 1, generator: { (i, _) in g(i) }))
     }
 }
 
 public extension _Matrix where n == _1, m == Dynamic {
-    public init(size: Int, generator g: (Int) -> R) {
+    init(size: Int, generator g: (Int) -> R) {
         self.init(MatrixImpl(rows: 1, cols: size, generator: { (_, j) in g(j) }))
     }
 }

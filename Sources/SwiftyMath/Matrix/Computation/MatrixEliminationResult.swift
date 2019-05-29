@@ -76,11 +76,11 @@ public struct MatrixEliminationResult<n: _Int, m: _Int, R: EuclideanRing> {
 }
 
 public extension MatrixEliminationResult where n == m {
-    public var inverse: _Matrix<n, n, R>? {
+    var inverse: _Matrix<n, n, R>? {
         return impl.inverse.map{ _Matrix($0) }
     }
     
-    public var determinant: R {
+    var determinant: R {
         return impl.determinant
     }
 }
