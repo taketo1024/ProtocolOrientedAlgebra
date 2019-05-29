@@ -112,6 +112,7 @@ public struct QuotientSet<X, E: EquivalenceRelation>: QuotientSetType where X ==
 public protocol MapType: SetType {
     associatedtype Domain: SetType
     associatedtype Codomain: SetType
+    init (_ f: @escaping (Domain) -> Codomain)
     func applied(to x: Domain) -> Codomain
 }
 
@@ -156,32 +157,25 @@ public struct Map<X: SetType, Y: SetType>: MapType {
     }
 }
 
-public protocol EndType: MapType, Monoid where Domain == Codomain {
+public protocol EndType: MapType where Domain == Codomain {
     static var identity: Self { get }
     func composed(with f: Self) -> Self
     static func ∘(g: Self, f: Self) -> Self
 }
 
-extension Map: Monoid, EndType where X == Y {
-    public static var identity: Map<X, Y> {
-        return Map{ $0 }
+public extension EndType {
+    static var identity: Self {
+        return Self { $0 }
     }
     
-    public static func *(g: Map<X, Y>, f: Map<X, Y>) -> Map<X, Y> {
+    func composed(with g: Self) -> Self {
+        return Self { x in self.applied( to: g.applied(to: x) ) }
+    }
+
+    static func ∘(g: Self, f: Self) -> Self {
         return g.composed(with: f)
     }
 }
 
+extension Map: EndType where X == Y {}
 public typealias End<X: SetType> = Map<X, X>
-
-public protocol AutType: SubsetType, EndType /*, Group*/ where Super: EndType, Domain == Super.Domain {}
-
-public extension AutType {
-    static func *(g: Self, f: Self) -> Self {
-        return g.composed(with: f)
-    }
-    
-    var description: String {
-        return asSuper.description
-    }
-}
