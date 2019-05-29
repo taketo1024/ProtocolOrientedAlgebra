@@ -13,7 +13,7 @@ public protocol SetType: Hashable, CustomStringConvertible {
 }
 
 public extension SetType {
-    public static var symbol: String {
+    static var symbol: String {
         return String(describing: self)
     }
 }
@@ -31,13 +31,13 @@ public protocol SubsetType: SetType {
 }
 
 public extension SubsetType {
-    public var description: String {
+    var description: String {
         return asSuper.description
     }
 }
 
 public extension SetType {
-    public func asSubset<S: SubsetType>(of: S.Type) -> S where S.Super == Self {
+    func asSubset<S: SubsetType>(of: S.Type) -> S where S.Super == Self {
         assert(S.contains(self), "\(S.self) does not contain \(self).")
         return S.init(self)
     }
@@ -53,35 +53,14 @@ public protocol ProductSetType: SetType {
 }
 
 public extension ProductSetType {
-    public var description: String {
+    var description: String {
         return "(\(left), \(right))"
     }
     
-    public static var symbol: String {
+    static var symbol: String {
         return "\(Left.symbol)×\(Right.symbol)"
     }
 }
-
-public struct ProductSet<Left: SetType, Right: SetType>: ProductSetType {
-    public let left : Left
-    public let right: Right
-    
-    public init(_ x: Left, _ y: Right) {
-        self.left  = x
-        self.right = y
-    }
-}
-
-// MEMO When "parametrized extension" is supported, we could defile:
-//
-//   struct QuotientSet<X: Base, Rel: EquivalenceRelation>
-//
-// and extend as subtypes like:
-//
-//   public typealias QuotientGroup<G, H: NormalSubgroup> = QuotientSet<G, ModSubgroupRelation<H>> where G == H.Super
-//   extension<H: NormalSubgroup> QuotientGroup where X == H.Super, Rel == ModSubgroupRelation<H> { ... }
-//
-// see: https://github.com/apple/swift/blob/master/docs/GenericsManifesto.md#parameterized-extensions
 
 public protocol QuotientSetType: SetType {
     associatedtype Base: SetType
@@ -91,15 +70,15 @@ public protocol QuotientSetType: SetType {
 }
 
 public extension QuotientSetType {
-    public var description: String {
+    var description: String {
         return representative.description
     }
     
-    public static func == (a: Self, b: Self) -> Bool {
+    static func == (a: Self, b: Self) -> Bool {
         return isEquivalent(a.representative, b.representative)
     }
     
-    public static var symbol: String {
+    static var symbol: String {
         return "\(Base.symbol)/~"
     }
 }
