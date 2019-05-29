@@ -30,6 +30,10 @@ public extension Ring {
         }
     }
     
+    static var zero: Self {
+        return Self(from: 0)
+    }
+    
     static var identity: Self {
         return Self(from: 1)
     }
