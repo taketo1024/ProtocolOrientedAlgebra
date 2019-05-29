@@ -114,6 +114,14 @@ public struct Quaternion: Ring, NormedSpace, ExpressibleByIntegerLiteral, Expres
         return 𝐇(x, y, z, w)
     }
     
+    public func isApproximatelyEqualTo(_ b: 𝐇, error e: 𝐑? = nil) -> Bool {
+        return
+        self.x.isApproximatelyEqualTo(b.x, error: e) &&
+        self.y.isApproximatelyEqualTo(b.y, error: e) &&
+        self.z.isApproximatelyEqualTo(b.z, error: e) &&
+        self.w.isApproximatelyEqualTo(b.w, error: e)
+    }
+    
     public var description: String {
         if self == .zero {
             return "0"

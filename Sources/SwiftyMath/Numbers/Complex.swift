@@ -105,6 +105,11 @@ public struct ComplexNumber: Field, NormedSpace, ExpressibleByIntegerLiteral, Ex
         return 𝐂(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x)
     }
     
+    public func isApproximatelyEqualTo(_ z: 𝐂, error e: 𝐑? = nil) -> Bool {
+        return self.realPart.isApproximatelyEqualTo(z.realPart, error: e) &&
+               self.imaginaryPart.isApproximatelyEqualTo(z.imaginaryPart, error: e)
+    }
+    
     public var description: String {
         return (x != 0 && y != 0) ? "\(x) + \(y)i" :
                          (y == 1) ? "i" :
