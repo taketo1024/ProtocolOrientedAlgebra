@@ -4,20 +4,25 @@ public protocol Ring: AdditiveGroup, Monoid {
     init(from: 𝐙)
     var inverse: Self? { get }
     var isInvertible: Bool { get }
-    var normalizeUnit: Self { get }
+    @available(*, deprecated) var normalizeUnit: Self { get }
+    var normalized: Self { get }
     static var isField: Bool { get }
 }
 
 public extension Ring {
-    public var isInvertible: Bool {
+    var isInvertible: Bool {
         return (inverse != nil)
     }
     
-    public var normalizeUnit: Self {
+    var normalizeUnit: Self {
         return .identity
     }
     
-    public func pow(_ n: Int) -> Self {
+    var normalized: Self {
+        return self
+    }
+    
+    func pow(_ n: Int) -> Self {
         if n >= 0 {
             return (0 ..< n).reduce(.identity){ (res, _) in self * res }
         } else {
@@ -25,15 +30,11 @@ public extension Ring {
         }
     }
     
-    public static var zero: Self {
-        return Self(from: 0)
-    }
-    
-    public static var identity: Self {
+    static var identity: Self {
         return Self(from: 1)
     }
     
-    public static var isField: Bool {
+    static var isField: Bool {
         return false
     }
 }
@@ -41,19 +42,19 @@ public extension Ring {
 public protocol Subring: Ring, AdditiveSubgroup, Submonoid where Super: Ring {}
 
 public extension Subring {
-    public init(from n: 𝐙) {
+    init(from n: 𝐙) {
         self.init( Super.init(from: n) )
     }
 
-    public var inverse: Self? {
+    var inverse: Self? {
         return asSuper.inverse.flatMap{ Self.init($0) }
     }
     
-    public static var zero: Self {
+    static var zero: Self {
         return Self.init(from: 0)
     }
     
-    public static var identity: Self {
+    static var identity: Self {
         return Self.init(from: 1)
     }
 }
@@ -66,61 +67,70 @@ public protocol Ideal: AdditiveSubgroup where Super: Ring {
 
 // MEMO: Usually Ideals are only used as a TypeParameter for a QuotientRing.
 public extension Ideal {
-    public init(_ x: Super) {
+    init(_ x: Super) {
         fatalError()
     }
     
-    public var asSuper: Super {
+    var asSuper: Super {
         fatalError()
     }
     
-    public static func * (a: Self, b: Self) -> Self {
+    static func * (a: Self, b: Self) -> Self {
         return Self(a.asSuper * b.asSuper)
     }
     
-    public static func * (r: Super, a: Self) -> Self {
+    static func * (r: Super, a: Self) -> Self {
         return Self(r * a.asSuper)
     }
     
-    public static func * (a: Self, r: Super) -> Self {
+    static func * (a: Self, r: Super) -> Self {
         return Self(a.asSuper * r)
     }
 }
 
 public protocol MaximalIdeal: Ideal {}
 
-public typealias ProductRing<X: Ring, Y: Ring> = AdditiveProductGroup<X, Y>
+public protocol ProductRingType: AdditiveProductGroupType, Ring where Left: Ring, Right: Ring {}
 
-extension ProductRing: Ring where Left: Ring, Right: Ring {
-    public init(from a: 𝐙) {
+public extension ProductRingType {
+    init(from a: 𝐙) {
         self.init(Left(from: a), Right(from: a))
     }
     
-    public var inverse: ProductRing<Left, Right>? {
-        return left.inverse.flatMap{ r1 in right.inverse.flatMap{ r2 in ProductRing(r1, r2) }  }
+    var inverse: Self? {
+        return left.inverse.flatMap{ r1 in right.inverse.flatMap{ r2 in Self(r1, r2) }  }
     }
     
-    public static var zero: ProductRing<Left, Right> {
-        return ProductRing(.zero, .zero)
+    static var zero: Self {
+        return Self(.zero, .zero)
     }
     
-    public static var identity: ProductRing<Left, Right> {
-        return ProductRing(.identity, .identity)
+    static var identity: Self {
+        return Self(.identity, .identity)
     }
     
-    public static func * (a: ProductRing<Left, Right>, b: ProductRing<Left, Right>) -> ProductRing<Left, Right> {
-        return ProductRing(a.left * b.left, a.right * b.right)
+    static func * (a: Self, b: Self) -> Self {
+        return Self(a.left * b.left, a.right * b.right)
+    }
+}
+
+public struct ProductRing<X: Ring, Y: Ring>: ProductRingType {
+    public let left: X
+    public let right: Y
+    public init(_ x: X, _ y: Y) {
+        self.left = x
+        self.right = y
     }
 }
 
 public protocol QuotientRingType: AdditiveQuotientGroupType, Ring where Sub: Ideal {}
 
 public extension QuotientRingType {
-    public init(from n: 𝐙) {
+    init(from n: 𝐙) {
         self.init(Base(from: n))
     }
     
-    public var inverse: Self? {
+    var inverse: Self? {
         if let inv = Sub.inverseInQuotient(representative) {
             return Self(inv)
         } else {
@@ -128,28 +138,37 @@ public extension QuotientRingType {
         }
     }
     
-    public static var zero: Self {
+    static var zero: Self {
         return Self(Base.zero)
     }
     
-    public static func + (a: Self, b: Self) -> Self {
+    static func + (a: Self, b: Self) -> Self {
         return Self(a.representative + b.representative)
     }
     
-    public static prefix func - (a: Self) -> Self {
+    static prefix func - (a: Self) -> Self {
         return Self(-a.representative)
     }
     
-    public static func * (a: Self, b: Self) -> Self {
+    static func * (a: Self, b: Self) -> Self {
         return Self(a.representative * b.representative)
     }
 }
 
-public typealias QuotientRing<R, I: Ideal> = AdditiveQuotientGroup<R, I> where R == I.Super
+public struct QuotientRing<R, I: Ideal>: QuotientRingType where R == I.Super {
+    public typealias Sub = I
+    
+    private let x: R
+    public init(_ x: R) {
+        self.x = I.normalizedInQuotient(x)
+    }
+    
+    public var representative: R {
+        return x
+    }
+}
 
-extension QuotientRing: Monoid, Ring, QuotientRingType where Sub: Ideal, Base == Sub.Super {}
-
-extension QuotientRing: EuclideanRing, Field where Sub: MaximalIdeal {}
+//extension QuotientRing: EuclideanRing, Field where Sub: MaximalIdeal {}
 
 extension QuotientRing: ExpressibleByIntegerLiteral where Base: ExpressibleByIntegerLiteral {
     public typealias IntegerLiteralType = Base.IntegerLiteralType
@@ -160,5 +179,30 @@ extension QuotientRing: ExpressibleByIntegerLiteral where Base: ExpressibleByInt
 
 public protocol RingHomType: AdditiveGroupHomType where Domain: Ring, Codomain: Ring {}
 
-public typealias RingHom<R1: Ring, R2: Ring> = AdditiveGroupHom<R1, R2>
-extension RingHom: RingHomType where Domain: Ring, Codomain: Ring {}
+public struct RingHom<X: Ring, Y: Ring>: RingHomType {
+    public typealias Domain = X
+    public typealias Codomain = Y
+    
+    private let f: (X) -> Y
+    
+    public init(_ f: @escaping (X) -> Y) {
+        self.f = f
+    }
+    
+    public func applied(to x: X) -> Y {
+        return f(x)
+    }
+    
+    public func composed<W>(with g: RingHom<W, X>) -> RingHom<W, Y> {
+        return RingHom<W, Y>{ x in self.applied( to: g.applied(to: x) ) }
+    }
+    
+    public static func ∘<W>(g: RingHom<X, Y>, f: RingHom<W, X>) -> RingHom<W, Y> {
+        return g.composed(with: f)
+    }
+}
+
+public protocol RingEndType: RingHomType, EndType {}
+
+extension RingHom: EndType, RingEndType where X == Y {}
+public typealias RingEnd<X: Ring> = RingHom<X, X>
