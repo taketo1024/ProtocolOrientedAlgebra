@@ -11,26 +11,22 @@ public struct AlgebraicExtension<K: Field, p: IrrPolynomialTP>: QuotientRingType
     public typealias Base = p.PolynomialType
     public typealias Sub = PolynomialIdeal<p>
     
-    private let p: Base
+    private let f: Base
     
     public init(from n: 𝐙) {
         self.init(Polynomial(K(from: n)))
-    }
-    
-    public init(from q: 𝐐) {
-        self.init(Polynomial(K(from: q)))
     }
     
     public init(_ x: K) {
         self.init(Polynomial(x))
     }
     
-    public init(_ x: Base) {
-        self.p = Sub.normalizedInQuotient(x)
+    public init(_ f: Base) {
+        self.f = Sub.normalizedInQuotient(f)
     }
     
     public var representative: Base {
-        return p
+        return f
     }
 }
 

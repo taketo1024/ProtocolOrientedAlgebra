@@ -22,31 +22,31 @@ public protocol BilinearMapType: MapType, VectorSpace
 }
 
 public extension BilinearMapType {
-    public init(_ f: @escaping (Domain.Left, Domain.Right) -> Codomain) {
+    init(_ f: @escaping (Domain.Left, Domain.Right) -> Codomain) {
         self.init { (v: Domain) in f(v.left, v.right) }
     }
     
-    public func applied(to v: (Domain.Left, Domain.Right)) -> Codomain {
+    func applied(to v: (Domain.Left, Domain.Right)) -> Codomain {
         return applied(to: Domain(v.0, v.1))
     }
     
-    public static var zero: Self {
+    static var zero: Self {
         return Self{ v in .zero }
     }
     
-    public static func +(f: Self, g: Self) -> Self {
+    static func +(f: Self, g: Self) -> Self {
         return Self { v in f.applied(to: v) + g.applied(to: v) }
     }
     
-    public static prefix func -(f: Self) -> Self {
+    static prefix func -(f: Self) -> Self {
         return Self { v in -f.applied(to: v) }
     }
     
-    public static func *(r: CoeffRing, f: Self) -> Self {
+    static func *(r: CoeffRing, f: Self) -> Self {
         return Self { v in r * f.applied(to: v) }
     }
     
-    public static func *(f: Self, r: CoeffRing) -> Self {
+    static func *(f: Self, r: CoeffRing) -> Self {
         return Self { v in f.applied(to: v) * r }
     }
 }
@@ -72,17 +72,17 @@ public protocol BilinearFormType: BilinearMapType where Domain.Left == Domain.Ri
 }
 
 public extension BilinearFormType {
-    public init(_ f: @escaping (Domain.Left, Domain.Right) -> CoeffRing) {
+    init(_ f: @escaping (Domain.Left, Domain.Right) -> CoeffRing) {
         self.init{ v in AsVectorSpace( f(v.left, v.right) ) }
     }
     
-    public subscript(x: Domain.Left, y: Domain.Right) -> CoeffRing {
+    subscript(x: Domain.Left, y: Domain.Right) -> CoeffRing {
         return self.applied(to: (x, y)).value
     }
 }
 
 public extension BilinearFormType where Domain.Left: FiniteDimVectorSpace {
-    public var asMatrix: Matrix<CoeffRing> {
+    var asMatrix: Matrix<CoeffRing> {
         typealias V = Domain.Left
         
         let n = V.dim

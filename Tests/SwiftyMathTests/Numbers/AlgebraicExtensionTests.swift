@@ -37,11 +37,6 @@ class AlgebraicExtensionTests: XCTestCase {
         XCTAssertEqual(a, A(1))
     }
     
-    func testFromRational() {
-        let a = A(from: 2./3)
-        XCTAssertEqual(a, A(2./3))
-    }
-    
     func testSum() {
         let a = 1 + 2 * α
         let b = 3 + 4 * α

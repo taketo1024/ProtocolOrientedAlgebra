@@ -10,10 +10,6 @@ let package = Package(
         .library(
             name: "SwiftyMath",
             targets: ["SwiftyMath"]),
-        .library(
-            name: "dSwiftyMath",
-			type: .dynamic,
-            targets: ["SwiftyMath"]),
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
