@@ -123,6 +123,15 @@ public extension MapType {
     static var symbol: String {
         return "Map(\(Domain.symbol), \(Codomain.symbol))"
     }
+    
+    func hash(into hasher: inout Hasher) {
+        fatalError("MapType is not hashable.")
+    }
+    
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        fatalError("MapType is not equatable.")
+    }
+
 }
 
 public struct Map<X: SetType, Y: SetType>: MapType {
@@ -130,11 +139,8 @@ public struct Map<X: SetType, Y: SetType>: MapType {
     public typealias Codomain = Y
     
     private let f: (X) -> Y
-    public let hashValue: Int
-    
-    public init(hashValue: Int = 0, _ f: @escaping (X) -> Y) {
+    public init(_ f: @escaping (X) -> Y) {
         self.f = f
-        self.hashValue = hashValue
     }
     
     public func applied(to x: X) -> Y {
@@ -147,14 +153,6 @@ public struct Map<X: SetType, Y: SetType>: MapType {
     
     public static func ∘<W>(g: Map<X, Y>, f: Map<W, X>) -> Map<W, Y> {
         return g.composed(with: f)
-    }
-
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(hashValue)
-    }
-    
-    public static func == (lhs: Map<X, Y>, rhs: Map<X, Y>) -> Bool {
-        fatalError("Map is not equatable.")
     }
 }
 
