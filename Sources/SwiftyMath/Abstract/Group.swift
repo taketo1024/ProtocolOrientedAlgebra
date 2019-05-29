@@ -5,7 +5,7 @@ public protocol Group: Monoid {
 }
 
 public extension Group {
-    public func pow(_ n: 𝐙) -> Self {
+    func pow(_ n: 𝐙) -> Self {
         if n >= 0 {
             return (0 ..< n).reduce(.identity){ (res, _) in self * res }
         } else {
@@ -17,92 +17,58 @@ public extension Group {
 public protocol Subgroup: Submonoid where Super: Group {}
 
 public extension Subgroup {
-    public var inverse: Self {
+    var inverse: Self {
         return Self(self.asSuper.inverse)
-    }
-}
-
-public extension Group {
-    public static func formsSubgroup<S: Sequence>(_ elements: S) -> Bool where S.Element == Self {
-        let list = Array(elements)
-        let n = list.count
-        
-        // check ^-1 closed
-        for g in list {
-            if !elements.contains(g.inverse) {
-                return false
-            }
-        }
-        
-        // check *-closed
-        let combis = n.choose(2)
-        for c in combis {
-            let (g, h) = (list[c[0]], list[c[1]])
-            if !elements.contains(g * h) {
-                return false
-            }
-            if !elements.contains(h * g) {
-                return false
-            }
-        }
-        
-        return true
-    }
-}
-
-public extension Group where Self: FiniteSetType {
-    public static func cyclicSubgroup(generator: Self) -> FiniteSubgroupStructure<Self> {
-        var g = generator
-        var set = Set([identity])
-        while !set.contains(g) {
-            set.insert(g)
-            g = g * g
-        }
-        return FiniteSubgroupStructure(allElements: set)
-    }
-    
-    public static var allCyclicSubgroups: [FiniteSubgroupStructure<Self>] {
-        return allElements.map{ cyclicSubgroup(generator: $0) }.sorted{ $0.countElements < $1.countElements }
-    }
-    
-    public static var allSubgroups: [FiniteSubgroupStructure<Self>] {
-        let n = countElements
-        if n == 1 {
-            return [cyclicSubgroup(generator: identity)]
-        }
-        
-        let cyclics = allCyclicSubgroups
-        var unions: Set<Set<Self>> = Set()
-        unions.insert(Set([identity]))
-        
-        for k in 2...cyclics.count {
-            n.choose(k).forEach { c in
-                let union: Set<Self> = c.map{ cyclics[$0] }.reduce([]){ $0.union($1.allElements) }
-                
-                // TODO improve algorithm
-                if !unions.contains(union) && (n % union.count == 0) && formsSubgroup(union) {
-                    unions.insert(union)
-                }
-            }
-        }
-        
-        return unions
-            .sorted{ $0.count < $1.count }
-            .map{ FiniteSubgroupStructure(allElements: $0) }
-    }
-}
-
-public typealias ProductGroup<X: Group, Y: Group> = ProductMonoid<X, Y>
-
-extension ProductGroup: Group where Left: Group, Right: Group {
-    public var inverse: ProductGroup<Left, Right> {
-        return ProductGroup(left.inverse, right.inverse)
     }
 }
 
 public protocol NormalSubgroup: Subgroup{}
 
-public struct QuotientGroup<G, H: NormalSubgroup>: Group, QuotientSetType where G == H.Super {
+public protocol ProductGroupType: ProductMonoidType, Group where Left: Group, Right: Group {}
+public extension ProductGroupType {
+    var inverse: Self {
+        return Self(left.inverse, right.inverse)
+    }
+}
+
+public struct ProductGroup<X: Group, Y: Group>: ProductGroupType {
+    public let left: X
+    public let right: Y
+    public init(_ x: X, _ y: Y) {
+        self.left = x
+        self.right = y
+    }
+}
+
+public protocol QuotientGroupType: QuotientSetType, Group where Base == Sub.Super {
+    associatedtype Sub: NormalSubgroup
+}
+
+public extension QuotientGroupType {
+    static func isEquivalent(_ x: Base, _ y: Base) -> Bool {
+        return Sub.contains(x * y.inverse)
+    }
+    
+    static var identity: Self {
+        return Self(Base.identity)
+    }
+    
+    var inverse: Self {
+        return Self(representative.inverse)
+    }
+    
+    static func * (a: Self, b: Self) -> Self {
+        return Self(a.representative * b.representative)
+    }
+    
+    static var symbol: String {
+        return "\(Base.symbol)/\(Sub.symbol)"
+    }
+}
+
+public struct QuotientGroup<G, H: NormalSubgroup>: QuotientGroupType where G == H.Super {
+    public typealias Sub = H
+    
     private let g: G
     public init(_ g: G) {
         self.g = g
@@ -111,32 +77,43 @@ public struct QuotientGroup<G, H: NormalSubgroup>: Group, QuotientSetType where 
     public var representative: G {
         return g
     }
-    
-    public static func isEquivalent(_ x: G, _ y: G) -> Bool {
-        return H.contains(x * y.inverse)
-    }
-    
-    public static var identity: QuotientGroup<G, H> {
-        return QuotientGroup(G.identity)
-    }
-    
-    public var inverse: QuotientGroup<G, H> {
-        return QuotientGroup(g.inverse)
-    }
-    
-    public static func * (a: QuotientGroup<G, H>, b: QuotientGroup<G, H>) -> QuotientGroup<G, H> {
-        return QuotientGroup(a.g * b.g)
-    }
-    
-    public static var symbol: String {
-        return "\(G.symbol)/\(H.symbol)"
-    }
 }
 
 public protocol GroupHomType: MonoidHomType where Domain: Group, Codomain: Group {}
 
-public typealias GroupHom<G: Group, H: Group> = MonoidHom<G, H>
-extension GroupHom: GroupHomType where Domain: Group, Codomain: Group {}
+public struct GroupHom<X: Group, Y: Group>: GroupHomType {
+    public typealias Domain = X
+    public typealias Codomain = Y
+    
+    private let f: (X) -> Y
+    
+    public init(_ f: @escaping (X) -> Y) {
+        self.f = f
+    }
+    
+    public func applied(to x: X) -> Y {
+        return f(x)
+    }
+    
+    public func composed<W>(with g: GroupHom<W, X>) -> GroupHom<W, Y> {
+        return GroupHom<W, Y>{ x in self.applied( to: g.applied(to: x) ) }
+    }
+    
+    public static func ∘<W>(g: GroupHom<X, Y>, f: GroupHom<W, X>) -> GroupHom<W, Y> {
+        return g.composed(with: f)
+    }
+}
 
-public typealias GroupAut<G: Group> = Aut<G>
-extension GroupAut: MonoidHomType, GroupHomType where Domain: Group {}
+public protocol GroupEndType: GroupHomType, EndType {}
+
+extension GroupHom: EndType, GroupEndType where X == Y {
+    public static func * (g: GroupHom<X, Y>, f: GroupHom<X, Y>) -> GroupHom<X, Y> {
+        return g.composed(with: f)
+    }
+    
+    public static var identity: GroupHom<X, Y> {
+        return GroupHom{ $0 }
+    }
+}
+
+public typealias GroupEnd<X: Group> = GroupHom<X, X>

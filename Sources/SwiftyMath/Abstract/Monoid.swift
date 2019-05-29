@@ -25,7 +25,15 @@ public extension Submonoid {
     }
 }
 
-public protocol ProductMonoidType: ProductSetType, Monoid where Left: Monoid, Right: Monoid {
+public protocol ProductMonoidType: ProductSetType, Monoid where Left: Monoid, Right: Monoid {}
+public extension ProductMonoidType {
+    static var identity: Self {
+        return Self(.identity, .identity)
+    }
+    
+    static func * (a: Self, b: Self) -> Self {
+        return Self(a.left * b.left, a.right * b.right)
+    }
 }
 
 public struct ProductMonoid<X: Monoid, Y: Monoid>: ProductMonoidType {
@@ -34,14 +42,6 @@ public struct ProductMonoid<X: Monoid, Y: Monoid>: ProductMonoidType {
     public init(_ x: X, _ y: Y) {
         self.left = x
         self.right = y
-    }
-    
-    public static var identity: ProductMonoid<X, Y> {
-        return ProductMonoid(.identity, .identity)
-    }
-    
-    public static func * (a: ProductMonoid<X, Y>, b: ProductMonoid<X, Y>) -> ProductMonoid<X, Y> {
-        return ProductMonoid(a.left * b.left, a.right * b.right)
     }
 }
 
@@ -70,20 +70,12 @@ public struct MonoidHom<X: Monoid, Y: Monoid>: MonoidHomType {
     }
 }
 
-public protocol MonoidEndType: MonoidHomType, EndType {
-}
+public protocol MonoidEndType: MonoidHomType, EndType {}
 
-extension MonoidHom: Monoid, EndType, MonoidEndType where X == Y {
-    public static func * (g: MonoidHom<X, Y>, f: MonoidHom<X, Y>) -> MonoidHom<X, Y> {
-        return g.composed(with: f)
-    }
-    
-    public static var identity: MonoidHom<X, Y> {
-        return MonoidHom{ $0 }
-    }
-}
+extension MonoidHom: EndType, MonoidEndType where X == Y {}
 
 public typealias MonoidEnd<X: Monoid> = MonoidHom<X, X>
+
 
 public extension Sequence where Element: Monoid {
     func multiplyAll() -> Element {

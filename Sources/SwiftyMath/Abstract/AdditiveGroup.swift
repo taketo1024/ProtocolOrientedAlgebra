@@ -161,3 +161,38 @@ public extension Sequence {
         return G.sum( self.map(f) )
     }
 }
+
+public struct AsGroup<G: AdditiveGroup>: Group {
+    private let g: G
+    public init(_ g: G) {
+        self.g = g
+    }
+
+    public var inverse: AsGroup<G> {
+        return AsGroup(-g)
+    }
+
+    public static func * (a: AsGroup<G>, b: AsGroup<G>) -> AsGroup<G> {
+        return AsGroup(a.g + b.g)
+    }
+
+    public static var identity: AsGroup<G> {
+        return AsGroup(G.zero)
+    }
+
+    public var description: String {
+        return g.description
+    }
+
+    public static var symbol: String {
+        return G.symbol
+    }
+}
+
+extension AsGroup: ExpressibleByIntegerLiteral where G: ExpressibleByIntegerLiteral {
+    public typealias IntegerLiteralType = G.IntegerLiteralType
+    public init(integerLiteral value: IntegerLiteralType) {
+        self.init(G(integerLiteral: value))
+    }
+}
+
