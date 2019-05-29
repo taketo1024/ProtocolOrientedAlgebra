@@ -72,13 +72,4 @@ class MapTests: XCTestCase {
         XCTAssertEqual((g ∘ f).applied(to: a), A(6))
         XCTAssertEqual((f ∘ g).applied(to: a), A(4))
     }
-    
-    func testAut() {
-        typealias F = Aut<A>
-        let f = F { a in A(a.value + 1)}
-        let g = F { a in A(a.value * 3)}
-        let a = A(1)
-        XCTAssertEqual((g ∘ f).applied(to: a), A(6))
-        XCTAssertEqual((f ∘ g).applied(to: a), A(4))
-    }
 }
