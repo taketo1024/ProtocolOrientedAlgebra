@@ -108,3 +108,82 @@ public struct QuotientSet<X, E: EquivalenceRelation>: QuotientSetType where X ==
         return E.isEquivalent(x, y)
     }
 }
+
+public protocol MapType: SetType {
+    associatedtype Domain: SetType
+    associatedtype Codomain: SetType
+    func applied(to x: Domain) -> Codomain
+}
+
+public extension MapType {
+    var description: String {
+        return "\(Domain.symbol) -> \(Codomain.symbol)"
+    }
+    
+    static var symbol: String {
+        return "Map(\(Domain.symbol), \(Codomain.symbol))"
+    }
+}
+
+public struct Map<X: SetType, Y: SetType>: MapType {
+    public typealias Domain = X
+    public typealias Codomain = Y
+    
+    private let f: (X) -> Y
+    public let hashValue: Int
+    
+    public init(hashValue: Int = 0, _ f: @escaping (X) -> Y) {
+        self.f = f
+        self.hashValue = hashValue
+    }
+    
+    public func applied(to x: X) -> Y {
+        return f(x)
+    }
+    
+    public func composed<W>(with g: Map<W, X>) -> Map<W, Y> {
+        return Map<W, Y>{ x in self.applied( to: g.applied(to: x) ) }
+    }
+    
+    public static func ∘<W>(g: Map<X, Y>, f: Map<W, X>) -> Map<W, Y> {
+        return g.composed(with: f)
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(hashValue)
+    }
+    
+    public static func == (lhs: Map<X, Y>, rhs: Map<X, Y>) -> Bool {
+        fatalError("Map is not equatable.")
+    }
+}
+
+public protocol EndType: MapType, Monoid where Domain == Codomain {
+    static var identity: Self { get }
+    func composed(with f: Self) -> Self
+    static func ∘(g: Self, f: Self) -> Self
+}
+
+extension Map: Monoid, EndType where X == Y {
+    public static var identity: Map<X, Y> {
+        return Map{ $0 }
+    }
+    
+    public static func *(g: Map<X, Y>, f: Map<X, Y>) -> Map<X, Y> {
+        return g.composed(with: f)
+    }
+}
+
+public typealias End<X: SetType> = Map<X, X>
+
+public protocol AutType: SubsetType, EndType /*, Group*/ where Super: EndType, Domain == Super.Domain {}
+
+public extension AutType {
+    static func *(g: Self, f: Self) -> Self {
+        return g.composed(with: f)
+    }
+    
+    var description: String {
+        return asSuper.description
+    }
+}
