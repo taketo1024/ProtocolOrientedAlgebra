@@ -18,85 +18,90 @@ public extension Submodule where CoeffRing == Super.CoeffRing {
     }
 }
 
-public typealias ProductModule<X: Module, Y: Module> = AdditiveProductGroup<X, Y>
+public protocol ProductModuleType: AdditiveProductGroupType, Module where Left: Module, Right: Module, CoeffRing == Left.CoeffRing, CoeffRing == Right.CoeffRing {}
 
-extension ProductModule: Module where Left: Module, Right: Module, Left.CoeffRing == Right.CoeffRing {
-    public typealias CoeffRing = Left.CoeffRing
-    
-    public static func * (r: CoeffRing, a: ProductModule<Left, Right>) -> ProductModule<Left, Right> {
-        return ProductModule(r * a.left, r * a.right)
+public extension ProductModuleType {
+    static func * (r: CoeffRing, a: Self) -> Self {
+        return Self(r * a.left, r * a.right)
     }
     
-    public static func * (a: ProductModule<Left, Right>, r: CoeffRing) -> ProductModule<Left, Right> {
-        return ProductModule(a.left * r, a.right * r)
-    }
-    
-    public static var symbol: String {
-        return "\(Left.symbol)⊕\(Right.symbol)"
+    static func * (a: Self, r: CoeffRing) -> Self {
+        return Self(a.left * r, a.right * r)
     }
 }
 
-public typealias QuotientModule<M, N: Submodule> = AdditiveQuotientGroup<M, N> where M == N.Super
+public struct ProductModule<X: Module, Y: Module>: ProductModuleType where X.CoeffRing == Y.CoeffRing {
+    public typealias CoeffRing = X.CoeffRing
+    
+    public let left: X
+    public let right: Y
+    public init(_ x: X, _ y: Y) {
+        self.left = x
+        self.right = y
+    }
+}
 
-extension QuotientModule: Module where Sub: Submodule {
+public protocol QuotientModuleType: AdditiveQuotientGroupType, Module where CoeffRing == Base.CoeffRing, Sub:Submodule {}
+
+public extension QuotientModuleType {
+    static func * (r: CoeffRing, a: Self) -> Self {
+        return Self(r * a.representative)
+    }
+    
+    static func * (a: Self, r: CoeffRing) -> Self {
+        return Self(a.representative * r)
+    }
+}
+
+public struct QuotientModule<Base, Sub: Submodule>: QuotientModuleType where Base == Sub.Super {
     public typealias CoeffRing = Base.CoeffRing
     
-    public static func * (r: CoeffRing, a: QuotientModule<Base, Sub>) -> QuotientModule<Base, Sub> {
-        return QuotientModule(r * a.representative)
+    private let x: Base
+    public init(_ x: Base) {
+        self.x = Sub.normalizedInQuotient(x)
     }
     
-    public static func * (a: QuotientModule<Base, Sub>, r: CoeffRing) -> QuotientModule<Base, Sub> {
-        return QuotientModule(a.representative * r)
+    public var representative: Base {
+        return x
     }
 }
 
-public protocol ModuleHomType: AdditiveGroupHomType, Module where Domain: Module, Codomain: Module, Self.CoeffRing == Domain.CoeffRing, Domain.CoeffRing == Codomain.CoeffRing {}
+public protocol ModuleHomType: AdditiveGroupHomType, Module where Domain: Module, Codomain: Module, CoeffRing == Domain.CoeffRing, CoeffRing == Codomain.CoeffRing {}
 
 public extension ModuleHomType {
-    public static func *(r: CoeffRing, f: Self) -> Self {
+    static func *(r: CoeffRing, f: Self) -> Self {
         return Self { x in r * f.applied(to: x) }
     }
     
-    public static func *(f: Self, r: CoeffRing) -> Self {
+    static func *(f: Self, r: CoeffRing) -> Self {
         return Self { x in f.applied(to: x) * r }
     }
 }
 
-public typealias ModuleHom<X: Module, Y: Module> = AdditiveGroupHom<X, Y> where X.CoeffRing == Y.CoeffRing
-extension ModuleHom: Module, ModuleHomType where Domain: Module, Codomain: Module, Domain.CoeffRing == Codomain.CoeffRing {
-    public typealias CoeffRing = Domain.CoeffRing
+public struct ModuleHom<X: Module, Y: Module>: ModuleHomType where X.CoeffRing == Y.CoeffRing {
+    public typealias CoeffRing = X.CoeffRing
+    public typealias Domain = X
+    public typealias Codomain = Y
+    
+    private let f: (X) -> Y
+    public init(_ f: @escaping (X) -> Y) {
+        self.f = f
+    }
+    
+    public func applied(to x: X) -> Y {
+        return f(x)
+    }
+    
+    public func composed<W>(with g: ModuleHom<W, X>) -> ModuleHom<W, Y> {
+        return ModuleHom<W, Y>{ x in self.applied( to: g.applied(to: x) ) }
+    }
+    
+    public static func ∘<W>(g: ModuleHom<X, Y>, f: ModuleHom<W, X>) -> ModuleHom<W, Y> {
+        return g.composed(with: f)
+    }
 }
 
-// a Ring considered as a Module over itself.
-public struct AsModule<R: Ring>: Module {
-    public typealias CoeffRing = R
-    
-    public let value: R
-    public init(_ x: R) {
-        self.value = x
-    }
-    
-    public static var zero: AsModule<R> {
-        return AsModule(.zero)
-    }
-    
-    public static func +(a: AsModule<R>, b: AsModule<R>) -> AsModule<R> {
-        return AsModule(a.value + b.value)
-    }
-    
-    public static prefix func -(x: AsModule<R>) -> AsModule<R> {
-        return AsModule(-x.value)
-    }
-    
-    public static func *(m: AsModule<R>, r: R) -> AsModule<R> {
-        return AsModule(m.value * r)
-    }
-    
-    public static func *(r: R, m: AsModule<R>) -> AsModule<R> {
-        return AsModule(r * m.value)
-    }
-    
-    public var description: String {
-        return value.description
-    }
-}
+public protocol ModuleEndType: ModuleHomType, EndType {}
+
+extension ModuleHom: EndType, ModuleEndType where X == Y {}
+public typealias ModuleEnd<X: Module> = ModuleHom<X, X>
