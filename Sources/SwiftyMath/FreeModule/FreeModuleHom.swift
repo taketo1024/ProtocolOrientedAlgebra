@@ -25,7 +25,7 @@ public struct FreeModuleHom<A: BasisElementType, B: BasisElementType, R: Ring>: 
         assert(  to.count == matrix.rows)
         
         self.init { (a: A) -> Codomain in
-            guard let j = from.index(of: a) else {
+            guard let j = from.firstIndex(of: a) else {
                 return .zero
             }
             return Codomain(basis: to, vector: matrix.colVector(j))

@@ -14,9 +14,9 @@ public protocol BasisElementType: SetType, Comparable {
 }
 
 public extension BasisElementType {
-    public var degree: Int { return 1 }
+    var degree: Int { return 1 }
     
-    public var dual: Dual<Self> {
+    var dual: Dual<Self> {
         return Dual(self)
     }
 }
