@@ -10,15 +10,15 @@ public protocol EuclideanRing: Ring {
 }
 
 public extension EuclideanRing {
-    public static func /% (_ a: Self, b: Self) -> (q: Self, r: Self) {
+    static func /% (_ a: Self, b: Self) -> (q: Self, r: Self) {
         return a.eucDiv(by: b)
     }
     
-    public static func / (_ a: Self, b: Self) -> Self {
+    static func / (_ a: Self, b: Self) -> Self {
         return a.eucDiv(by: b).q
     }
     
-    public static func % (_ a: Self, b: Self) -> Self {
+    static func % (_ a: Self, b: Self) -> Self {
         return a.eucDiv(by: b).r
     }
 }
