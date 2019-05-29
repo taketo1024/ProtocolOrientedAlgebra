@@ -6,7 +6,7 @@ public protocol _Int {
 }
 
 public extension _Int {
-    public static var isDynamic: Bool { return false }
+    static var isDynamic: Bool { return false }
 }
 
 public protocol _Prime: _Int {}

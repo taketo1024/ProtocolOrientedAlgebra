@@ -11,11 +11,11 @@ import Foundation
 // see: https://en.wikipedia.org/wiki/Unicode_subscripts_and_superscripts
 
 public struct Format {
-    public static func sup(_ i: Int) -> String {
+    static func sup(_ i: Int) -> String {
         return sup(String(i))
     }
     
-    public static func sup(_ s: String) -> String {
+    static func sup(_ s: String) -> String {
         return String( s.map { c in
             switch c {
             case "0": return "⁰"
@@ -38,11 +38,11 @@ public struct Format {
         } )
     }
     
-    public static func sub(_ i: Int) -> String {
+    static func sub(_ i: Int) -> String {
         return sub(String(i))
     }
     
-    public static func sub(_ s: String) -> String {
+    static func sub(_ s: String) -> String {
         return String( s.map { c in
             switch c {
             case "0": return "₀"
@@ -66,11 +66,11 @@ public struct Format {
         } )
     }
     
-    public static func symbol(_ x: String, _ i: Int) -> String {
+    static func symbol(_ x: String, _ i: Int) -> String {
         return "\(x)\(sub(i))"
     }
     
-    public static func term<R: Ring>(_ a: R, _ x: String, _ n: Int = 1, skipZero: Bool = false) -> String {
+    static func term<R: Ring>(_ a: R, _ x: String, _ n: Int = 1, skipZero: Bool = false) -> String {
         let (o, e) = (R.zero, R.identity)
         switch (a, n) {
         case ( o, _): return skipZero ? "" : "0"
@@ -84,7 +84,7 @@ public struct Format {
         }
     }
     
-    public static func terms<R: Ring>(_ op: String, _ terms: [(R, String, Int)], skipZero: Bool = false) -> String {
+    static func terms<R: Ring>(_ op: String, _ terms: [(R, String, Int)], skipZero: Bool = false) -> String {
         let ts = terms.compactMap{ (a, x, n) -> String? in
             let t = term(a, x, n, skipZero: skipZero)
             return (skipZero && t.isEmpty) ? nil : t
@@ -92,7 +92,7 @@ public struct Format {
         return ts.isEmpty ? "0" : ts
     }
     
-    public static func table<T1, T2, T3>(rows: [T1], cols: [T2], symbol: String = "", separator s: String = "\t", printHeaders: Bool = true, op: (T1, T2) -> T3) -> String {
+    static func table<T1, T2, T3>(rows: [T1], cols: [T2], symbol: String = "", separator s: String = "\t", printHeaders: Bool = true, op: (T1, T2) -> T3) -> String {
         
         let head = printHeaders ? [[symbol] + (0 ..< cols.count).map{ j in "\(cols[j])" }] : []
         let body = (0 ..< rows.count).map { i -> [String] in
@@ -108,33 +108,33 @@ public struct Format {
 
 
 public extension AdditiveGroup {
-    public static func printAddTable(values: [Self]) {
+    static func printAddTable(values: [Self]) {
         print( Format.table(rows: values, cols: values, symbol: "+") { $0 + $1 } )
     }
 }
 
 public extension AdditiveGroup where Self: FiniteSetType {
-    public static func printAddTable() {
+    static func printAddTable() {
         printAddTable(values: allElements)
     }
 }
 
 public extension Monoid {
-    public static func printMulTable(values: [Self]) {
+    static func printMulTable(values: [Self]) {
         print( Format.table(rows: values, cols: values, symbol: "*") { $0 * $1 } )
     }
     
-    public static func printExpTable(values: [Self], upTo n: Int) {
+    static func printExpTable(values: [Self], upTo n: Int) {
         print( Format.table(rows: values, cols: Array(0 ... n), symbol: "^") { $0.pow($1) } )
     }
 }
 
 public extension Monoid where Self: FiniteSetType {
-    public static func printMulTable() {
+    static func printMulTable() {
         printMulTable(values: allElements)
     }
     
-    public static func printExpTable() {
+    static func printExpTable() {
         let all = allElements
         printExpTable(values: all, upTo: all.count - 1)
     }
