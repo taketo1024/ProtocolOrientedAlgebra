@@ -115,13 +115,6 @@ class ComplexTests: XCTestCase {
         assertApproxEqual(a.arg, π / 4)
     }
     
-    func testNorm() {
-        let a = A(2, 4)
-        assertApproxEqual(a.norm, √20)
-        assertApproxEqual((-a).norm, √20)
-        assertApproxEqual(a.conjugate.norm, √20)
-    }
-    
     private func assertApproxEqual(_ x: 𝐑, _ y: 𝐑, error e: 𝐑 = 0.0001) {
         XCTAssertTrue(x.isApproximatelyEqualTo(y, error: e))
     }

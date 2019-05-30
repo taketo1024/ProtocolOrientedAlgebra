@@ -10,7 +10,7 @@ import Foundation
 
 public typealias 𝐂 = ComplexNumber
 
-public struct ComplexNumber: Field, NormedSpace, ExpressibleByIntegerLiteral, ExpressibleByFloatLiteral {
+public struct ComplexNumber: Field, ExpressibleByIntegerLiteral, ExpressibleByFloatLiteral {
     public typealias IntegerLiteralType = Int
     public typealias FloatLiteralType = Double
     
@@ -70,12 +70,8 @@ public struct ComplexNumber: Field, NormedSpace, ExpressibleByIntegerLiteral, Ex
         return √(x * x + y * y)
     }
     
-    public var norm: 𝐑 {
-        return abs
-    }
-    
     public var arg: 𝐑 {
-        let r = self.norm
+        let r = self.abs
         if(r == 0) {
             return 0
         }

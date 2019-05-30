@@ -105,13 +105,6 @@ class RealTests: XCTestCase {
         assertApproxEqual(b.abs, a)
     }
     
-    func testNorm() {
-        let a = A(4.1)
-        let b = A(-4.1)
-        assertApproxEqual(a.norm, 4.1)
-        assertApproxEqual(b.norm, 4.1)
-    }
-    
     func testApproxEqual() {
         let a = A(0.1)
         let b = A(0.2)

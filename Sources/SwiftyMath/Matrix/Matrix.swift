@@ -347,6 +347,26 @@ public extension Matrix where R: EuclideanRing {
     }
 }
 
+public extension Matrix where R == 𝐑 {
+    var asComplex: Matrix<n, m, 𝐂> {
+        return Matrix<n, m, 𝐂>(impl.mapValues{ 𝐂($0) })
+    }
+}
+
+public extension Matrix where R == 𝐂 {
+    var realPart: Matrix<n, m, 𝐑> {
+        return Matrix<n, m, 𝐑>(impl.mapValues{ $0.realPart })
+    }
+    
+    var imaginaryPart: Matrix<n, m, 𝐑> {
+        return Matrix<n, m, 𝐑>(impl.mapValues{ $0.imaginaryPart })
+    }
+    
+    var adjoint: Matrix<m, n, R> {
+        return Matrix<m, n, R>(impl.transposed.mapValues{ $0.conjugate })
+    }
+}
+
 extension Matrix: Codable where R: Codable {
     public init(from decoder: Decoder) throws {
         let c = try decoder.singleValueContainer()

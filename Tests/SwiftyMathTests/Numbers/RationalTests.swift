@@ -111,13 +111,6 @@ class RationalTests: XCTestCase {
         XCTAssertEqual(b.abs, a)
     }
     
-    func testNorm() {
-        let a = A(4, 5)
-        let b = A(-4, 5)
-        XCTAssertEqual(a.norm, 0.8)
-        XCTAssertEqual(b.norm, 0.8)
-    }
-    
     func testRandom() {
         let (x0, x1) = (A(0), A(10, 3))
         for x in (0 ..< 10).map({ _ in A.random(in: x0 ..< x1) }) {

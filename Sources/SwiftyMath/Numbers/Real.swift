@@ -1,8 +1,9 @@
 import Foundation
 
-public typealias 𝐑 = Double
+public typealias RealNumber = Double
+public typealias 𝐑 = RealNumber
 
-extension Double: Field, NormedSpace {
+extension RealNumber: Field {
     public init(from x: 𝐙) {
         self.init(x)
     }
@@ -27,10 +28,6 @@ extension Double: Field, NormedSpace {
     
     public var abs: 𝐑 {
         return 𝐑(Swift.abs(self))
-    }
-    
-    public var norm: 𝐑 {
-        return abs
     }
     
     public var inverse: 𝐑? {

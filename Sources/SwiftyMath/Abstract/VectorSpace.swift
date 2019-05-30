@@ -16,12 +16,6 @@ public protocol FiniteDimVectorSpace: VectorSpace {
     var standardCoordinates: [CoeffRing] { get }
 }
 
-// MEMO not made as a subprotocol of VectorSpace,
-// to avoid multi-inheritance.
-public protocol NormedSpace {
-    var norm: 𝐑 { get }
-}
-
 public typealias ProductVectorSpace<X: VectorSpace, Y: VectorSpace> = ProductModule<X, Y> where X.CoeffRing == Y.CoeffRing
 extension ProductVectorSpace: VectorSpace where Left: VectorSpace, Right: VectorSpace, Left.CoeffRing == Right.CoeffRing {}
 

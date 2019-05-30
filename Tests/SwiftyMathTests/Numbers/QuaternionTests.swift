@@ -94,11 +94,6 @@ class QuaternionTests: XCTestCase {
         assertApproxEqual(a.abs, √30)
     }
     
-    func testNorm() {
-        let a = A(1, 2, 3, 4)
-        assertApproxEqual(a.norm, √30)
-    }
-    
     private func assertApproxEqual(_ x: 𝐑, _ y: 𝐑, error e: 𝐑 = 0.0001) {
         XCTAssertTrue(x.isApproximatelyEqualTo(y, error: e))
     }
