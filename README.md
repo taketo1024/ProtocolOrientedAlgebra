@@ -6,10 +6,10 @@ The aim of this project is to understand Mathematics by realizing abstract conce
 
 # Submodules
 
-* [SwiftyLinearAlgebra]((https://github.com/taketo1024/SwiftyMath-linalg)
-* [SwiftyHomology]((https://github.com/taketo1024/SwiftyMath-homology)
-* [SwiftyTopology]((https://github.com/taketo1024/SwiftyMath-topology)
-* [SwiftyKnots]((https://github.com/taketo1024/SwiftyMath-knots)
+* [SwiftyLinearAlgebra](https://github.com/taketo1024/SwiftyMath-linalg)
+* [SwiftyHomology](https://github.com/taketo1024/SwiftyMath-homology)
+* [SwiftyTopology](https://github.com/taketo1024/SwiftyMath-topology)
+* [SwiftyKnots](https://github.com/taketo1024/SwiftyMath-knots)
 
 # Getting Started
 
