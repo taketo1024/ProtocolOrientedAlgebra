@@ -40,7 +40,7 @@ public struct IntList: Hashable, Comparable, CustomStringConvertible, Codable {
         return components.count
     }
     
-    public func permuted(by p: Permutation) -> IntList {
+    public func permuted<n>(by p: Permutation<n>) -> IntList {
         let indices = self.components.enumerated().map{ (i, j) in (p[i], j)}
         return IntList(Dictionary(pairs: indices))
     }

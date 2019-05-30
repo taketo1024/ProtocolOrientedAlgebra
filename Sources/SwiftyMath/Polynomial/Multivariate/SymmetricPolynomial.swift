@@ -50,7 +50,7 @@ public struct SymmetricPolynomial<R: Ring>: Subring, Submodule {
     // see: https://en.wikipedia.org/wiki/Symmetric_polynomial#Monomial_symmetric_polynomials
     public static func monomial(_ n: Int, _ I: IntList) -> SymmetricPolynomial<R> {
         assert(n == I.total)
-        let Js = Permutation.allPermutations(ofLength: n).map { s in
+        let Js = DPermutation.allPermutations(ofLength: n).map { s in
             I.permuted(by: s)
         }.unique()
         let elements = Dictionary( pairs: Js.map{ ($0, R.identity) } )

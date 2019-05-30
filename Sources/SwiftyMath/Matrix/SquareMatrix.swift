@@ -91,7 +91,7 @@ extension SquareMatrix: Ring where n == m {
     public var determinant: R {
         assert(isSquare)
         print("warn: computing determinant for a general ring.")
-        return Permutation.allPermutations(ofLength: rows).sum { s in
+        return DPermutation.allPermutations(ofLength: rows).sum { s in
             let e = R(from: s.signature)
             let term = (0 ..< rows).multiply { i in self[i, s[i]] }
             print("\t", e, term)

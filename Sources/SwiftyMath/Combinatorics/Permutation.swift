@@ -8,14 +8,17 @@
 
 import Foundation
 
-public struct Permutation: MapType {
+public typealias DPermutation = Permutation<Dynamic>
+
+public struct Permutation<n: _Int>: Group, MapType, FiniteSetType { // SymmetricGroup<n>
     public typealias Domain = Int
     public typealias Codomain = Int
     
     internal var elements: [Int : Int]
     
     public init(_ f: @escaping (Int) -> Int) {
-        let elements = (0...).lazy.map{ i in (i, f(i)) }.prefix{ (_, j) in j >= 0 }
+        assert(!n.isDynamic)
+        let elements = (0 ... n.intValue).map{ i in (i, f(i)) }
         self.init(Dictionary(pairs: elements))
     }
     
@@ -41,11 +44,11 @@ public struct Permutation: MapType {
         self.init(Dictionary(pairs: elements))
     }
     
-    public static var identity: Permutation {
+    public static var identity: Permutation<n> {
         return Permutation([:])
     }
     
-    public var inverse: Permutation {
+    public var inverse: Permutation<n> {
         let inv = elements.map{ (i, j) in (j, i)}
         return Permutation(Dictionary(pairs: inv))
     }
@@ -69,9 +72,9 @@ public struct Permutation: MapType {
         return decomp.multiply { p in (-1).pow( p.elements.count - 1) }
     }
     
-    public var cyclicDecomposition: [Permutation] {
+    public var cyclicDecomposition: [Permutation<n>] {
         var dict = elements
-        var result: [Permutation] = []
+        var result: [Permutation<n>] = []
         
         while !dict.isEmpty {
             let i = dict.keys.anyElement!
@@ -92,7 +95,7 @@ public struct Permutation: MapType {
         return result
     }
     
-    public static func *(a: Permutation, b: Permutation) -> Permutation {
+    public static func *(a: Permutation<n>, b: Permutation<n>) -> Permutation<n> {
         var d = a.elements
         for i in b.elements.keys {
             d[i] = a[b[i]]
@@ -100,21 +103,12 @@ public struct Permutation: MapType {
         return Permutation(d)
     }
     
-    public static func allPermutations(ofLength n: Int) -> [Permutation] {
-        assert(n >= 0)
-        if n > 1 {
-            let prev = Permutation.allPermutations(ofLength: n - 1)
-            return (0 ..< n).flatMap { (i: Int) -> [Permutation] in
-                prev.map { (p: Permutation) -> Permutation in
-                    let d = [(n - 1, i)] + (0 ..< n - 1).map { j in
-                        (j, p[j] < i ? p[j] : p[j] + 1)
-                    }
-                    return Permutation(Dictionary(pairs: d))
-                }
-            }
-        } else {
-            return [Permutation.identity]
-        }
+    public static var allElements: [Permutation<n>] {
+        return Permutation.allRawPermutations(ofLength: n.intValue).map{ Permutation<n>($0) }
+    }
+    
+    public static var countElements: Int {
+        return n.intValue.factorial
     }
     
     public var description: String {
@@ -123,12 +117,38 @@ public struct Permutation: MapType {
     }
     
     public static var symbol: String {
-        return "Permutation"
+        return "S_\(n.intValue)"
+    }
+    
+    internal static func allRawPermutations(ofLength l: Int) -> [[Int : Int]] {
+        typealias RawPermutation = [Int : Int]
+        
+        assert(l >= 0)
+        if l > 1 {
+            let prev = allRawPermutations(ofLength: l - 1)
+            return (0 ..< l).flatMap { (i: Int) -> [RawPermutation] in
+                prev.map { (p) -> RawPermutation in
+                    let d = [(l - 1, i)] + (0 ..< l - 1).map { (j) -> (Int, Int) in
+                        let a = p[j] ?? j
+                        return (j, (a < i) ? a : a + 1)
+                    }
+                    return Dictionary(pairs: d)
+                }
+            }
+        } else {
+            return [[:]]
+        }
+    }
+}
+
+public extension Permutation where n == Dynamic {
+    static func allPermutations(ofLength l: Int) -> [DPermutation] {
+        return DPermutation.allRawPermutations(ofLength: l).map{ DPermutation($0) }
     }
 }
 
 public extension Array where Element: Hashable {
-    func permuted(by p: Permutation) -> [Element] {
+    func permuted<n>(by p: Permutation<n>) -> [Element] {
         return (0 ..< count).map{ i in self[p[i]] }
     }
 }
