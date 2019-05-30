@@ -11,11 +11,11 @@ import Foundation
 // see: https://en.wikipedia.org/wiki/Unicode_subscripts_and_superscripts
 
 public struct Format {
-    static func sup(_ i: Int) -> String {
+    public static func sup(_ i: Int) -> String {
         return sup(String(i))
     }
     
-    static func sup(_ s: String) -> String {
+    public static func sup(_ s: String) -> String {
         return String( s.map { c in
             switch c {
             case "0": return "⁰"
@@ -38,11 +38,11 @@ public struct Format {
         } )
     }
     
-    static func sub(_ i: Int) -> String {
+    public static func sub(_ i: Int) -> String {
         return sub(String(i))
     }
     
-    static func sub(_ s: String) -> String {
+    public static func sub(_ s: String) -> String {
         return String( s.map { c in
             switch c {
             case "0": return "₀"
@@ -66,11 +66,11 @@ public struct Format {
         } )
     }
     
-    static func symbol(_ x: String, _ i: Int) -> String {
+    public static func symbol(_ x: String, _ i: Int) -> String {
         return "\(x)\(sub(i))"
     }
     
-    static func term<R: Ring>(_ a: R, _ x: String, _ n: Int = 1, skipZero: Bool = false) -> String {
+    public static func term<R: Ring>(_ a: R, _ x: String, _ n: Int = 1, skipZero: Bool = false) -> String {
         let (o, e) = (R.zero, R.identity)
         switch (a, n) {
         case ( o, _): return skipZero ? "" : "0"
@@ -84,7 +84,7 @@ public struct Format {
         }
     }
     
-    static func terms<R: Ring>(_ op: String, _ terms: [(R, String, Int)], skipZero: Bool = false) -> String {
+    public static func terms<R: Ring>(_ op: String, _ terms: [(R, String, Int)], skipZero: Bool = false) -> String {
         let ts = terms.compactMap{ (a, x, n) -> String? in
             let t = term(a, x, n, skipZero: skipZero)
             return (skipZero && t.isEmpty) ? nil : t
@@ -92,7 +92,7 @@ public struct Format {
         return ts.isEmpty ? "0" : ts
     }
     
-    static func table<T1, T2, T3>(rows: [T1], cols: [T2], symbol: String = "", separator s: String = "\t", printHeaders: Bool = true, op: (T1, T2) -> T3) -> String {
+    public static func table<T1, T2, T3>(rows: [T1], cols: [T2], symbol: String = "", separator s: String = "\t", printHeaders: Bool = true, op: (T1, T2) -> T3) -> String {
         
         let head = printHeaders ? [[symbol] + (0 ..< cols.count).map{ j in "\(cols[j])" }] : []
         let body = (0 ..< rows.count).map { i -> [String] in
@@ -105,7 +105,6 @@ public struct Format {
         return (head + body).map{ $0.joined(separator: s) }.joined(separator: "\n")
     }
 }
-
 
 public extension AdditiveGroup {
     static func printAddTable(values: [Self]) {
