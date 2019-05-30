@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct MatrixEliminationResult<n: _Int, m: _Int, R: EuclideanRing> {
+public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing> {
     internal let impl: MatrixEliminationResultImpl<R>
     
     internal init<n, m>(_ matrix: _Matrix<n, m, R>, _ impl: MatrixEliminationResultImpl<R>) {
@@ -46,19 +46,19 @@ public struct MatrixEliminationResult<n: _Int, m: _Int, R: EuclideanRing> {
         return impl.diagonal
     }
     
-    public var kernelMatrix: _Matrix<m, Dynamic, R> {
+    public var kernelMatrix: _Matrix<m, DynamicSize, R> {
         return _Matrix(impl.kernelMatrix)
     }
     
-    public var kernelTransitionMatrix: _Matrix<Dynamic, m, R> {
+    public var kernelTransitionMatrix: _Matrix<DynamicSize, m, R> {
         return _Matrix(impl.kernelTransitionMatrix)
     }
     
-    public var imageMatrix: _Matrix<n, Dynamic, R> {
+    public var imageMatrix: _Matrix<n, DynamicSize, R> {
         return _Matrix(impl.imageMatrix)
     }
     
-    public var imageTransitionMatrix: _Matrix<Dynamic, n, R> {
+    public var imageTransitionMatrix: _Matrix<DynamicSize, n, R> {
         return _Matrix(impl.imageTransitionMatrix)
     }
     

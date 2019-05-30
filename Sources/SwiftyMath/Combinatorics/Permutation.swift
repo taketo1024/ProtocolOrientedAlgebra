@@ -8,9 +8,9 @@
 
 import Foundation
 
-public typealias DPermutation = Permutation<Dynamic>
+public typealias DPermutation = Permutation<DynamicSize>
 
-public struct Permutation<n: _Int>: Group, MapType, FiniteSetType { // SymmetricGroup<n>
+public struct Permutation<n: SizeType>: Group, MapType, FiniteSetType { // SymmetricGroup<n>
     public typealias Domain = Int
     public typealias Codomain = Int
     
@@ -141,7 +141,7 @@ public struct Permutation<n: _Int>: Group, MapType, FiniteSetType { // Symmetric
     }
 }
 
-public extension Permutation where n == Dynamic {
+public extension Permutation where n == DynamicSize {
     static func allPermutations(ofLength l: Int) -> [DPermutation] {
         return DPermutation.allRawPermutations(ofLength: l).map{ DPermutation($0) }
     }

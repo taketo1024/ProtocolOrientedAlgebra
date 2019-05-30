@@ -8,18 +8,26 @@
 
 import Foundation
 
-public typealias 𝐙₂ = IntegerQuotientRing<_2>
+public protocol PrimeSizeType: SizeType {}
+extension _2: PrimeSizeType {}
+extension _3: PrimeSizeType {}
+extension _5: PrimeSizeType {}
+extension _7: PrimeSizeType {}
+// add more if necessary
 
-public struct IntegerIdeal<n: _Int>: EuclideanIdeal {
+public typealias 𝐙₂ = IntegerQuotientRing<_2>
+// add more if necessary
+
+public struct IntegerIdeal<n: StaticSizeType>: EuclideanIdeal {
     public typealias Super = 𝐙
     public static var mod: 𝐙 {
         return n.intValue
     }
 }
 
-extension IntegerIdeal: MaximalIdeal where n: _Prime {}
+extension IntegerIdeal: MaximalIdeal where n: PrimeSizeType {}
 
-public struct IntegerQuotientRing<n: _Int>: QuotientRingType, FiniteSetType, ExpressibleByIntegerLiteral, Codable {
+public struct IntegerQuotientRing<n: StaticSizeType>: QuotientRingType, FiniteSetType, ExpressibleByIntegerLiteral, Codable {
     public typealias Base = 𝐙
     public typealias Sub = IntegerIdeal<n>
     
@@ -54,4 +62,4 @@ public struct IntegerQuotientRing<n: _Int>: QuotientRingType, FiniteSetType, Exp
     }
 }
 
-extension IntegerQuotientRing: EuclideanRing, Field where n: _Prime {}
+extension IntegerQuotientRing: EuclideanRing, Field where n: PrimeSizeType {}

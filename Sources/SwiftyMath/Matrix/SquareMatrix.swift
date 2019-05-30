@@ -8,7 +8,7 @@
 
 import Foundation
 
-public typealias SquareMatrix<n: _Int, R: Ring> = _Matrix<n, n, R>
+public typealias SquareMatrix<n: SizeType, R: Ring> = _Matrix<n, n, R>
 
 public typealias Matrix1<R: Ring> = SquareMatrix<_1, R>
 public typealias Matrix2<R: Ring> = SquareMatrix<_2, R>

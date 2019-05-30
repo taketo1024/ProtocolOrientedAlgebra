@@ -10,9 +10,9 @@ public enum MatrixForm {
     case Smith
 }
 
-public typealias Matrix<R: Ring> = _Matrix<Dynamic, Dynamic, R>
+public typealias Matrix<R: Ring> = _Matrix<DynamicSize, DynamicSize, R>
 
-public struct _Matrix<n: _Int, m: _Int, R: Ring>: Module, Sequence {
+public struct _Matrix<n: SizeType, m: SizeType, R: Ring>: Module, Sequence {
     public typealias CoeffRing = R
     
     internal var impl: MatrixImpl<R>
@@ -159,12 +159,12 @@ public struct _Matrix<n: _Int, m: _Int, R: Ring>: Module, Sequence {
         return _ColVector(impl.submatrix(0 ..< rows, j ..< j + 1))
     }
     
-    public func submatrix(rowRange: CountableRange<Int>) -> _Matrix<Dynamic, m, R> {
-        return _Matrix<Dynamic, m, R>(impl.submatrix(rowRange: rowRange) )
+    public func submatrix(rowRange: CountableRange<Int>) -> _Matrix<DynamicSize, m, R> {
+        return _Matrix<DynamicSize, m, R>(impl.submatrix(rowRange: rowRange) )
     }
     
-    public func submatrix(colRange: CountableRange<Int>) -> _Matrix<n, Dynamic, R> {
-        return _Matrix<n, Dynamic, R>(impl.submatrix(colRange: colRange) )
+    public func submatrix(colRange: CountableRange<Int>) -> _Matrix<n, DynamicSize, R> {
+        return _Matrix<n, DynamicSize, R>(impl.submatrix(colRange: colRange) )
     }
     
     public func submatrix(rowRange: CountableRange<Int>, colRange: CountableRange<Int>) -> Matrix<R> {
@@ -175,12 +175,12 @@ public struct _Matrix<n: _Int, m: _Int, R: Ring>: Module, Sequence {
         return Matrix(impl.submatrix(r, c))
     }
     
-    public func concatRows<n2>(with A: _Matrix<n2, m, R>) -> _Matrix<Dynamic, m, R> {
-        return _Matrix<Dynamic, m, R>(impl.concatRows(A.impl))
+    public func concatRows<n2>(with A: _Matrix<n2, m, R>) -> _Matrix<DynamicSize, m, R> {
+        return _Matrix<DynamicSize, m, R>(impl.concatRows(A.impl))
     }
     
-    public func concatCols<m2>(with A: _Matrix<n, m2, R>) -> _Matrix<n, Dynamic, R> {
-        return _Matrix<n, Dynamic, R>(impl.concatCols(A.impl))
+    public func concatCols<m2>(with A: _Matrix<n, m2, R>) -> _Matrix<n, DynamicSize, R> {
+        return _Matrix<n, DynamicSize, R>(impl.concatCols(A.impl))
     }
     
     public var grid: [R] {
@@ -268,7 +268,7 @@ public struct _Matrix<n: _Int, m: _Int, R: Ring>: Module, Sequence {
     }
 }
 
-public extension _Matrix where n == Dynamic, m == Dynamic {
+public extension _Matrix where n == DynamicSize, m == DynamicSize {
     init(rows: Int, cols: Int, grid: [R]) {
         self.init(MatrixImpl(rows: rows, cols: cols, grid: grid))
     }
