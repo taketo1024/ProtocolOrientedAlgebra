@@ -10,7 +10,7 @@ import Foundation
 
 public typealias DPermutation = Permutation<DynamicSize>
 
-public struct Permutation<n: SizeType>: Group, MapType, FiniteSetType { // SymmetricGroup<n>
+public struct Permutation<n: SizeType>: Group, MapType { // SymmetricGroup<n>
     public typealias Domain = Int
     public typealias Codomain = Int
     
@@ -103,14 +103,6 @@ public struct Permutation<n: SizeType>: Group, MapType, FiniteSetType { // Symme
         return Permutation(d)
     }
     
-    public static var allElements: [Permutation<n>] {
-        return Permutation.allRawPermutations(ofLength: n.intValue).map{ Permutation<n>($0) }
-    }
-    
-    public static var countElements: Int {
-        return n.intValue.factorial
-    }
-    
     public var description: String {
         return elements.isEmpty ? "id"
             : "p[\(elements.keys.sorted().map{ i in "\(i): \(self[i])"}.joined(separator: ", "))]"
@@ -138,6 +130,16 @@ public struct Permutation<n: SizeType>: Group, MapType, FiniteSetType { // Symme
         } else {
             return [[:]]
         }
+    }
+}
+
+extension Permutation: FiniteSetType where n: StaticSizeType {
+    public static var allElements: [Permutation<n>] {
+        return Permutation.allRawPermutations(ofLength: n.intValue).map{ Permutation<n>($0) }
+    }
+    
+    public static var countElements: Int {
+        return n.intValue.factorial
     }
 }
 
