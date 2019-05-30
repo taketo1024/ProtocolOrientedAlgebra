@@ -9,12 +9,12 @@
 import XCTest
 @testable import SwiftyMath
 
-class MatrixTests: XCTestCase {
+class DMatrixTests: XCTestCase {
     
     typealias R = 𝐙
     typealias C = MatrixComponent<R>
     
-    private func D(_ a: R, _ b: R, _ c: R, _ d: R) -> DMatrix<R> {
+    private func M(_ a: R, _ b: R, _ c: R, _ d: R) -> DMatrix<R> {
         return DMatrix(rows: 2, cols: 2, grid: [a, b, c, d])
     }
     
