@@ -3,7 +3,7 @@ import Foundation
 // MEMO: with parametrized extension, replace:
 // public typealias FreeModuleHom<A, B, R> = Map<FreeModule<A, R>, FreeModule<A, R>>
 
-public struct FreeModuleHom<A: BasisElementType, B: BasisElementType, R: Ring>: ModuleHomType {
+public struct FreeModuleHom<A: FreeModuleBasis, B: FreeModuleBasis, R: Ring>: ModuleHomType {
     public typealias CoeffRing = R
     public typealias Domain    = FreeModule<A, R>
     public typealias Codomain  = FreeModule<B, R>

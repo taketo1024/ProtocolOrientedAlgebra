@@ -8,12 +8,12 @@
 
 import Foundation
 
-public protocol BasisElementType: SetType, Comparable {
+public protocol FreeModuleBasis: SetType, Comparable {
     var degree: Int { get }
     var dual: Dual<Self> { get }
 }
 
-public extension BasisElementType {
+public extension FreeModuleBasis {
     var degree: Int { return 1 }
     
     var dual: Dual<Self> {
@@ -22,7 +22,7 @@ public extension BasisElementType {
 }
 
 // Derived Bases
-public struct Dual<A: BasisElementType>: BasisElementType {
+public struct Dual<A: FreeModuleBasis>: FreeModuleBasis {
     public let base: A
     public init(_ a: A) {
         base = a
@@ -45,7 +45,7 @@ public struct Dual<A: BasisElementType>: BasisElementType {
     }
 }
 
-public struct Tensor<A: BasisElementType, B: BasisElementType>: BasisElementType {
+public struct Tensor<A: FreeModuleBasis, B: FreeModuleBasis>: FreeModuleBasis {
     private let a: A
     private let b: B
     
@@ -67,7 +67,7 @@ public struct Tensor<A: BasisElementType, B: BasisElementType>: BasisElementType
     }
 }
 
-public struct FreeTensor<A: BasisElementType>: BasisElementType {
+public struct FreeTensor<A: FreeModuleBasis>: FreeModuleBasis {
     public let factors: [A]
     public init(_ factors: [A]) {
         self.factors = factors
