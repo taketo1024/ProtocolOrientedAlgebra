@@ -20,7 +20,7 @@ public struct FreeModuleHom<A: BasisElementType, B: BasisElementType, R: Ring>: 
         }
     }
     
-    public init<n, m>(from: [A], to: [B], matrix: _Matrix<n, m, R>) {
+    public init<n, m>(from: [A], to: [B], matrix: Matrix<n, m, R>) {
         assert(from.count == matrix.cols)
         assert(  to.count == matrix.rows)
         
@@ -32,14 +32,14 @@ public struct FreeModuleHom<A: BasisElementType, B: BasisElementType, R: Ring>: 
         }
     }
     
-    public func asMatrix(from: [A], to: [B]) -> Matrix<CoeffRing> {
+    public func asMatrix(from: [A], to: [B]) -> DMatrix<CoeffRing> {
         let comps = from.enumerated().flatMap { (j, a) -> [MatrixComponent<CoeffRing>] in
             let w = self.applied(to: a)
             return w.factorize(by: to).enumerated().compactMap { (i, a) in
                 a != .zero ? MatrixComponent(i, j, a) : nil
             }
         }
-        return Matrix(rows: to.count, cols: from.count, components: comps)
+        return DMatrix(rows: to.count, cols: from.count, components: comps)
     }
     
     public func applied(to a: A) -> Codomain {

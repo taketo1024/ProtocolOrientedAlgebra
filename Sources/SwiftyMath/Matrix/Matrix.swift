@@ -10,9 +10,9 @@ public enum MatrixForm {
     case Smith
 }
 
-public typealias Matrix<R: Ring> = _Matrix<DynamicSize, DynamicSize, R>
+public typealias DMatrix<R: Ring> = Matrix<DynamicSize, DynamicSize, R>
 
-public struct _Matrix<n: SizeType, m: SizeType, R: Ring>: Module, Sequence {
+public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
     public typealias CoeffRing = R
     
     internal var impl: MatrixImpl<R>
@@ -20,53 +20,6 @@ public struct _Matrix<n: SizeType, m: SizeType, R: Ring>: Module, Sequence {
     
     internal init(_ impl: MatrixImpl<R>) {
         self.impl = impl
-    }
-    
-    // 1. Initialize by Grid.
-    public init(_ grid: [R]) {
-        let (rows, cols) = {() -> (Int, Int) in
-            if !n.isDynamic && !m.isDynamic {
-                return (n.intValue, m.intValue)
-            } else if !m.isDynamic && m.intValue == 1 {
-                return !n.isDynamic ? (n.intValue, 1) : (grid.count, 1)
-            } else if !n.isDynamic && n.intValue == 1 {
-                return !m.isDynamic ? (1, m.intValue) : (1, grid.count)
-            } else {
-                fatalError("cannot determine matrix size.")
-            }
-        }()
-        self.init(MatrixImpl(rows: rows, cols: cols, grid: grid))
-    }
-    
-    public init(_ grid: R...) {
-        self.init(grid)
-    }
-    
-    // 2. Initialize by Generator.
-    public init(generator g: (Int, Int) -> R) {
-        assert(!n.isDynamic && !m.isDynamic)
-        let (rows, cols) = (n.intValue, m.intValue)
-        self.init(MatrixImpl(rows: rows, cols: cols, generator: g))
-    }
-    
-    // 3. Initialize by Components.
-    public init(components: [MatrixComponent<R>]) {
-        assert(!n.isDynamic && !m.isDynamic)
-        let (rows, cols) = (n.intValue, m.intValue)
-        self.init(MatrixImpl(rows: rows, cols: cols, components: components))
-    }
-    
-    // Convenience initializers
-    public init(fill a: R) {
-        self.init() { (_, _) in a }
-    }
-    
-    public init(diagonal d: [R]) {
-        self.init() { (i, j) in (i == j && i < d.count) ? d[i] : .zero }
-    }
-    
-    public init(scalar a: R) {
-        self.init() { (i, j) in (i == j) ? a : .zero }
     }
     
     public var rows: Int { return impl.rows }
@@ -88,51 +41,32 @@ public struct _Matrix<n: SizeType, m: SizeType, R: Ring>: Module, Sequence {
         }
     }
     
-    public static var zero: _Matrix<n, m, R> {
-        return _Matrix<n, m, R> { _,_ in .zero }
-    }
-    
-    public static func unit(_ i0: Int, _ j0: Int) -> _Matrix<n, m, R> {
-        return _Matrix { (i, j) in (i, j) == (i0, j0) ? .identity : .zero }
-    }
-    
-    public static func ==(a: _Matrix<n, m, R>, b: _Matrix<n, m, R>) -> Bool {
+    public static func ==(a: Matrix<n, m, R>, b: Matrix<n, m, R>) -> Bool {
         return a.impl == b.impl
     }
     
-    public static func +(a: _Matrix<n, m, R>, b: _Matrix<n, m, R>) -> _Matrix<n, m, R> {
-        return _Matrix(a.impl + b.impl)
+    public static func +(a: Matrix<n, m, R>, b: Matrix<n, m, R>) -> Matrix<n, m, R> {
+        return Matrix(a.impl + b.impl)
     }
     
-    public prefix static func -(a: _Matrix<n, m, R>) -> _Matrix<n, m, R> {
-        return _Matrix(-a.impl)
+    public prefix static func -(a: Matrix<n, m, R>) -> Matrix<n, m, R> {
+        return Matrix(-a.impl)
     }
     
-    public static func *(r: R, a: _Matrix<n, m, R>) -> _Matrix<n, m, R> {
-        return _Matrix(r * a.impl)
+    public static func -(a: Matrix<n, m, R>, b: Matrix<n, m, R>) -> Matrix<n, m, R> {
+        return a + (-b)
     }
     
-    public static func *(a: _Matrix<n, m, R>, r: R) -> _Matrix<n, m, R> {
-        return _Matrix(a.impl * r)
+    public static func *(r: R, a: Matrix<n, m, R>) -> Matrix<n, m, R> {
+        return Matrix(r * a.impl)
     }
     
-    public static func * <p>(a: _Matrix<n, m, R>, b: _Matrix<m, p, R>) -> _Matrix<n, p, R> {
-        return _Matrix<n, p, R>(a.impl * b.impl)
+    public static func *(a: Matrix<n, m, R>, r: R) -> Matrix<n, m, R> {
+        return Matrix(a.impl * r)
     }
     
-    public static func ⊕ <n2, m2>(a: _Matrix<n, m, R>, b: _Matrix<n2, m2, R>) -> Matrix<R> {
-        return Matrix<R>(a.impl ⊕ b.impl)
-    }
-    
-    public static func ⊗ <n2, m2>(a: _Matrix<n, m, R>, b: _Matrix<n2, m2, R>) -> Matrix<R> {
-        let (n, m) = (b.rows, b.cols)
-        return Matrix<R>(rows: a.rows * b.rows, cols: a.cols * b.cols) { (i, j) in
-            a[i / n, j / m] * b[i % n, j % m]
-        }
-    }
-    
-    public func mapValues<R2>(_ f: (R) -> R2) -> _Matrix<n, m, R2> {
-        return _Matrix<n, m, R2>(impl.mapValues(f))
+    public static func * <p>(a: Matrix<n, m, R>, b: Matrix<m, p, R>) -> Matrix<n, p, R> {
+        return Matrix<n, p, R>(a.impl * b.impl)
     }
     
     public var isZero: Bool {
@@ -147,40 +81,16 @@ public struct _Matrix<n: SizeType, m: SizeType, R: Ring>: Module, Sequence {
         return (0 ..< Swift.min(rows, cols)).map{ i in self[i, i] }
     }
     
-    public var transposed: _Matrix<m, n, R> {
-        return _Matrix<m, n, R>(impl.transposed)
+    public var transposed: Matrix<m, n, R> {
+        return Matrix<m, n, R>(impl.transposed)
     }
     
-    public func rowVector(_ i: Int) -> _RowVector<m, R> {
-        return _RowVector(impl.submatrix(i ..< i + 1, 0 ..< cols))
+    public func rowVector(_ i: Int) -> RowVector<m, R> {
+        return RowVector(impl.submatrix(i ..< i + 1, 0 ..< cols))
     }
     
-    public func colVector(_ j: Int) -> _ColVector<n, R> {
-        return _ColVector(impl.submatrix(0 ..< rows, j ..< j + 1))
-    }
-    
-    public func submatrix(rowRange: CountableRange<Int>) -> _Matrix<DynamicSize, m, R> {
-        return _Matrix<DynamicSize, m, R>(impl.submatrix(rowRange: rowRange) )
-    }
-    
-    public func submatrix(colRange: CountableRange<Int>) -> _Matrix<n, DynamicSize, R> {
-        return _Matrix<n, DynamicSize, R>(impl.submatrix(colRange: colRange) )
-    }
-    
-    public func submatrix(rowRange: CountableRange<Int>, colRange: CountableRange<Int>) -> Matrix<R> {
-        return Matrix(impl.submatrix(rowRange, colRange))
-    }
-    
-    public func submatrix(rowsMatching r: (Int) -> Bool, colsMatching c: (Int) -> Bool) -> Matrix<R> {
-        return Matrix(impl.submatrix(r, c))
-    }
-    
-    public func concatRows<n2>(with A: _Matrix<n2, m, R>) -> _Matrix<DynamicSize, m, R> {
-        return _Matrix<DynamicSize, m, R>(impl.concatRows(A.impl))
-    }
-    
-    public func concatCols<m2>(with A: _Matrix<n, m2, R>) -> _Matrix<n, DynamicSize, R> {
-        return _Matrix<n, DynamicSize, R>(impl.concatCols(A.impl))
+    public func colVector(_ j: Int) -> ColVector<n, R> {
+        return ColVector(impl.submatrix(0 ..< rows, j ..< j + 1))
     }
     
     public var grid: [R] {
@@ -199,22 +109,8 @@ public struct _Matrix<n: SizeType, m: SizeType, R: Ring>: Module, Sequence {
         return impl.components(ofCol: j)
     }
     
-    public func blocks(rowSizes: [Int], colSizes: [Int]) -> [[Matrix<R>]] {
-        var i = 0
-        return rowSizes.map { r -> [Matrix<R>] in
-            defer { i += r }
-            
-            var j = 0
-            return colSizes.map { c -> Matrix<R> in
-                defer { j += c }
-                return self.submatrix(rowRange: i ..< i + r, colRange: j ..< j + c)
-            }
-        }
-    }
-    
-    // TODO directly iterate impl
-    public func makeIterator() -> IndexingIterator<[(Int, Int, R)]> {
-        return nonZeroComponents.map{ c in (c.row, c.col, c.value) }.makeIterator()
+    public func mapComponents<R2>(_ f: (R) -> R2) -> Matrix<n, m, R2> {
+        return Matrix<n, m, R2>(impl.mapValues(f))
     }
     
     public var hashValue: Int {
@@ -268,7 +164,56 @@ public struct _Matrix<n: SizeType, m: SizeType, R: Ring>: Module, Sequence {
     }
 }
 
-public extension _Matrix where n == DynamicSize, m == DynamicSize {
+extension Matrix: Sequence {
+    // TODO directly iterate impl
+    public func makeIterator() -> IndexingIterator<[(Int, Int, R)]> {
+        return nonZeroComponents.map{ c in (c.row, c.col, c.value) }.makeIterator()
+    }
+}
+
+extension Matrix: AdditiveGroup, Module where n: StaticSizeType, m: StaticSizeType {
+    public init(_ grid: [R]) {
+        let (rows, cols) = (n.intValue, m.intValue)
+        self.init(MatrixImpl(rows: rows, cols: cols, grid: grid))
+    }
+    
+    public init(_ grid: R...) {
+        self.init(grid)
+    }
+    
+    public init(generator g: (Int, Int) -> R) {
+        let (rows, cols) = (n.intValue, m.intValue)
+        self.init(MatrixImpl(rows: rows, cols: cols, generator: g))
+    }
+    
+    public init(components: [MatrixComponent<R>]) {
+        let (rows, cols) = (n.intValue, m.intValue)
+        self.init(MatrixImpl(rows: rows, cols: cols, components: components))
+    }
+    
+    // Convenience initializers
+    public init(fill a: R) {
+        self.init() { (_, _) in a }
+    }
+    
+    public init(diagonal d: [R]) {
+        self.init() { (i, j) in (i == j && i < d.count) ? d[i] : R.zero }
+    }
+    
+    public init(scalar a: R) {
+        self.init() { (i, j) in (i == j) ? a : R.zero }
+    }
+    
+    public static var zero: Matrix<n, m, R> {
+        return Matrix(components:[])
+    }
+    
+    public static func unit(_ i0: Int, _ j0: Int) -> Matrix<n, m, R> {
+        return Matrix { (i, j) in (i, j) == (i0, j0) ? .identity : .zero }
+    }
+}
+
+public extension Matrix where n == DynamicSize, m == DynamicSize {
     init(rows: Int, cols: Int, grid: [R]) {
         self.init(MatrixImpl(rows: rows, cols: cols, grid: grid))
     }
@@ -297,34 +242,80 @@ public extension _Matrix where n == DynamicSize, m == DynamicSize {
         self.init(rows: n, cols: n) { (i, j) in (i == j) ? a : .zero }
     }
     
-    static func identity(size n: Int) -> Matrix<R> {
-        return Matrix(size: n, scalar: .identity)
+    static func identity(size n: Int) -> DMatrix<R> {
+        return DMatrix(size: n, scalar: .identity)
     }
     
-    static func zero(size n: Int) -> Matrix<R> {
-        return Matrix.zero(rows: n, cols: n)
+    static func zero(size n: Int) -> DMatrix<R> {
+        return DMatrix.zero(rows: n, cols: n)
     }
     
-    static func zero(rows: Int, cols: Int) -> Matrix<R> {
-        return Matrix(rows: rows, cols: cols) { (_, _) in .zero }
+    static func zero(rows: Int, cols: Int) -> DMatrix<R> {
+        return DMatrix(rows: rows, cols: cols) { (_, _) in .zero }
     }
     
-    static func unit(rows: Int, cols: Int, _ coord: (Int, Int)) -> Matrix<R> {
-        return Matrix(rows: rows, cols: cols) { (i, j) in (i, j) == coord ? .identity : .zero }
+    static func unit(rows: Int, cols: Int, _ coord: (Int, Int)) -> DMatrix<R> {
+        return DMatrix(rows: rows, cols: cols) { (i, j) in (i, j) == coord ? .identity : .zero }
+    }
+    
+    static func ⊕ (a: DMatrix<R>, b: DMatrix<R>) -> DMatrix<R> {
+        return DMatrix<R>(a.impl ⊕ b.impl)
+    }
+    
+    static func ⊗ (a: DMatrix<R>, b: DMatrix<R>) -> DMatrix<R> {
+        let (n, m) = (b.rows, b.cols)
+        return DMatrix<R>(rows: a.rows * b.rows, cols: a.cols * b.cols) { (i, j) in
+            a[i / n, j / m] * b[i % n, j % m]
+        }
+    }
+    
+    func submatrix(rowRange: CountableRange<Int>) -> DMatrix<R> {
+        return Matrix<DynamicSize, m, R>(impl.submatrix(rowRange: rowRange) )
+    }
+    
+    func submatrix(colRange: CountableRange<Int>) -> DMatrix<R> {
+        return Matrix<n, DynamicSize, R>(impl.submatrix(colRange: colRange) )
+    }
+    
+    func submatrix(rowRange: CountableRange<Int>, colRange: CountableRange<Int>) -> DMatrix<R> {
+        return DMatrix(impl.submatrix(rowRange, colRange))
+    }
+    
+    func submatrix(rowsMatching r: (Int) -> Bool, colsMatching c: (Int) -> Bool) -> DMatrix<R> {
+        return DMatrix(impl.submatrix(r, c))
+    }
+    
+    func concatRows(with A: DMatrix<R>) -> Matrix<DynamicSize, m, R> {
+        return DMatrix<R>(impl.concatRows(A.impl))
+    }
+    
+    func concatCols(with A: DMatrix<R>) -> Matrix<n, DynamicSize, R> {
+        return DMatrix<R>(impl.concatCols(A.impl))
+    }
+    
+    func blocks(rowSizes: [Int], colSizes: [Int]) -> [[DMatrix<R>]] {
+        var i = 0
+        return rowSizes.map { r -> [DMatrix<R>] in
+            defer { i += r }
+            
+            var j = 0
+            return colSizes.map { c -> DMatrix<R> in
+                defer { j += c }
+                return self.submatrix(rowRange: i ..< i + r, colRange: j ..< j + c)
+            }
+        }
     }
 }
 
-extension _Matrix: VectorSpace, FiniteDimVectorSpace where R: Field {
+extension Matrix: VectorSpace, FiniteDimVectorSpace where R: Field, n: StaticSizeType, m: StaticSizeType {
     public static var dim: Int {
-        assert(!n.isDynamic && !m.isDynamic)
         return n.intValue * m.intValue
     }
     
-    public static var standardBasis: [_Matrix<n, m, R>] {
-        assert(!n.isDynamic && !m.isDynamic)
-        return (0 ..< n.intValue).flatMap { i -> [_Matrix<n, m, R>] in
-            (0 ..< m.intValue).map { j -> _Matrix<n, m, R> in
-                _Matrix.unit(i, j)
+    public static var standardBasis: [Matrix<n, m, R>] {
+        return (0 ..< n.intValue).flatMap { i -> [Matrix<n, m, R>] in
+            (0 ..< m.intValue).map { j -> Matrix<n, m, R> in
+                Matrix.unit(i, j)
             }
         }
     }
@@ -334,7 +325,7 @@ extension _Matrix: VectorSpace, FiniteDimVectorSpace where R: Field {
     }
 }
 
-public extension _Matrix where R: EuclideanRing {
+public extension Matrix where R: EuclideanRing {
     typealias EliminationResult = MatrixEliminationResult<n, m, R>
     
     @discardableResult
@@ -353,36 +344,6 @@ public extension _Matrix where R: EuclideanRing {
         elimCache.value![form] = (res as AnyObject)
         
         return res
-    }
-}
-
-extension _Matrix: NormedSpace where R: NormedSpace {
-    public var norm: 𝐑 {
-        return √( sum { (_, _, a) in a.norm.pow(2) } )
-    }
-    
-    public var maxNorm: 𝐑 {
-        return self.map { $0.2.norm }.max() ?? 𝐑.zero
-    }
-}
-
-public extension _Matrix where R == 𝐑 {
-    var asComplex: _Matrix<n, m, 𝐂> {
-        return _Matrix<n, m, 𝐂>(impl.mapValues{ 𝐂($0) })
-    }
-}
-
-public extension _Matrix where R == 𝐂 {
-    var realPart: _Matrix<n, m, 𝐑> {
-        return _Matrix<n, m, 𝐑>(impl.mapValues{ $0.realPart })
-    }
-    
-    var imaginaryPart: _Matrix<n, m, 𝐑> {
-        return _Matrix<n, m, 𝐑>(impl.mapValues{ $0.imaginaryPart })
-    }
-    
-    var adjoint: _Matrix<m, n, R> {
-        return _Matrix<m, n, R>(impl.transposed.mapValues{ $0.conjugate })
     }
 }
 

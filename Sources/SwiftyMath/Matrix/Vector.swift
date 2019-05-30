@@ -8,19 +8,19 @@
 
 import Foundation
 
-public typealias _ColVector<n: SizeType, R: Ring> = _Matrix<n, _1, R>
-public typealias _RowVector<n: SizeType, R: Ring> = _Matrix<_1, n, R>
+public typealias ColVector<n: SizeType, R: Ring> = Matrix<n, _1, R>
+public typealias RowVector<m: SizeType, R: Ring> = Matrix<_1, m, R>
 
-public typealias ColVector<R: Ring> = _ColVector<DynamicSize, R>
-public typealias RowVector<R: Ring> = _RowVector<DynamicSize, R>
+public typealias DRowVector<R: Ring> = RowVector<DynamicSize, R>
+public typealias DColVector<R: Ring> = ColVector<DynamicSize, R>
+public typealias DVector<R: Ring>    = DColVector<R>
 
-public typealias Vector<R: Ring>  = ColVector<R>
-public typealias Vector2<R: Ring> = _ColVector<_2, R>
-public typealias Vector3<R: Ring> = _ColVector<_3, R>
-public typealias Vector4<R: Ring> = _ColVector<_4, R>
+public typealias Vector2<R: Ring> = ColVector<_2, R>
+public typealias Vector3<R: Ring> = ColVector<_3, R>
+public typealias Vector4<R: Ring> = ColVector<_4, R>
 
 
-public extension _Matrix where m == _1 {
+public extension Matrix where m == _1 { // (D)ColVector
     subscript(index: Int) -> R {
         @_transparent
         get { return self[index, 0] }
@@ -30,7 +30,7 @@ public extension _Matrix where m == _1 {
     }
 }
 
-public extension _Matrix where n == _1 {
+public extension Matrix where n == _1 { // (D)RowVector
     subscript(index: Int) -> R {
         @_transparent
         get { return self[0, index] }
@@ -40,13 +40,29 @@ public extension _Matrix where n == _1 {
     }
 }
 
-public extension _Matrix where n == DynamicSize, m == _1 {
+public extension Matrix where n == DynamicSize, m == _1 { // DColVector
+    init(_ grid: [R]) {
+        self.init(MatrixImpl(rows: grid.count, cols: 1, grid: grid))
+    }
+    
+    init(_ grid: R...) {
+        self.init(grid)
+    }
+
     init(size: Int, generator g: (Int) -> R) {
         self.init(MatrixImpl(rows: size, cols: 1, generator: { (i, _) in g(i) }))
     }
 }
 
-public extension _Matrix where n == _1, m == DynamicSize {
+public extension Matrix where n == _1, m == DynamicSize { // DRowVector
+    init(_ grid: [R]) {
+        self.init(MatrixImpl(rows: 1, cols: grid.count, grid: grid))
+    }
+    
+    init(_ grid: R...) {
+        self.init(grid)
+    }
+
     init(size: Int, generator g: (Int) -> R) {
         self.init(MatrixImpl(rows: 1, cols: size, generator: { (_, j) in g(j) }))
     }

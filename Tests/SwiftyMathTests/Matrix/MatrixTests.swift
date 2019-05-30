@@ -135,18 +135,6 @@ class MatrixTests: XCTestCase {
         XCTAssertEqual(a.transposed, M(1,3,2,4))
     }
     
-    func testDirSum() {
-        let a = M(1,2,3,4)
-        let b = M(5,6,7,8)
-        let x = a ⊕ b
-        XCTAssertEqual(x.rows, 4)
-        XCTAssertEqual(x.cols, 4)
-        XCTAssertEqual(x.grid, [1,2,0,0,
-                                3,4,0,0,
-                                0,0,5,6,
-                                0,0,7,8])
-    }
-    
     func testCodable() {
         let a = M(1,2,3,4)
         let d = try! JSONEncoder().encode(a)
@@ -183,45 +171,6 @@ class MatrixTests: XCTestCase {
         XCTAssertNil(b.elimCache.value?[.Diagonal]) // cache is released for b
     }
     
-    func testSubmatrix() {
-        let a = M(1,2,3,4)
-        
-        let a1 = a.submatrix(rowRange: 0 ..< 1)
-        XCTAssertEqual(a1.rows, 1)
-        XCTAssertEqual(a1.cols, 2)
-        XCTAssertEqual(a1.grid, [1, 2])
-        
-        let a2 = a.submatrix(colRange: 1 ..< 2)
-        XCTAssertEqual(a2.rows, 2)
-        XCTAssertEqual(a2.cols, 1)
-        XCTAssertEqual(a2.grid, [2, 4])
-        
-        let a3 = a.submatrix(rowRange: 1 ..< 2, colRange: 0 ..< 1)
-        XCTAssertEqual(a3.rows, 1)
-        XCTAssertEqual(a3.cols, 1)
-        XCTAssertEqual(a3.grid, [3])
-        
-        let a4 = a.submatrix(rowsMatching: { $0 % 2 == 0}, colsMatching: { $0 % 2 != 0})
-        XCTAssertEqual(a4.rows, 1)
-        XCTAssertEqual(a4.cols, 1)
-        XCTAssertEqual(a4.grid, [2])
-    }
-    
-    func testConcat() {
-        let a = M(1,2,3,4)
-        let b = M(5,6,7,8)
-
-        let x = a.concatRows(with: b)
-        XCTAssertEqual(x.rows, 4)
-        XCTAssertEqual(x.cols, 2)
-        XCTAssertEqual(x.grid, [1,2,3,4,5,6,7,8])
-        
-        let y = a.concatCols(with: b)
-        XCTAssertEqual(y.rows, 2)
-        XCTAssertEqual(y.cols, 4)
-        XCTAssertEqual(y.grid, [1,2,5,6,3,4,7,8])
-    }
-    
     public func testKernel() {
         let a = M(1, 2, 1, 2)
         let k = a.elimination().kernelMatrix
@@ -230,7 +179,7 @@ class MatrixTests: XCTestCase {
         XCTAssertTrue((a * k).isZero)
         
         let t = a.elimination().kernelTransitionMatrix
-        XCTAssertEqual(t * k, Matrix(rows: 1, cols: 1, grid: [1]))
+        XCTAssertEqual(t * k, DMatrix(rows: 1, cols: 1, grid: [1]))
     }
 
     public func testImage() {
@@ -242,6 +191,6 @@ class MatrixTests: XCTestCase {
         XCTAssertEqual(i.grid, [2, 2])
 
         let t = a.elimination().imageTransitionMatrix
-        XCTAssertEqual(t * i, Matrix(rows: 1, cols: 1, grid: [2]))
+        XCTAssertEqual(t * i, DMatrix(rows: 1, cols: 1, grid: [2]))
     }
 }

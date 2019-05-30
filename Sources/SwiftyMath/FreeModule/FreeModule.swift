@@ -21,7 +21,7 @@ public struct FreeModule<A: BasisElementType, R: Ring>: Module {
         self.init(Dictionary(pairs: zip(basis, components)))
     }
     
-    public init<n>(basis: Basis, vector: _ColVector<n, R>) {
+    public init<n>(basis: Basis, vector: ColVector<n, R>) {
         assert(basis.count == vector.rows)
         self.init(Dictionary(pairs: zip(basis, vector.grid)))
     }
@@ -114,11 +114,11 @@ public struct FreeModule<A: BasisElementType, R: Ring>: Module {
     }
 }
 
-public func *<A, R>(v: [A], a: Matrix<R>) -> [FreeModule<A, R>] {
+public func *<A, R>(v: [A], a: DMatrix<R>) -> [FreeModule<A, R>] {
     return v.map{ .wrap($0) } * a
 }
 
-public func *<A, R>(v: [FreeModule<A, R>], a: Matrix<R>) -> [FreeModule<A, R>] {
+public func *<A, R>(v: [FreeModule<A, R>], a: DMatrix<R>) -> [FreeModule<A, R>] {
     assert(v.count == a.rows)
     return (0 ..< a.cols).map{ j in
         a.nonZeroComponents(ofCol: j).sum{ c in

@@ -28,28 +28,20 @@ extension ProductVectorSpace: VectorSpace where Left: VectorSpace, Right: Vector
 public protocol LinearMapType: ModuleHomType, VectorSpace where Domain: VectorSpace, Codomain: VectorSpace { }
 
 public extension LinearMapType where Domain: FiniteDimVectorSpace, Codomain: FiniteDimVectorSpace {
-    init(matrix: Matrix<CoeffRing>) {
+    init(matrix: DMatrix<CoeffRing>) {
         self.init{ v in
-            let x = Vector(v.standardCoordinates)
+            let x = DVector(v.standardCoordinates)
             let y = matrix * x
             return zip(y.grid, Codomain.standardBasis).sum { (a, w) in a * w }
         }
     }
     
-    var asMatrix: Matrix<CoeffRing> {
+    var asMatrix: DMatrix<CoeffRing> {
         let comps = Domain.standardBasis.enumerated().flatMap { (j, v) -> [MatrixComponent<CoeffRing>] in
             let w = self.applied(to: v)
             return w.standardCoordinates.enumerated().map { (i, a) in MatrixComponent(i, j, a) }
         }
-        return Matrix(rows: Codomain.dim, cols: Domain.dim, components: comps)
-    }
-    
-    var trace: CoeffRing {
-        return asMatrix.trace
-    }
-    
-    var determinant: CoeffRing {
-        return asMatrix.determinant
+        return DMatrix(rows: Codomain.dim, cols: Domain.dim, components: comps)
     }
 }
 
