@@ -4,27 +4,16 @@
 
 The aim of this project is to understand Mathematics by realizing abstract concepts as codes. Mathematical axioms correspond to `protocol`s, and objects satisfying some axioms correspond to `struct`s.
 
+# Submodules
+
+* [SwiftyLinearAlgebra](https://github.com/taketo1024/SwiftyMath-linalg)
+* [SwiftyHomology](https://github.com/taketo1024/SwiftyMath-homology)
+* [SwiftyTopology](https://github.com/taketo1024/SwiftyMath-topology)
+* [SwiftyKnots](https://github.com/taketo1024/SwiftyMath-knots)
+
 # Getting Started
 
-## Swift REPL
-
-With [Xcode](https://developer.apple.com/xcode/) installed, you can run SwiftyMath on the Swift-REPL by:
-
-```
-$ swift build 
-$ swift -I .build/debug/ -L .build/debug/ -ldSwiftyMath
-```
-
-Try something like:
-
-```swift
-:set set print-decls false
-import SwiftyMath
-
-typealias F5 = IntegerQuotientRing<_5>
-F5.printAddTable()
-F5.printMulTable()
-```
+## Using [SwiftyMathREPL](https://github.com/taketo1024/SwiftyMath-REPL)
 
 ![ss2](doc/ss2.png)
 
@@ -51,7 +40,7 @@ $ swift package init --type executable
      dependencies: [
          // Dependencies declare other packages that this package depends on.
 -        // .package(url: /* package url */, from: "1.0.0"),
-+        .package(url: "https://github.com/taketo1024/SwiftyMath.git", from: "0.3.0"),
++        .package(url: "https://github.com/taketo1024/SwiftyMath.git", from: "1.0.0"),
      ],
      targets: [
          // Targets are the basic building blocks of a package. A target can define a module or a test suite.
@@ -59,7 +48,7 @@ $ swift package init --type executable
          .target(
              name: "YourProject",
 -            dependencies: []),
-+            dependencies: ["SwiftyMath", "SwiftyTopology"]),
++            dependencies: ["SwiftyMath"]),
      ]
  )
 ```
@@ -69,8 +58,8 @@ $ swift package init --type executable
 ```swift
 import SwiftyMath
 
-let a = 𝐐(4, 5)  // 4/5
-let b = 𝐐(3, 2)  // 3/2
+let a = RationalNumber(4, 5)  // 4/5
+let b = RationalNumber(3, 2)  // 3/2
 
 print(a + b)     // 23/10
 ```
@@ -193,39 +182,6 @@ typealias K = QuotientField<Polynomial<𝐐>, I>      // K = 𝐐[x]/I
 
 let a = Polynomial<𝐐>(0, 1).asQuotient(in: K.self) // a = x mod I
 a * a == 2                                         // true!
-```
-
-### Homology, Cohomology
-
-```swift
-import SwiftyMath
-import SwiftyTopology
-
-let S2 = SimplicialComplex.sphere(dim: 2)
-let H = Homology(S2, 𝐙.self)
-print("H(S^2; 𝐙) =", H.detailDescription, "\n")
-```
-
-```
-H(S^2; 𝐙) = {
-  0 : 𝐙,    [(v1)],
-  1 : 0,    [],
-  2 : 𝐙,    [-1(v0, v2, v3) + -1(v0, v1, v2) + (v1, v2, v3) + (v0, v1, v3)]
-}
-```
-
-```swift
-let RP2 = SimplicialComplex.realProjectiveSpace(dim: 2)
-let H = Homology(RP2, 𝐙₂.self)
-print("H(RP^2; 𝐙₂) =", H.detailDescription, "\n")
-```
-
-```
-H(RP^2; 𝐙₂) = {
-  0 : 𝐙₂,    [(v1)],
-  1 : 𝐙₂,    [(v0, v1) + (v1, v2) + (v0, v3) + (v2, v3)],
-  2 : 𝐙₂,    [(v0, v2, v3) + (v3, v4, v5) + (v2, v3, v5) + (v1, v2, v5) + (v0, v4, v5) + (v1, v3, v4) + (v0, v1, v5) + (v1, v2, v4) + (v0, v2, v4) + (v0, v1, v3)]
-}
 ```
 
 ## References
