@@ -1,8 +1,24 @@
 import Foundation
 
-public struct FreeModule<A: FreeModuleBasis, R: Ring>: Module {
+public protocol FreeModuleGenerator: SetType, Comparable {
+    var degree: Int { get }
+}
+
+public extension FreeModuleGenerator {
+    var degree: Int { return 1 }
+}
+
+public protocol FreeModuleType: Module {
+    associatedtype Generator: FreeModuleGenerator
+    var elements: [Generator : CoeffRing] { get }
+    init(generators: [Generator], components: [CoeffRing])
+    static func wrap(_ a: Generator) -> Self
+    func factorize(by: [Generator]) -> [CoeffRing]
+}
+
+public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
     public typealias CoeffRing = R
-    public typealias Basis = [A]
+    public typealias Generator = A
     
     public let elements: [A: R]
     
@@ -16,14 +32,9 @@ public struct FreeModule<A: FreeModuleBasis, R: Ring>: Module {
         self.init(dict)
     }
     
-    public init(basis: Basis, components: [R]) {
-        assert(basis.count == components.count)
-        self.init(Dictionary(pairs: zip(basis, components)))
-    }
-    
-    public init<n>(basis: Basis, vector: ColVector<n, R>) {
-        assert(basis.count == vector.rows)
-        self.init(Dictionary(pairs: zip(basis, vector.grid)))
+    public init(generators: [A], components: [R]) {
+        assert(generators.count == components.count)
+        self.init(Dictionary(pairs: zip(generators, components)))
     }
     
     @_transparent
@@ -45,7 +56,7 @@ public struct FreeModule<A: FreeModuleBasis, R: Ring>: Module {
         return elements.anyElement?.0.degree ?? 0
     }
     
-    public var basis: Basis {
+    public var generators: [A] {
         return elements.keys.sorted().toArray()
     }
     
@@ -65,16 +76,12 @@ public struct FreeModule<A: FreeModuleBasis, R: Ring>: Module {
         return FreeModule([])
     }
     
-    public func mapBasis<A2>(_ f: (A) -> A2) -> FreeModule<A2, R> {
+    public func convertGenerators<A2>(_ f: (A) -> A2) -> FreeModule<A2, R> {
         return FreeModule<A2, R>(elements.mapKeys(f))
     }
     
-    public func mapValues<R2>(_ f: (R) -> R2) -> FreeModule<A, R2> {
+    public func convertComponents<R2>(_ f: (R) -> R2) -> FreeModule<A, R2> {
         return FreeModule<A, R2>(elements.mapValues(f))
-    }
-    
-    public func map<A2, R2>(_ f: (A, R) -> FreeModule<A2, R2>) -> FreeModule<A2, R2> {
-        return self.elements.map{ (a, r) in f(a, r) }.sumAll()
     }
     
     public static func + (a: FreeModule<A, R>, b: FreeModule<A, R>) -> FreeModule<A, R> {
@@ -106,7 +113,7 @@ public struct FreeModule<A: FreeModuleBasis, R: Ring>: Module {
     }
     
     public var description: String {
-        return Format.terms("+", basis.map { a in (self[a], a.description, 1) })
+        return Format.terms("+", generators.map { a in (self[a], a.description, 1) })
     }
     
     public static var symbol: String {
@@ -129,15 +136,22 @@ public func *<A, R>(v: [FreeModule<A, R>], a: DMatrix<R>) -> [FreeModule<A, R>] 
 
 extension FreeModule: VectorSpace where R: Field {}
 
-public func pair<A, R>(_ x: FreeModule<A, R>, _ y: FreeModule<Dual<A>, R>) -> R {
-    return x.elements.reduce(.zero) { (res, next) -> R in
-        let (a, r) = next
-        return res + r * y[Dual(a)]
+extension ModuleHom where X: FreeModuleType, Y: FreeModuleType {
+    public static func linearlyExtend(_ f: @escaping (X.Generator) -> Codomain) -> ModuleHom<X, Y> {
+        return ModuleHom { (m: Domain) in
+            m.elements.map{ (a, r) in r * f(a) }.sumAll()
+        }
     }
-}
-
-public func pair<A, R>(_ x: FreeModule<Dual<A>, R>, _ y: FreeModule<A, R>) -> R {
-    return pair(y, x)
+    
+    public func asMatrix(from: [X.Generator], to: [Y.Generator]) -> DMatrix<CoeffRing> {
+        let comps = from.enumerated().flatMap { (j, a) -> [MatrixComponent<CoeffRing>] in
+            let w = self.applied(to: .wrap(a))
+            return w.factorize(by: to).enumerated().compactMap { (i, a) in
+                a != .zero ? MatrixComponent(i, j, a) : nil
+            }
+        }
+        return DMatrix(rows: to.count, cols: from.count, components: comps)
+    }
 }
 
 extension FreeModule: Codable where A: Codable, R: Codable {}
