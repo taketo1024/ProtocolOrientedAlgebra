@@ -52,6 +52,10 @@ public extension Matrix where n == DynamicSize, m == _1 { // DColVector
     init(size: Int, generator g: (Int) -> R) {
         self.init(MatrixImpl(rows: size, cols: 1, generator: { (i, _) in g(i) }))
     }
+    
+    init(size: Int, components: [MatrixComponent<R>]) {
+        self.init(MatrixImpl(rows: size, cols: 1, components: components))
+    }
 }
 
 public extension Matrix where n == _1, m == DynamicSize { // DRowVector
@@ -65,5 +69,9 @@ public extension Matrix where n == _1, m == DynamicSize { // DRowVector
 
     init(size: Int, generator g: (Int) -> R) {
         self.init(MatrixImpl(rows: 1, cols: size, generator: { (_, j) in g(j) }))
+    }
+    
+    init(size: Int, components: [MatrixComponent<R>]) {
+        self.init(MatrixImpl(rows: 1, cols: size, components: components))
     }
 }

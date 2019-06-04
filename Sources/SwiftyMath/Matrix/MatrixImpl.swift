@@ -251,7 +251,7 @@ internal final class MatrixImpl<R: Ring>: Hashable, CustomStringConvertible {
         return MatrixImpl(rows, cols + A.cols, .Cols, table)
     }
     
-    func mapValues<R2>(_ f: (R) -> R2) -> MatrixImpl<R2> {
+    func mapComponents<R2>(_ f: (R) -> R2) -> MatrixImpl<R2> {
         typealias M = MatrixImpl<R2>
         let mapped = table.mapValues { list in
                 list.map { (i, r) in (i, f(r)) }
@@ -266,7 +266,8 @@ internal final class MatrixImpl<R: Ring>: Hashable, CustomStringConvertible {
         if (a.rows, a.cols) != (b.rows, b.cols) {
             return false
         }
-        return Set(a.components) == Set(b.components)
+        let (z1, z2) = (a.components, b.components)
+        return z1.count == z2.count && z1.allSatisfy{ (i, j, x) in b[i, j] == x }
     }
     
     @_specialize(where R == ComputationSpecializedRing)
@@ -285,17 +286,17 @@ internal final class MatrixImpl<R: Ring>: Hashable, CustomStringConvertible {
     
     @_specialize(where R == ComputationSpecializedRing)
     static prefix func -(a: MatrixImpl) -> MatrixImpl<R> {
-        return a.mapValues{ -$0 }
+        return a.mapComponents{ -$0 }
     }
     
     @_specialize(where R == ComputationSpecializedRing)
     static func *(r: R, a: MatrixImpl) -> MatrixImpl<R> {
-        return a.mapValues{ r * $0 }
+        return a.mapComponents{ r * $0 }
     }
     
     @_specialize(where R == ComputationSpecializedRing)
     static func *(a: MatrixImpl, r: R) -> MatrixImpl<R> {
-        return a.mapValues{ $0 * r }
+        return a.mapComponents{ $0 * r }
     }
     
     @_specialize(where R == ComputationSpecializedRing)
@@ -491,6 +492,20 @@ extension MatrixImpl where R: EuclideanRing{
     }
 }
 
+private struct MatrixComponentCodable<R: Ring>: Codable where R: Codable {
+    public let row: Int
+    public let col: Int
+    public let value: R
+    
+    init(_ touple: MatrixComponent<R>) {
+        (row, col, value) = touple
+    }
+    
+    var asTouple: MatrixComponent<R> {
+        return (row, col, value)
+    }
+}
+
 extension MatrixImpl: Codable where R: Codable {
     enum CodingKeys: String, CodingKey {
         case rows, cols, grid, components
@@ -505,8 +520,8 @@ extension MatrixImpl: Codable where R: Codable {
             let grid = try c.decode([R].self, forKey: .grid)
             self.init(rows: rows, cols: cols, align: .Rows, grid: grid)
         } else {
-            let comps = try c.decode([Component].self, forKey: .components)
-            self.init(rows: rows, cols: cols, align: .Rows, components: comps)
+            let comps = try c.decode([MatrixComponentCodable<R>].self, forKey: .components)
+            self.init(rows: rows, cols: cols, align: .Rows, components: comps.map{ $0.asTouple })
         }
     }
     
@@ -517,7 +532,7 @@ extension MatrixImpl: Codable where R: Codable {
         if density > 0.5 {
             try c.encode(grid, forKey: .grid)
         } else {
-            try c.encode(components, forKey: .components)
+            try c.encode(components.map{ MatrixComponentCodable($0) }, forKey: .components)
         }
     }
 }

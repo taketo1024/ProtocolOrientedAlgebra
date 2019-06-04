@@ -1,5 +1,7 @@
 import Foundation
 
+public typealias MatrixComponent<R: Ring> = (row: Int, col: Int, value: R)
+
 public enum MatrixForm {
     case Default
     case RowEchelon
@@ -109,8 +111,8 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         return impl.components(ofCol: j)
     }
     
-    public func mapComponents<R2>(_ f: (R) -> R2) -> Matrix<n, m, R2> {
-        return Matrix<n, m, R2>(impl.mapValues(f))
+    public func mapNonZeroComponents<R2>(_ f: (R) -> R2) -> Matrix<n, m, R2> {
+        return Matrix<n, m, R2>(impl.mapComponents(f))
     }
     
     public var hashValue: Int {
@@ -349,21 +351,21 @@ public extension Matrix where R: EuclideanRing {
 
 public extension Matrix where R == 𝐑 {
     var asComplex: Matrix<n, m, 𝐂> {
-        return Matrix<n, m, 𝐂>(impl.mapValues{ 𝐂($0) })
+        return Matrix<n, m, 𝐂>(impl.mapComponents{ 𝐂($0) })
     }
 }
 
 public extension Matrix where R == 𝐂 {
     var realPart: Matrix<n, m, 𝐑> {
-        return Matrix<n, m, 𝐑>(impl.mapValues{ $0.realPart })
+        return Matrix<n, m, 𝐑>(impl.mapComponents{ $0.realPart })
     }
     
     var imaginaryPart: Matrix<n, m, 𝐑> {
-        return Matrix<n, m, 𝐑>(impl.mapValues{ $0.imaginaryPart })
+        return Matrix<n, m, 𝐑>(impl.mapComponents{ $0.imaginaryPart })
     }
     
     var adjoint: Matrix<m, n, R> {
-        return Matrix<m, n, R>(impl.transposed.mapValues{ $0.conjugate })
+        return Matrix<m, n, R>(impl.transposed.mapComponents{ $0.conjugate })
     }
 }
 
