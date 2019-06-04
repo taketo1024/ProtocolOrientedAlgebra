@@ -220,6 +220,10 @@ public struct AsModule<R: Ring>: Module {
         self.value = x
     }
     
+    public static func wrap(_ r: R) -> AsModule<R> {
+        return AsModule(r)
+    }
+    
     public static var zero: AsModule<R> {
         return AsModule(.zero)
     }

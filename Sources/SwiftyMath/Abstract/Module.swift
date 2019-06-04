@@ -105,3 +105,15 @@ public protocol ModuleEndType: ModuleHomType, EndType {}
 
 extension ModuleHom: EndType, ModuleEndType where X == Y {}
 public typealias ModuleEnd<X: Module> = ModuleHom<X, X>
+
+
+public typealias Dual<M: Module> = ModuleHom<M, AsModule<M.CoeffRing>>
+
+public func pair<M: Module>(x: M, f: Dual<M>) -> M.CoeffRing {
+    return f.applied(to: x).value
+}
+
+public func pair<M: Module>(f: Dual<M>, x: M) -> M.CoeffRing {
+    return f.applied(to: x).value
+}
+
