@@ -134,8 +134,6 @@ public func *<A, R>(v: [FreeModule<A, R>], a: DMatrix<R>) -> [FreeModule<A, R>] 
     }
 }
 
-extension FreeModule: VectorSpace where R: Field {}
-
 extension FreeModule where R: RealSubset {
     public var asReal: FreeModule<A, 𝐑> {
         return mapComponents{ $0.asReal }
