@@ -24,21 +24,32 @@ extension _Polynomial where T == NormalPolynomialType, R == 𝐂 {
         
         let f = F.derivative
         
-        var z: 𝐂 = .random(radius: 1.0)
-        while f.evaluate(at: z) == 0 {
-            z = z + .random(radius: 0.1)
-        }
-        
-        while true {
-            let w = F.evaluate(at: z)
-//            print("z = \(z) -> f(z) = \(w)")
+        for _ in 0 ..< 10 {
+            var z: 𝐂 = .random(radius: 1.0)
+            while f.evaluate(at: z) == 0 {
+                z = z + .random(radius: 0.1)
+            }
             
-            if w == 0 {
+            for _ in 0 ..< 10000 {
+                let w = F.evaluate(at: z)
+//                print("z = \(z) -> f(z) = \(w)")
+                
+                if w == 0 {
+                    break
+                }
+                z = z - w / f.evaluate(at: z)
+            }
+            
+            if F.evaluate(at: z.rounded()) == 0 {
+                return z.rounded()
+            }
+            
+            if F.evaluate(at: z) == 0 {
                 return z
             }
-            z = z - w / f.evaluate(at: z)
         }
-        fatalError()
+        
+        return nil
     }
     
     public func findAllRoots() -> [𝐂] {
