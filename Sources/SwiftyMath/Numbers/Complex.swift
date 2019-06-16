@@ -129,3 +129,25 @@ public struct ComplexNumber: Field, ExpressibleByIntegerLiteral, ExpressibleByFl
         return "𝐂"
     }
 }
+
+public protocol ComplexSubset {
+    var asComplex: 𝐂 { get }
+}
+
+extension 𝐙: ComplexSubset {
+    public var asComplex: 𝐂 {
+        return 𝐂(self)
+    }
+}
+
+extension 𝐐: ComplexSubset {
+    public var asComplex: 𝐂 {
+        return 𝐂(self)
+    }
+}
+
+extension 𝐑: ComplexSubset {
+    public var asComplex: 𝐂 {
+        return 𝐂(self)
+    }
+}
