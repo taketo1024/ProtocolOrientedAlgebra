@@ -113,18 +113,26 @@ public struct ComplexNumber: Field, ExpressibleByIntegerLiteral, ExpressibleByFl
         return .init(r: .random(in: 0 ... r), θ: .random(in: 0 ... 2 * π))
     }
     
+    public func rounded(_ rule: FloatingPointRoundingRule = .toNearestOrAwayFromZero) -> 𝐂 {
+        return 𝐂(x.rounded(rule), y.rounded(rule))
+    }
+    
     public func isApproximatelyEqualTo(_ z: 𝐂, error e: 𝐑? = nil) -> Bool {
         return self.realPart.isApproximatelyEqualTo(z.realPart, error: e) &&
                self.imaginaryPart.isApproximatelyEqualTo(z.imaginaryPart, error: e)
     }
     
     public var description: String {
-        return (x != 0 && y != 0) ? "\(x) + \(y)i" :
-                         (y == 1) ? "i" :
-                         (y != 0) ? "\(y)i"
-                                  : "\(x)"
+        switch (x, y) {
+        case (_, 0): return "\(x)"
+        case (0, 1): return "i"
+        case (0, -1): return "-i"
+        case (0, _): return "\(y)i"
+        case (_, _) where y < 0: return "\(x) - \(-y)i"
+        default: return "\(x) + \(y)i"
+        }
     }
-    
+
     public static var symbol: String {
         return "𝐂"
     }
