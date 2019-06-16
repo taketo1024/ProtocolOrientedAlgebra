@@ -123,12 +123,16 @@ public struct ComplexNumber: Field, ExpressibleByIntegerLiteral, ExpressibleByFl
     }
     
     public var description: String {
-        return (x != 0 && y != 0) ? "\(x) + \(y)i" :
-                         (y == 1) ? "i" :
-                         (y != 0) ? "\(y)i"
-                                  : "\(x)"
+        switch (x, y) {
+        case (_, 0): return "\(x)"
+        case (0, 1): return "i"
+        case (0, -1): return "-i"
+        case (0, _): return "\(y)i"
+        case (_, _) where y < 0: return "\(x) - \(-y)i"
+        default: return "\(x) + \(y)i"
+        }
     }
-    
+
     public static var symbol: String {
         return "𝐂"
     }
