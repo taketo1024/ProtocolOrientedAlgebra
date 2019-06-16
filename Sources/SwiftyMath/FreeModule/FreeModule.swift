@@ -76,14 +76,6 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
         return FreeModule([])
     }
     
-    public func convertGenerators<A2>(_ f: (A) -> A2) -> FreeModule<A2, R> {
-        return FreeModule<A2, R>(elements.mapKeys(f))
-    }
-    
-    public func convertComponents<R2>(_ f: (R) -> R2) -> FreeModule<A, R2> {
-        return FreeModule<A, R2>(elements.mapValues(f))
-    }
-    
     public static func + (a: FreeModule<A, R>, b: FreeModule<A, R>) -> FreeModule<A, R> {
         var d = a.elements
         for (a, r) in b.elements {
@@ -112,6 +104,14 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
         return FreeModule(sum)
     }
     
+    public func mapGenerators<A2>(_ f: (A) -> A2) -> FreeModule<A2, R> {
+        return FreeModule<A2, R>(elements.mapKeys(f))
+    }
+    
+    public func mapComponents<R2>(_ f: (R) -> R2) -> FreeModule<A, R2> {
+        return FreeModule<A, R2>(elements.mapValues(f))
+    }
+    
     public var description: String {
         return Format.terms("+", generators.map { a in (self[a], a.description, 1) })
     }
@@ -138,13 +138,13 @@ extension FreeModule: VectorSpace where R: Field {}
 
 extension FreeModule where R: RealSubset {
     public var asReal: FreeModule<A, 𝐑> {
-        return convertComponents{ $0.asReal }
+        return mapComponents{ $0.asReal }
     }
 }
 
 extension FreeModule where R: ComplexSubset {
     public var asComplex: FreeModule<A, 𝐂> {
-        return convertComponents{ $0.asComplex }
+        return mapComponents{ $0.asComplex }
     }
 }
 
