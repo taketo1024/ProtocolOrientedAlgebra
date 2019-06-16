@@ -136,6 +136,18 @@ public func *<A, R>(v: [FreeModule<A, R>], a: DMatrix<R>) -> [FreeModule<A, R>] 
 
 extension FreeModule: VectorSpace where R: Field {}
 
+extension FreeModule where R: RealSubset {
+    public var asReal: FreeModule<A, 𝐑> {
+        return convertComponents{ $0.asReal }
+    }
+}
+
+extension FreeModule where R: ComplexSubset {
+    public var asComplex: FreeModule<A, 𝐂> {
+        return convertComponents{ $0.asComplex }
+    }
+}
+
 extension ModuleHom where X: FreeModuleType, Y: FreeModuleType {
     public static func linearlyExtend(_ f: @escaping (X.Generator) -> Codomain) -> ModuleHom<X, Y> {
         return ModuleHom { (m: Domain) in
