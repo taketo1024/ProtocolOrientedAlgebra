@@ -101,6 +101,18 @@ public struct ComplexNumber: Field, ExpressibleByIntegerLiteral, ExpressibleByFl
         return 𝐂(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x)
     }
     
+    public static func random(in real: Range<𝐑>, _ imaginary: Range<𝐑>) -> 𝐂 {
+        return .init(.random(in: real), .random(in: imaginary))
+    }
+    
+    public static func random(in real: ClosedRange<𝐑>, _ imaginary: ClosedRange<𝐑>) -> 𝐂 {
+        return .init(.random(in: real), .random(in: imaginary))
+    }
+    
+    public static func random(radius r: 𝐑) -> 𝐂 {
+        return .init(r: .random(in: 0 ... r), θ: .random(in: 0 ... 2 * π))
+    }
+    
     public func isApproximatelyEqualTo(_ z: 𝐂, error e: 𝐑? = nil) -> Bool {
         return self.realPart.isApproximatelyEqualTo(z.realPart, error: e) &&
                self.imaginaryPart.isApproximatelyEqualTo(z.imaginaryPart, error: e)

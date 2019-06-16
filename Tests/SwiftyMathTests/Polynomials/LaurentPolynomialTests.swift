@@ -9,8 +9,8 @@ import XCTest
 @testable import SwiftyMath
 
 class LaurentPolynomialTests: XCTestCase {
-    typealias A = LaurentPolynomial_x<𝐙>
-    typealias B = LaurentPolynomial_x<𝐐>
+    typealias A = LaurentPolynomial<_x, 𝐙>
+    typealias B = LaurentPolynomial<_x, 𝐐>
 
     func testInitFromInt() {
         let a = A(from: 3)
@@ -96,10 +96,10 @@ class LaurentPolynomialTests: XCTestCase {
     
     func testEvaluate() {
         let a = A(coeffs: [1, 2, 3], shift: -1)
-        XCTAssertEqual(a.evaluate(-1), -2)
+        XCTAssertEqual(a.evaluate(at: -1), -2)
         
         let b = B(coeffs: [1, 2, 3], shift: -1)
-        XCTAssertEqual(b.evaluate(2), 17./2)
+        XCTAssertEqual(b.evaluate(at: 2), 17./2)
     }
     
     func testIsMonic() {
