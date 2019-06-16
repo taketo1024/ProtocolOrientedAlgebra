@@ -20,6 +20,10 @@ extension Matrix: Monoid, Ring where n == m, n: StaticSizeType {
         self.init(scalar: R(from: n))
     }
     
+    public var size: Int {
+        return rows
+    }
+    
     public static var identity: Matrix<n, n, R> {
         return Matrix<n, n, R> { $0 == $1 ? .identity : .zero }
     }
@@ -29,7 +33,20 @@ extension Matrix: Monoid, Ring where n == m, n: StaticSizeType {
     }
     
     public var inverse: Matrix<n, n, R>? {
-        fatalError("matrix-inverse not yet supported for a general ring.")
+        if size >= 5 {
+            print("warn: Directly computing matrix-inverse can be extremely slow. Use elimination().determinant instead.")
+        }
+        
+        guard let dInv = determinant.inverse else {
+            return nil
+        }
+        return dInv * SquareMatrix<n, R> { (i, j) in cofactor(j, i) }
+    }
+    
+    public func cofactor(_ i: Int, _ j: Int) -> R {
+        let ε = R(from: (-1).pow(i + j))
+        let d = impl.submatrix({ $0 != i }, { $0 != j }).determinant
+        return ε * d
     }
     
     public func pow(_ n: 𝐙) -> SquareMatrix<n, R> {
@@ -38,49 +55,20 @@ extension Matrix: Monoid, Ring where n == m, n: StaticSizeType {
     }
     
     public var trace: R {
-        return (0 ..< rows).sum { i in self[i, i] }
+        return (0 ..< size).sum { i in self[i, i] }
     }
     
     public var determinant: R {
-        print("warn: computing determinant for a general ring.")
-        return DPermutation.allPermutations(ofLength: rows).sum { s in
-            let e = R(from: s.signature)
-            let term = (0 ..< rows).multiply { i in self[i, s[i]] }
-            return e * term
+        if size >= 5 {
+            print("warn: Directly computing determinant can be extremely slow. Use elimination().determinant instead.")
         }
+        
+        return impl.determinant
     }
 }
 
 extension Matrix where n == m, n == _1 {
     public var asScalar: R {
         return self[0, 0]
-    }
-}
-
-extension Matrix where n == m, n: StaticSizeType, R: EuclideanRing {
-    public var determinant: R {
-        switch rows {
-        case 0: return .identity
-        case 1: return self[0, 0]
-        case 2: return self[0, 0] * self[1, 1] - self[1, 0] * self[0, 1]
-        default: return elimination().determinant
-        }
-    }
-    
-    public var isInvertible: Bool {
-        return determinant.isInvertible
-    }
-    
-    public var inverse: Matrix<n, n, R>? {
-        switch rows {
-        case 0: return .identity
-        case 1: return self[0, 0].inverse.flatMap{ Matrix($0) }
-        case 2:
-            let det = determinant
-            return (det.isInvertible)
-                ? det.inverse! * Matrix(self[1, 1], -self[0, 1], -self[1, 0], self[0, 0])
-                : nil
-        default: return elimination().inverse
-        }
     }
 }

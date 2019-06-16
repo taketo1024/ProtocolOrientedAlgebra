@@ -130,6 +130,14 @@ class MatrixTests: XCTestCase {
         XCTAssertEqual(a.determinant, -2)
     }
     
+    func testDet4() {
+        let a = Matrix4(3,-1,2,4,
+                        2,1,1,3,
+                        -2,0,3,-1,
+                        0,-2,1,3)
+        XCTAssertEqual(a.determinant, 66)
+    }
+    
     func testTransposed() {
         let a = M(1,2,3,4)
         XCTAssertEqual(a.transposed, M(1,3,2,4))
