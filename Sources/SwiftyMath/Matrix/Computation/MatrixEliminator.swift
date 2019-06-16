@@ -8,9 +8,7 @@
 
 import Foundation
 
-public extension LogFlag {
-    static var matrixElimination: LogFlag { return LogFlag(id: "Matrix.Elimination", label: "matrix") }
-}
+private var _debug = false
 
 internal class MatrixEliminator<R: EuclideanRing>: CustomStringConvertible {
     var target: MatrixImpl<R>
@@ -89,6 +87,7 @@ internal class MatrixEliminator<R: EuclideanRing>: CustomStringConvertible {
     func apply(_ s: ElementaryOperation) {
         s.apply(to: target)
         s.isRowOperation ? rowOps.append(s) : colOps.append(s)
+        
         log("\(s)")
     }
     
@@ -102,7 +101,9 @@ internal class MatrixEliminator<R: EuclideanRing>: CustomStringConvertible {
     }
     
     func log(_ msg: @autoclosure () -> String) {
-        Logger.write(.matrixElimination, msg())
+        if MatrixEliminator.debug {
+            print(msg() + "\n" + DMatrix(target).detailDescription)
+        }
     }
     
     enum ElementaryOperation {
@@ -189,5 +190,10 @@ internal class MatrixEliminator<R: EuclideanRing>: CustomStringConvertible {
                 A.swapCols(i, j)
             }
         }
+    }
+    
+    static var debug: Bool  {
+        get { return _debug }
+        set { _debug = newValue }
     }
 }

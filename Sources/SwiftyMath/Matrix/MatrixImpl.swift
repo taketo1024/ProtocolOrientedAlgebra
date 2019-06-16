@@ -463,6 +463,24 @@ internal final class MatrixImpl<R: Ring>: Hashable, CustomStringConvertible {
         transpose()
     }
     
+    var determinant: R {
+        assert(rows == cols)
+        if rows == 0 {
+            return .identity
+        }
+        
+        guard let row = table[0] else {
+            return .zero
+        }
+        
+        return row.sum{ (j, a) in
+            let minor = (align == .Rows)
+                ? submatrix({ $0 != 0 }, { $0 != j })
+                : submatrix({ $0 != j }, { $0 != 0 })
+            return R(from: (-1).pow(j)) * a * minor.determinant
+        }
+    }
+    
     var hashValue: Int {
         return isZero ? 0 : 1 // TODO
     }

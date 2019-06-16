@@ -13,6 +13,11 @@ import XCTest
 
 class MatrixEliminationTests: XCTestCase {
     
+    override func setUp() {
+        super.setUp()
+//        MatrixEliminator<𝐙>.debug = true
+    }
+    
     private func M<R: Ring>(_ rows: Int, _ cols: Int, _ grid: [R]) -> MatrixImpl<R> {
         return MatrixImpl(rows: rows, cols: cols, grid: grid)
     }
