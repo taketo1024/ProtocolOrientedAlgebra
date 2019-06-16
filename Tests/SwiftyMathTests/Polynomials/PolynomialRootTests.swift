@@ -10,7 +10,7 @@ import XCTest
 
 class PolynomialRootTests: XCTestCase {
 
-    typealias P = Polynomial<𝐂, Indeterminate_x>
+    typealias P = xPolynomial<𝐂>
     
     func testExample() {
         let f = P(coeffs: 1, 0, 1)

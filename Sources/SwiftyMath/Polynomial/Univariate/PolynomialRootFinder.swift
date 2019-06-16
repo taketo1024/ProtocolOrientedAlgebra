@@ -25,18 +25,18 @@ extension _Polynomial where T == NormalPolynomialType, R == 𝐂 {
         let f = F.derivative
         
         var z: 𝐂 = .random(radius: 1.0)
-        while f.evaluate(z) == 0 {
+        while f.evaluate(at: z) == 0 {
             z = z + .random(radius: 0.1)
         }
         
         while true {
-            let w = F.evaluate(z)
-            print("z = \(z) -> f(z) = \(w)")
+            let w = F.evaluate(at: z)
+//            print("z = \(z) -> f(z) = \(w)")
             
             if w == 0 {
                 return z
             }
-            z = z - w / f.evaluate(z)
+            z = z - w / f.evaluate(at: z)
         }
         fatalError()
     }

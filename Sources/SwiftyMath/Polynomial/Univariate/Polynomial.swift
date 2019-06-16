@@ -3,16 +3,24 @@ import Foundation
 public protocol PolynomialType {
     static var isNormal: Bool { get }
 }
-public struct NormalPolynomialType : PolynomialType { public static var isNormal = true  }
-public struct LaurentPolynomialType: PolynomialType { public static var isNormal = false }
 
-public typealias Polynomial<R: Ring, x: Indeterminate> = _Polynomial<NormalPolynomialType, R, x>
-public typealias Polynomial_x<R: Ring> = Polynomial<R, Indeterminate_x>
+public struct NormalPolynomialType : PolynomialType {
+    public static let isNormal = true
+}
 
-public typealias LaurentPolynomial<R: Ring, x: Indeterminate> = _Polynomial<LaurentPolynomialType, R, x>
-public typealias LaurentPolynomial_x<R: Ring> = LaurentPolynomial<R, Indeterminate_x>
+public struct LaurentPolynomialType: PolynomialType {
+    public static let isNormal = false
+}
 
-public struct _Polynomial<T: PolynomialType, R: Ring, x: Indeterminate>: Ring, Module {
+public typealias  Polynomial<x: PolynomialIndeterminate, R: Ring> = _Polynomial<NormalPolynomialType, x, R>
+public typealias xPolynomial<R: Ring> = Polynomial<_x, R>
+public typealias yPolynomial<R: Ring> = Polynomial<_y, R>
+public typealias zPolynomial<R: Ring> = Polynomial<_z, R>
+public typealias tPolynomial<R: Ring> = Polynomial<_t, R>
+
+public typealias LaurentPolynomial<x: PolynomialIndeterminate, R: Ring> = _Polynomial<LaurentPolynomialType, x, R>
+
+public struct _Polynomial<T: PolynomialType, x: PolynomialIndeterminate, R: Ring>: Ring, Module {
     public typealias CoeffRing = R
     
     internal let coeffs: [Int : R]
@@ -40,7 +48,7 @@ public struct _Polynomial<T: PolynomialType, R: Ring, x: Indeterminate>: Ring, M
         self.init(coeffs: coeffs)
     }
     
-    public static var indeterminate: _Polynomial<T, R, x> {
+    public static var indeterminate: _Polynomial<T, x, R> {
         return _Polynomial(coeffs: .zero, .identity)
     }
     
@@ -64,7 +72,7 @@ public struct _Polynomial<T: PolynomialType, R: Ring, x: Indeterminate>: Ring, M
         return coeff(highestPower)
     }
     
-    public var leadTerm: _Polynomial<T, R, x> {
+    public var leadTerm: _Polynomial<T, x, R> {
         return _Polynomial(coeffs: [highestPower: leadCoeff])
     }
     
@@ -80,15 +88,15 @@ public struct _Polynomial<T: PolynomialType, R: Ring, x: Indeterminate>: Ring, M
         return coeff(0)
     }
     
-    public func mapCoeffs<S: Ring>(_ f: ((R) -> S)) -> _Polynomial<T, S, x> {
-        return _Polynomial<T, S, x>(coeffs: coeffs.mapValues(f))
+    public func mapCoeffs<S: Ring>(_ f: ((R) -> S)) -> _Polynomial<T, x, S> {
+        return _Polynomial<T, x, S>(coeffs: coeffs.mapValues(f))
     }
     
-    public func asPolynomial<y: Indeterminate>(of type: y.Type) -> _Polynomial<T, R, y> {
-        return _Polynomial<T, R, y>(coeffs: coeffs)
+    public func changeIndeterminate<y: PolynomialIndeterminate>(to: y.Type) -> _Polynomial<T, y, R> {
+        return _Polynomial<T, y, R>(coeffs: coeffs)
     }
     
-    public var normalizeUnit: _Polynomial<T, R, x> {
+    public var normalizeUnit: _Polynomial<T, x, R> {
         if let a = leadCoeff.inverse {
             return _Polynomial(coeffs: a)
         } else {
@@ -96,7 +104,7 @@ public struct _Polynomial<T: PolynomialType, R: Ring, x: Indeterminate>: Ring, M
         }
     }
     
-    public var inverse: _Polynomial<T, R, x>? {
+    public var inverse: _Polynomial<T, x, R>? {
         if T.isNormal, highestPower == 0, let a = constTerm.inverse {
             return _Polynomial(coeffs: a)
         } else if !T.isNormal, lowestPower == highestPower, let a = leadCoeff.inverse {
@@ -105,7 +113,7 @@ public struct _Polynomial<T: PolynomialType, R: Ring, x: Indeterminate>: Ring, M
         return nil
     }
     
-    public var derivative: _Polynomial<T, R, x> {
+    public var derivative: _Polynomial<T, x, R> {
         return _Polynomial(coeffs: coeffs.mapPairs { (i, a) -> (Int, R) in
             (i - 1, R(from: i) * a)
         })
@@ -113,7 +121,7 @@ public struct _Polynomial<T: PolynomialType, R: Ring, x: Indeterminate>: Ring, M
     
     // Horner's method
     // see: https://en.wikipedia.org/wiki/Horner%27s_method
-    public func evaluate(_ a: R) -> R {
+    public func evaluate(at a: R) -> R {
         let A = a.pow(lowestPower)
         let B = (lowestPower ..< highestPower).reversed().reduce(leadCoeff) { (res, i) in
             coeff(i) + a * res
@@ -121,8 +129,7 @@ public struct _Polynomial<T: PolynomialType, R: Ring, x: Indeterminate>: Ring, M
         return A * B
     }
 
-    // MEMO: more generally, this could be done with any superring of K.
-    public func evaluate<n>(_ a: SquareMatrix<n, R>) -> SquareMatrix<n, R> {
+    public func evaluate<n>(at a: SquareMatrix<n, R>) -> SquareMatrix<n, R> {
         typealias M = SquareMatrix<n, R>
         let A = a.pow(lowestPower)
         let B = (lowestPower ..< highestPower).reversed().reduce(leadCoeff * M.identity) { (res, i) -> M in
@@ -131,7 +138,7 @@ public struct _Polynomial<T: PolynomialType, R: Ring, x: Indeterminate>: Ring, M
         return A * B
     }
     
-    public static func + (f: _Polynomial<T, R, x>, g: _Polynomial<T, R, x>) -> _Polynomial<T, R, x> {
+    public static func + (f: _Polynomial<T, x, R>, g: _Polynomial<T, x, R>) -> _Polynomial<T, x, R> {
         let degs = Set(f.coeffs.keys).union(g.coeffs.keys)
         let coeffs = Dictionary(keys: degs) { i in
             f.coeff(i) + g.coeff(i)
@@ -139,11 +146,11 @@ public struct _Polynomial<T: PolynomialType, R: Ring, x: Indeterminate>: Ring, M
         return _Polynomial(coeffs: coeffs)
     }
     
-    public static prefix func - (f: _Polynomial<T, R, x>) -> _Polynomial<T, R, x> {
+    public static prefix func - (f: _Polynomial<T, x, R>) -> _Polynomial<T, x, R> {
         return f.mapCoeffs { -$0 }
     }
     
-    public static func * (f: _Polynomial<T, R, x>, g: _Polynomial<T, R, x>) -> _Polynomial<T, R, x> {
+    public static func * (f: _Polynomial<T, x, R>, g: _Polynomial<T, x, R>) -> _Polynomial<T, x, R> {
         let kRange = (f.lowestPower + g.lowestPower ... f.highestPower + g.highestPower)
         let coeffs = kRange.map { k -> (Int, R) in
             let iRange = max(f.lowestPower, k - g.highestPower) ... min(k - g.lowestPower, f.highestPower)
@@ -155,11 +162,11 @@ public struct _Polynomial<T: PolynomialType, R: Ring, x: Indeterminate>: Ring, M
         return _Polynomial(coeffs: Dictionary(pairs: coeffs))
     }
     
-    public static func * (r: R, f: _Polynomial<T, R, x>) -> _Polynomial<T, R, x> {
+    public static func * (r: R, f: _Polynomial<T, x, R>) -> _Polynomial<T, x, R> {
         return f.mapCoeffs { r * $0 }
     }
     
-    public static func * (f: _Polynomial<T, R, x>, r: R) -> _Polynomial<T, R, x> {
+    public static func * (f: _Polynomial<T, x, R>, r: R) -> _Polynomial<T, x, R> {
         return f.mapCoeffs { $0 * r }
     }
     
@@ -174,7 +181,7 @@ public struct _Polynomial<T: PolynomialType, R: Ring, x: Indeterminate>: Ring, M
 }
 
 public extension _Polynomial where R: Field {
-    func toMonic() -> _Polynomial<T, R, x> {
+    func toMonic() -> _Polynomial<T, x, R> {
         let a = leadCoeff
         return self.mapCoeffs{ $0 / a }
     }
@@ -185,12 +192,12 @@ extension _Polynomial: EuclideanRing where R: Field {
         return T.isNormal ? highestPower : highestPower - lowestPower
     }
     
-    public func eucDiv(by g: _Polynomial<T, R, x>) -> (q: _Polynomial<T, R, x>, r: _Polynomial<T, R, x>) {
+    public func eucDiv(by g: _Polynomial<T, x, R>) -> (q: _Polynomial<T, x, R>, r: _Polynomial<T, x, R>) {
         guard g != .zero else {
             fatalError("divide by 0")
         }
         
-        typealias P = _Polynomial<T, R, x>
+        typealias P = _Polynomial<T, x, R>
         let x = P.indeterminate
         let f = self
         
