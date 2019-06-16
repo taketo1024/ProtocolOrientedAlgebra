@@ -29,20 +29,24 @@ internal final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R>
         
         // find pivot point
         let elements = targetColElements()
-        guard let (i0, a0) = pivot(elements) else {
+        guard let pivot = findPivot(in: elements) else {
             targetCol += 1
             return
+        }
+        
+        let i0 = pivot.0
+        var a0 = pivot.1
+        
+        if a0.normalizeUnit != .identity {
+            apply(.MulRow(at: i0, by: a0.normalizeUnit))
+            a0 = a0.normalized
         }
         
         // eliminate target col
         
         var again = false
         
-        for (i, a) in elements {
-            if i == i0 {
-                continue
-            }
-            
+        for (i, a) in elements where i != i0 {
             let (q, r) = a /% a0
             apply(.AddRow(at: i0, to: i, mul: -q))
             
@@ -56,10 +60,6 @@ internal final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R>
         }
         
         // final step
-        
-        if a0.normalizeUnit != .identity {
-            apply(.MulRow(at: i0, by: a0.normalizeUnit))
-        }
         
         if i0 != targetRow {
             apply(.SwapRows(i0, targetRow))
@@ -80,25 +80,8 @@ internal final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R>
     }
     
     @_specialize(where R == ComputationSpecializedRing)
-    private func pivot(_ candidates: [(Int, R)]) -> (Int, R)? {
-        if candidates.isEmpty {
-            return nil
-        }
-        
-        var (i0, a0) = candidates.first!
-        var w0 = rowWeight(i0)
-        
-        for (i, a) in candidates {
-            let w = rowWeight(i)
-            if (a.eucDegree < a0.eucDegree) || (a.eucDegree == a0.eucDegree && w < w0) {
-                (i0, a0, w0) = (i, a, w)
-            }
-        }
-        return (i0, a0)
-    }
-    
-    private func rowWeight(_ i: Int) -> Int {
-        return target.table[i]!.sum{ $0.1.eucDegree }
+    private func findPivot(in candidates: [(Int, R)]) -> (Int, R)? {
+        return candidates.min { $0.1.eucDegree < $1.1.eucDegree }
     }
 }
 

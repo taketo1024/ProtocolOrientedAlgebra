@@ -26,26 +26,29 @@ internal final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     @_specialize(where R == ComputationSpecializedRing)
     override func iteration() {
         let diagonal = targetDiagonal()
-        guard let (i0, a0) = diagonal.min(by: {$0.1.eucDegree < $1.1.eucDegree}) else {
+        guard let pivot = diagonal.min(by: {$0.1.eucDegree < $1.1.eucDegree}) else {
             fatalError()
         }
         
-        if !a0.isInvertible {
-            for (i, a) in diagonal {
-                if i == i0 {
-                    continue
-                }
-                
-                if a % a0 != .zero {
-                    diagonalGCD((i0, a0), (i, a))
-                    return
-                }
-            }
-        }
+        let i0 = pivot.0
+        var a0 = pivot.1
         
-        // now `a0` divides all other elements.
         if a0.normalizeUnit != .identity {
             apply(.MulRow(at: i0, by: a0.normalizeUnit))
+            a0 = a0.normalized
+        }
+        
+        if a0 != .identity {
+            var again = false
+
+            for (i, a) in diagonal where (i != i0 && a % a0 != .zero) {
+                diagonalGCD((i0, a0), (i, a))
+                again = true
+            }
+            
+            if again {
+                return
+            }
         }
         
         if i0 != targetIndex {
