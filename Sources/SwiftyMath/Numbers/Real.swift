@@ -52,3 +52,19 @@ extension RealNumber: Field {
 }
 
 public let π = 𝐑(Double.pi)
+
+public protocol RealSubset {
+    var asReal: 𝐑 { get }
+}
+
+extension 𝐙: RealSubset {
+    public var asReal: 𝐑 {
+        return 𝐑(self)
+    }
+}
+
+extension 𝐐: RealSubset {
+    public var asReal: 𝐑 {
+        return 𝐑(self)
+    }
+}

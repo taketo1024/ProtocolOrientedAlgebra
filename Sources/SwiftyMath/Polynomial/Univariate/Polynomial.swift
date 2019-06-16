@@ -222,3 +222,15 @@ extension _Polynomial: EuclideanRing where R: Field {
         }
     }
 }
+
+extension _Polynomial where R: RealSubset {
+    public var asReal: _Polynomial<T, x, 𝐑> {
+        return mapCoeffs{ $0.asReal }
+    }
+}
+
+extension _Polynomial where R: ComplexSubset {
+    public var asComplex: _Polynomial<T, x, 𝐂> {
+        return mapCoeffs{ $0.asComplex }
+    }
+}

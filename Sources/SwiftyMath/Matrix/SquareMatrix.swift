@@ -32,36 +32,6 @@ extension Matrix: Monoid, Ring where n == m, n: StaticSizeType {
         fatalError("matrix-inverse not yet supported for a general ring.")
     }
     
-    public var isDiagonal: Bool {
-        return self.nonZeroComponents.allSatisfy{ c in c.col == c.row }
-    }
-    
-    public var isSymmetric: Bool {
-        if rows <= 1 {
-            return true
-        }
-        return (0 ..< rows - 1).allSatisfy { i in
-            (i + 1 ..< cols).allSatisfy { j in
-                self[i, j] == self[j, i]
-            }
-        }
-    }
-    
-    public var isSkewSymmetric: Bool {
-        if rows <= 1 {
-            return isZero
-        }
-        return (0 ..< rows - 1).allSatisfy { i in
-            (i + 1 ..< cols).allSatisfy { j in
-                self[i, j] == -self[j, i]
-            }
-        }
-    }
-    
-    public var isOrthogonal: Bool {
-        return self.transposed * self == .identity
-    }
-    
     public func pow(_ n: 𝐙) -> SquareMatrix<n, R> {
         assert(n >= 0)
         return (0 ..< n).reduce(.identity){ (res, _) in self * res }
@@ -76,20 +46,19 @@ extension Matrix: Monoid, Ring where n == m, n: StaticSizeType {
         return DPermutation.allPermutations(ofLength: rows).sum { s in
             let e = R(from: s.signature)
             let term = (0 ..< rows).multiply { i in self[i, s[i]] }
-            print("\t", e, term)
             return e * term
         }
     }
 }
 
-public extension Matrix where n == m, n == _1 {
-    var asScalar: R {
+extension Matrix where n == m, n == _1 {
+    public var asScalar: R {
         return self[0, 0]
     }
 }
 
-public extension Matrix where n == m, n: StaticSizeType, R: EuclideanRing {
-    var determinant: R {
+extension Matrix where n == m, n: StaticSizeType, R: EuclideanRing {
+    public var determinant: R {
         switch rows {
         case 0: return .identity
         case 1: return self[0, 0]
@@ -98,7 +67,11 @@ public extension Matrix where n == m, n: StaticSizeType, R: EuclideanRing {
         }
     }
     
-    var inverse: Matrix<n, n, R>? {
+    public var isInvertible: Bool {
+        return determinant.isInvertible
+    }
+    
+    public var inverse: Matrix<n, n, R>? {
         switch rows {
         case 0: return .identity
         case 1: return self[0, 0].inverse.flatMap{ Matrix($0) }
