@@ -349,9 +349,15 @@ public extension Matrix where R: EuclideanRing {
     }
 }
 
-public extension Matrix where R == 𝐑 {
+public extension Matrix where R: RealSubset {
+    var asReal: Matrix<n, m, 𝐑> {
+        return Matrix<n, m, 𝐑>(impl.mapComponents{ $0.asReal })
+    }
+}
+
+public extension Matrix where R: ComplexSubset {
     var asComplex: Matrix<n, m, 𝐂> {
-        return Matrix<n, m, 𝐂>(impl.mapComponents{ 𝐂($0) })
+        return Matrix<n, m, 𝐂>(impl.mapComponents{ $0.asComplex })
     }
 }
 
