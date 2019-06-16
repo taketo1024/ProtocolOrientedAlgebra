@@ -2,24 +2,12 @@ import Foundation
 
 public typealias MatrixComponent<R: Ring> = (row: Int, col: Int, value: R)
 
-public enum MatrixForm {
-    case Default
-    case RowEchelon
-    case ColEchelon
-    case RowHermite
-    case ColHermite
-    case Diagonal
-    case Smith
-}
-
 public typealias DMatrix<R: Ring> = Matrix<DynamicSize, DynamicSize, R>
 
 public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
     public typealias CoeffRing = R
     
     internal var impl: MatrixImpl<R>
-    internal var elimCache: Cache<[MatrixForm: AnyObject]> = Cache([:])
-    
     internal init(_ impl: MatrixImpl<R>) {
         self.impl = impl
     }
@@ -31,7 +19,6 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         if !isKnownUniquelyReferenced(&impl) {
             impl = impl.copy()
         }
-        elimCache = Cache([:])
     }
     
     public subscript(i: Int, j: Int) -> R {
@@ -306,28 +293,6 @@ public extension Matrix where n == DynamicSize, m == DynamicSize {
                 return self.submatrix(rowRange: i ..< i + r, colRange: j ..< j + c)
             }
         }
-    }
-}
-
-public extension Matrix where R: EuclideanRing {
-    typealias EliminationResult = MatrixEliminationResult<n, m, R>
-    
-    @discardableResult
-    mutating func eliminate(form: MatrixForm = .Diagonal) -> EliminationResult {
-        let e = impl.eliminate(form: form)
-        return EliminationResult(self, e)
-    }
-    
-    func elimination(form: MatrixForm = .Diagonal) -> EliminationResult {
-        if let res = elimCache.value?[form] as? EliminationResult {
-            return res
-        }
-        
-        let e = impl.copy().eliminate(form: form)
-        let res = EliminationResult(self, e)
-        elimCache.value![form] = (res as AnyObject)
-        
-        return res
     }
 }
 

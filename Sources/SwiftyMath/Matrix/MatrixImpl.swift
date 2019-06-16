@@ -492,24 +492,6 @@ internal final class MatrixImpl<R: Ring>: Hashable, CustomStringConvertible {
     }
 }
 
-extension MatrixImpl where R: EuclideanRing{
-    func eliminate(form: MatrixForm = .Diagonal) -> MatrixEliminationResultImpl<R> {
-        let eliminator = { () -> MatrixEliminator<R> in
-            switch form {
-            case .RowEchelon: return RowEchelonEliminator(self)
-            case .ColEchelon: return ColEchelonEliminator(self)
-            case .RowHermite: return RowHermiteEliminator(self)
-            case .ColHermite: return ColHermiteEliminator(self)
-            case .Diagonal:   return DiagonalEliminator  (self)
-            case .Smith:      return SmithEliminator     (self)
-            default: fatalError()
-            }
-        }()
-        
-        return eliminator.run()
-    }
-}
-
 private struct MatrixComponentCodable<R: Ring>: Codable where R: Codable {
     public let row: Int
     public let col: Int
