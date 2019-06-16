@@ -113,6 +113,10 @@ public struct ComplexNumber: Field, ExpressibleByIntegerLiteral, ExpressibleByFl
         return .init(r: .random(in: 0 ... r), θ: .random(in: 0 ... 2 * π))
     }
     
+    public func rounded(_ rule: FloatingPointRoundingRule = .toNearestOrAwayFromZero) -> 𝐂 {
+        return 𝐂(x.rounded(rule), y.rounded(rule))
+    }
+    
     public func isApproximatelyEqualTo(_ z: 𝐂, error e: 𝐑? = nil) -> Bool {
         return self.realPart.isApproximatelyEqualTo(z.realPart, error: e) &&
                self.imaginaryPart.isApproximatelyEqualTo(z.imaginaryPart, error: e)
