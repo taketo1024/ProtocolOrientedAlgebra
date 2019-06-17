@@ -42,6 +42,45 @@ public final class Cache<T>: CustomStringConvertible {
     }
     
     public var description: String {
-        return value == nil ? "empty" : "cache(\(value!))"
+        return "Cache(\(value.map{ "\($0)" } ?? "-"))"
+    }
+}
+
+public final class CacheDictionary<K, T>: CustomStringConvertible where K: Hashable {
+    private var dictionary: [K : T]
+    
+    public init(_ dictionary: [K : T] = [:]) {
+        self.dictionary = dictionary
+    }
+    
+    public static var empty: CacheDictionary<K, T> {
+        return CacheDictionary()
+    }
+    
+    public subscript (key: K) -> T? {
+        get { return dictionary[key] }
+        set { dictionary[key] = newValue }
+    }
+    
+    public func useCacheOrSet(key: K, _ initializer: () -> T) -> T {
+        if let v = dictionary[key] {
+            return v
+        }
+        
+        let v = initializer()
+        dictionary[key] = v
+        return v
+    }
+    
+    public func remove(key: K) {
+        dictionary.removeValue(forKey: key)
+    }
+    
+    public func clear() {
+        self.dictionary = [:]
+    }
+    
+    public var description: String {
+        return "Cache(\(dictionary))"
     }
 }
