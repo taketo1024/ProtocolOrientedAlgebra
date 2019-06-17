@@ -121,21 +121,6 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
     }
 }
 
-public func *<A, R>(v: [A], a: DMatrix<R>) -> [FreeModule<A, R>] {
-    return v.map{ .wrap($0) } * a
-}
-
-public func *<A, R>(v: [FreeModule<A, R>], A: DMatrix<R>) -> [FreeModule<A, R>] {
-    assert(v.count == A.rows)
-    let cols = A.nonZeroComponents.group{ $0.col }
-    return (0 ..< A.cols).map{ j -> FreeModule<A, R> in
-        guard let col = cols[j] else {
-            return .zero
-        }
-        return col.sum { (i, _, a) in a * v[i] }
-    }
-}
-
 extension FreeModule where R: RealSubset {
     public var asReal: FreeModule<A, 𝐑> {
         return mapComponents{ $0.asReal }
