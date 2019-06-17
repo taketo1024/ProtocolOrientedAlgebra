@@ -143,6 +143,15 @@ class MatrixTests: XCTestCase {
         XCTAssertEqual(a.transposed, M(1,3,2,4))
     }
     
+    func testAsDynamic() {
+        let a = Matrix<_2, _3, R>(1,2,3,4,5,6)
+        let b = a.asDynamic
+        XCTAssertEqual(b, DMatrix(rows: 2, cols: 3, grid: [1,2,3,4,5,6]))
+        
+        let c = b.as(Matrix<_2, _3, R>.self)
+        XCTAssertEqual(a, c)
+    }
+    
     func testCodable() {
         let a = M(1,2,3,4)
         let d = try! JSONEncoder().encode(a)

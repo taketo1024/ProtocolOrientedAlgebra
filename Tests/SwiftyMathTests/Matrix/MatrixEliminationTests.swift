@@ -138,4 +138,13 @@ class MatrixEliminationTests: XCTestCase {
         let T = E.imageTransitionMatrix
         XCTAssertEqual(T * I, DMatrix(rows: 1, cols: 1, grid: [2]))
     }
+    
+    public func testDet() {
+        let A = Matrix4(3,-1,2,4,
+                        2,1,1,3,
+                        -2,0,3,-1,
+                        0,-2,1,3)
+        let E = MatrixEliminator.eliminate(A)
+        XCTAssertEqual(E.determinant, 66)
+    }
 }

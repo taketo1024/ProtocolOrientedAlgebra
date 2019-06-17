@@ -2,6 +2,12 @@ import Foundation
 
 public typealias MatrixComponent<R: Ring> = (row: Int, col: Int, value: R)
 
+public typealias SquareMatrix<n: StaticSizeType, R: Ring> = Matrix<n, n, R>
+public typealias Matrix1<R: Ring> = SquareMatrix<_1, R>
+public typealias Matrix2<R: Ring> = SquareMatrix<_2, R>
+public typealias Matrix3<R: Ring> = SquareMatrix<_3, R>
+public typealias Matrix4<R: Ring> = SquareMatrix<_4, R>
+
 public typealias DMatrix<R: Ring> = Matrix<DynamicSize, DynamicSize, R>
 
 public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
@@ -71,7 +77,7 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
     }
     
     public var transposed: Matrix<m, n, R> {
-        return Matrix<m, n, R>(impl.transposed)
+        return Matrix<m, n, R>(impl.copy().transpose())
     }
     
     public func rowVector(_ i: Int) -> RowVector<m, R> {
@@ -90,16 +96,12 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         return impl.components
     }
     
-    public func nonZeroComponents(ofRow i: Int) -> [MatrixComponent<R>] {
-        return impl.components(ofRow: i)
-    }
-    
-    public func nonZeroComponents(ofCol j: Int) -> [MatrixComponent<R>] {
-        return impl.components(ofCol: j)
-    }
-    
     public func mapNonZeroComponents<R2>(_ f: (R) -> R2) -> Matrix<n, m, R2> {
         return Matrix<n, m, R2>(impl.mapComponents(f))
+    }
+    
+    public var density: Double {
+        return Double(nonZeroComponents.count) / Double(rows * cols)
     }
     
     public var hashValue: Int {
@@ -153,13 +155,6 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
     }
 }
 
-extension Matrix: Sequence {
-    // TODO directly iterate impl
-    public func makeIterator() -> IndexingIterator<[(Int, Int, R)]> {
-        return nonZeroComponents.map{ c in (c.row, c.col, c.value) }.makeIterator()
-    }
-}
-
 extension Matrix: AdditiveGroup, Module where n: StaticSizeType, m: StaticSizeType {
     public init(_ grid: [R]) {
         let (rows, cols) = (n.intValue, m.intValue)
@@ -199,6 +194,58 @@ extension Matrix: AdditiveGroup, Module where n: StaticSizeType, m: StaticSizeTy
     
     public static func unit(_ i0: Int, _ j0: Int) -> Matrix<n, m, R> {
         return Matrix { (i, j) in (i, j) == (i0, j0) ? .identity : .zero }
+    }
+    
+    public var asDynamic: DMatrix<R> {
+        return DMatrix(impl)
+    }
+}
+
+extension Matrix: Monoid, Ring where n == m, n: StaticSizeType {
+    public init(from n : 𝐙) {
+        self.init(scalar: R(from: n))
+    }
+    
+    public var size: Int {
+        return rows
+    }
+    
+    public static var identity: SquareMatrix<n, R> {
+        return Matrix<n, n, R> { $0 == $1 ? .identity : .zero }
+    }
+    
+    public var isInvertible: Bool {
+        return determinant.isInvertible
+    }
+    
+    public var inverse: SquareMatrix<n, R>? {
+        if size >= 5 {
+            print("warn: Directly computing matrix-inverse can be extremely slow. Use elimination().determinant instead.")
+        }
+        return impl.inverse.map{ SquareMatrix($0) }
+    }
+    
+    public var trace: R {
+        return impl.trace
+    }
+    
+    public var determinant: R {
+        if size >= 5 {
+            print("warn: Directly computing determinant can be extremely slow. Use elimination().determinant instead.")
+        }
+        
+        return impl.determinant
+    }
+    
+    public func pow(_ n: 𝐙) -> SquareMatrix<n, R> {
+        assert(n >= 0)
+        return (0 ..< n).reduce(.identity){ (res, _) in self * res }
+    }
+}
+
+extension Matrix where n == m, n == _1 {
+    public var asScalar: R {
+        return self[0, 0]
     }
 }
 
@@ -247,8 +294,40 @@ public extension Matrix where n == DynamicSize, m == DynamicSize {
         return DMatrix(rows: rows, cols: cols) { (i, j) in (i, j) == coord ? .identity : .zero }
     }
     
+    var inverse: DMatrix<R>? {
+        assert(rows == cols)
+        if rows >= 5 {
+            print("warn: Directly computing matrix-inverse can be extremely slow. Use elimination().determinant instead.")
+        }
+        return impl.inverse.map{ DMatrix($0) }
+    }
+    
+    var trace: R {
+        assert(rows == cols)
+        return impl.trace
+    }
+    
+    var determinant: R {
+        assert(rows == cols)
+        if rows >= 5 {
+            print("warn: Directly computing determinant can be extremely slow. Use elimination().determinant instead.")
+        }
+        
+        return impl.determinant
+    }
+    
+    func pow(_ n: 𝐙) -> DMatrix<R> {
+        assert(rows == cols)
+        assert(n >= 0)
+        return (0 ..< n).reduce(.identity(size: rows)){ (res, _) in self * res }
+    }
+    
+    mutating func transpose() {
+        impl.transpose()
+    }
+    
     static func ⊕ (a: DMatrix<R>, b: DMatrix<R>) -> DMatrix<R> {
-        return DMatrix<R>(a.impl ⊕ b.impl)
+        return DMatrix<R>(a.impl.concatDiagonally(b.impl))
     }
     
     static func ⊗ (a: DMatrix<R>, b: DMatrix<R>) -> DMatrix<R> {
@@ -274,12 +353,14 @@ public extension Matrix where n == DynamicSize, m == DynamicSize {
         return DMatrix(impl.submatrix(r, c))
     }
     
-    func concatRows(with A: DMatrix<R>) -> Matrix<DynamicSize, m, R> {
-        return DMatrix<R>(impl.concatRows(A.impl))
+    func concatHorizontally(_ B: DMatrix<R>) -> DMatrix<R> {
+        assert(rows == B.rows)
+        return DMatrix<R>(impl.concatHorizontally(B.impl))
     }
     
-    func concatCols(with A: DMatrix<R>) -> Matrix<n, DynamicSize, R> {
-        return DMatrix<R>(impl.concatCols(A.impl))
+    func concatVertically(_ B: DMatrix<R>) -> DMatrix<R> {
+        assert(cols == B.cols)
+        return DMatrix<R>(impl.concatVertically(B.impl))
     }
     
     func blocks(rowSizes: [Int], colSizes: [Int]) -> [[DMatrix<R>]] {
@@ -293,6 +374,13 @@ public extension Matrix where n == DynamicSize, m == DynamicSize {
                 return self.submatrix(rowRange: i ..< i + r, colRange: j ..< j + c)
             }
         }
+    }
+    
+    func `as`<n, m>(_ type: Matrix<n, m, R>.Type) -> Matrix<n, m, R> {
+        assert(n.isDynamic || n.intValue == rows)
+        assert(m.isDynamic || m.intValue == cols)
+        
+        return Matrix<n, m, R>(impl)
     }
 }
 
@@ -318,7 +406,7 @@ public extension Matrix where R == 𝐂 {
     }
     
     var adjoint: Matrix<m, n, R> {
-        return Matrix<m, n, R>(impl.transposed.mapComponents{ $0.conjugate })
+        return transposed.mapNonZeroComponents { $0.conjugate }
     }
 }
 

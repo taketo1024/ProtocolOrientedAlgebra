@@ -58,12 +58,12 @@ class DMatrixTests: XCTestCase {
         let a = M(1,2,3,4)
         let b = M(5,6,7,8)
 
-        let x = a.concatRows(with: b)
+        let x = a.concatVertically(b)
         XCTAssertEqual(x.rows, 4)
         XCTAssertEqual(x.cols, 2)
         XCTAssertEqual(x.grid, [1,2,3,4,5,6,7,8])
         
-        let y = a.concatCols(with: b)
+        let y = a.concatHorizontally(b)
         XCTAssertEqual(y.rows, 2)
         XCTAssertEqual(y.cols, 4)
         XCTAssertEqual(y.grid, [1,2,5,6,3,4,7,8])

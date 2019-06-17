@@ -125,12 +125,14 @@ public func *<A, R>(v: [A], a: DMatrix<R>) -> [FreeModule<A, R>] {
     return v.map{ .wrap($0) } * a
 }
 
-public func *<A, R>(v: [FreeModule<A, R>], a: DMatrix<R>) -> [FreeModule<A, R>] {
-    assert(v.count == a.rows)
-    return (0 ..< a.cols).map{ j in
-        a.nonZeroComponents(ofCol: j).sum{ c in
-            v[c.row] * c.value
+public func *<A, R>(v: [FreeModule<A, R>], A: DMatrix<R>) -> [FreeModule<A, R>] {
+    assert(v.count == A.rows)
+    let cols = A.nonZeroComponents.group{ $0.col }
+    return (0 ..< A.cols).map{ j -> FreeModule<A, R> in
+        guard let col = cols[j] else {
+            return .zero
         }
+        return col.sum { (i, _, a) in a * v[i] }
     }
 }
 
