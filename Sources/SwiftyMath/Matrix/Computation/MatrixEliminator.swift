@@ -82,7 +82,7 @@ public class MatrixEliminator<R: EuclideanRing> {
     }
     
     final func apply(_ s: ElementaryOperation) {
-        s.apply(to: target)
+        target.apply(s)
         s.isRowOperation ? rowOps.append(s) : colOps.append(s)
         
         log("\(s)")
@@ -187,28 +187,29 @@ public class MatrixEliminator<R: EuclideanRing> {
                 return .SwapRows(i, j)
             }
         }
-        
-        @_specialize(where R == ComputationSpecializedRing)
-        func apply(to A: MatrixImpl<R>) {
-            switch self {
-            case let .AddRow(i, j, r):
-                A.addRow(at: i, to: j, multipliedBy: r)
-            case let .AddCol(i, j, r):
-                A.addCol(at: i, to: j, multipliedBy: r)
-            case let .MulRow(i, r):
-                A.multiplyRow(at: i, by: r)
-            case let .MulCol(i, r):
-                A.multiplyCol(at: i, by: r)
-            case let .SwapRows(i, j):
-                A.swapRows(i, j)
-            case let .SwapCols(i, j):
-                A.swapCols(i, j)
-            }
-        }
     }
     
     static var debug: Bool  {
         get { return _debug }
         set { _debug = newValue }
+    }
+}
+
+extension MatrixImpl where R: EuclideanRing {
+    func apply(_ s: MatrixEliminator<R>.ElementaryOperation) {
+        switch s {
+        case let .AddRow(i, j, r):
+            addRow(at: i, to: j, multipliedBy: r)
+        case let .AddCol(i, j, r):
+            addCol(at: i, to: j, multipliedBy: r)
+        case let .MulRow(i, r):
+            multiplyRow(at: i, by: r)
+        case let .MulCol(i, r):
+            multiplyCol(at: i, by: r)
+        case let .SwapRows(i, j):
+            swapRows(i, j)
+        case let .SwapCols(i, j):
+            swapCols(i, j)
+        }
     }
 }

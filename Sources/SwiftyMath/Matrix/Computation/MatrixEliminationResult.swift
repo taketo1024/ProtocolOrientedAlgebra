@@ -129,7 +129,7 @@ internal class MatrixEliminationResultImpl<R: EuclideanRing> {
     final func _left() -> MatrixImpl<R> {
         let P = MatrixImpl<R>.identity(size: result.rows, align: .Rows)
         for s in rowOps {
-            s.apply(to: P)
+            P.apply(s)
         }
         return P
     }
@@ -141,7 +141,7 @@ internal class MatrixEliminationResultImpl<R: EuclideanRing> {
             : MatrixImpl<R>.identity(size: result.rows, align: .Rows).submatrix(colRange: colRange!)
         
         for s in rowOps.reversed() {
-            s.inverse.apply(to: P)
+            P.apply(s.inverse)
         }
         
         return P
@@ -151,7 +151,7 @@ internal class MatrixEliminationResultImpl<R: EuclideanRing> {
     final func _right() -> MatrixImpl<R> {
         let P = MatrixImpl<R>.identity(size: result.cols, align: .Cols)
         for s in colOps {
-            s.apply(to: P)
+            P.apply(s)
         }
         return P
     }
@@ -163,7 +163,7 @@ internal class MatrixEliminationResultImpl<R: EuclideanRing> {
             : MatrixImpl<R>.identity(size: result.cols, align: .Cols).submatrix(rowRange: rowRange!)
         
         for s in colOps.reversed() {
-            s.inverse.apply(to: P)
+            P.apply(s.inverse)
         }
         
         return P
