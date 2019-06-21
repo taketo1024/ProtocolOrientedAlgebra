@@ -12,34 +12,37 @@ import XCTest
 class MatrixTests: XCTestCase {
     
     typealias R = 𝐙
-    typealias C = MatrixComponent<R>
-    typealias M = Matrix2<R>
+    
+    func testInit() {
+        let a = Matrix2(1,2,3,4)
+        XCTAssertEqual(a.grid, [1,2,3,4])
+    }
     
     func testEquality() {
-        let a = M(1,2,3,4)
-        let b = M(1,2,3,4)
-        let c = M(1,3,2,4)
+        let a = Matrix2(1,2,3,4)
+        let b = Matrix2(1,2,3,4)
+        let c = Matrix2(1,3,2,4)
         XCTAssertEqual(a, b)
         XCTAssertNotEqual(a, c)
     }
     
     func testInitByGenerator() {
-        let a = M { (i, j) in i * 10 + j}
-        XCTAssertEqual(a, M(0,1,10,11))
+        let a = Matrix2 { (i, j) in i * 10 + j}
+        XCTAssertEqual(a, Matrix2(0,1,10,11))
     }
     
     func testInitByComponents() {
-        let a = M(components: [C(0,0,3), C(0,1,2), C(1,1,5)])
-        XCTAssertEqual(a, M(3,2,0,5))
+        let a = Matrix2(components: [(0,0,3), (0,1,2), (1,1,5)])
+        XCTAssertEqual(a, Matrix2(3,2,0,5))
     }
     
     func testInitWithMissingGrid() {
-        let a = M(1,2,3)
-        XCTAssertEqual(a, M(1,2,3,0))
+        let a = Matrix2(1,2,3)
+        XCTAssertEqual(a, Matrix2(1,2,3,0))
     }
 
     func testSubscript() {
-        let a = M(1,2,0,4)
+        let a = Matrix2(1,2,0,4)
         XCTAssertEqual(a[0, 0], 1)
         XCTAssertEqual(a[0, 1], 2)
         XCTAssertEqual(a[1, 0], 0)
@@ -47,7 +50,7 @@ class MatrixTests: XCTestCase {
     }
     
     func testSubscriptSet() {
-        var a = M(1,2,0,4)
+        var a = Matrix2(1,2,0,4)
         a[0, 0] = 0
         a[0, 1] = 0
         a[1, 1] = 2
@@ -58,7 +61,7 @@ class MatrixTests: XCTestCase {
     }
     
     func testCopyOnMutate() {
-        let a = M(1,2,0,4)
+        let a = Matrix2(1,2,0,4)
         var b = a
         
         b[0, 0] = 0
@@ -68,65 +71,68 @@ class MatrixTests: XCTestCase {
     }
     
     func testSum() {
-        let a = M(1,2,3,4)
-        let b = M(2,3,4,5)
-        XCTAssertEqual(a + b, M(3,5,7,9))
+        let a = Matrix2(1,2,3,4)
+        let b = Matrix2(2,3,4,5)
+        XCTAssertEqual(a + b, Matrix2(3,5,7,9))
     }
     
     func testZero() {
-        let a = M(1,2,3,4)
-        let o = M.zero
+        let a = Matrix2(1,2,3,4)
+        let o = Matrix2<R>.zero
         XCTAssertEqual(a + o, a)
         XCTAssertEqual(o + a, a)
     }
 
     func testNeg() {
-        let a = M(1,2,3,4)
-        XCTAssertEqual(-a, M(-1,-2,-3,-4))
+        let a = Matrix2(1,2,3,4)
+        XCTAssertEqual(-a, Matrix2(-1,-2,-3,-4))
     }
 
     func testMul() {
-        let a = M(1,2,3,4)
-        let b = M(2,3,4,5)
-        XCTAssertEqual(a * b, M(10,13,22,29))
+        let a = Matrix2(1,2,3,4)
+        let b = Matrix2(2,3,4,5)
+        XCTAssertEqual(a * b, Matrix2(10,13,22,29))
     }
     
     func testScalarMul() {
-        let a = M(1,2,3,4)
-        XCTAssertEqual(2 * a, M(2,4,6,8))
-        XCTAssertEqual(a * 3, M(3,6,9,12))
+        let a = Matrix2(1,2,3,4)
+        XCTAssertEqual(2 * a, Matrix2(2,4,6,8))
+        XCTAssertEqual(a * 3, Matrix2(3,6,9,12))
     }
     
     func testId() {
-        let a = M(1,2,3,4)
-        let e = M.identity
+        let a = Matrix2(1,2,3,4)
+        let e = Matrix2<R>.identity
         XCTAssertEqual(a * e, a)
         XCTAssertEqual(e * a, a)
     }
     
     func testInv() {
-        let a = M(1,2,2,3)
-        XCTAssertEqual(a.inverse!, M(-3,2,2,-1))
-        
-        let b = M(1,2,3,4)
+        let a = Matrix2(1,2,2,3)
+        XCTAssertEqual(a.inverse!, Matrix2(-3,2,2,-1))
+    }
+    
+    func testNonInvertible() {
+        let b = Matrix2(1,2,3,4)
+        XCTAssertFalse(b.isInvertible)
         XCTAssertNil(b.inverse)
     }
     
     func testPow() {
-        let a = M(1,2,3,4)
-        XCTAssertEqual(a.pow(0), M.identity)
+        let a = Matrix2(1,2,3,4)
+        XCTAssertEqual(a.pow(0), Matrix2.identity)
         XCTAssertEqual(a.pow(1), a)
-        XCTAssertEqual(a.pow(2), M(7,10,15,22))
-        XCTAssertEqual(a.pow(3), M(37,54,81,118))
+        XCTAssertEqual(a.pow(2), Matrix2(7,10,15,22))
+        XCTAssertEqual(a.pow(3), Matrix2(37,54,81,118))
     }
     
     func testTrace() {
-        let a = M(1,2,3,4)
+        let a = Matrix2(1,2,3,4)
         XCTAssertEqual(a.trace, 5)
     }
     
     func testDet() {
-        let a = M(1,2,3,4)
+        let a = Matrix2(1,2,3,4)
         XCTAssertEqual(a.determinant, -2)
     }
     
@@ -139,10 +145,74 @@ class MatrixTests: XCTestCase {
     }
     
     func testTransposed() {
-        let a = M(1,2,3,4)
-        XCTAssertEqual(a.transposed, M(1,3,2,4))
+        let a = Matrix2(1,2,3,4)
+        XCTAssertEqual(a.transposed, Matrix2(1,3,2,4))
     }
     
+    func testSubmatrixRow() {
+        let a = Matrix2(1,2,3,4)
+        let a1 = a.submatrix(rowRange: 0 ..< 1).as(Matrix<_1, _2, R>.self)
+        XCTAssertEqual(a1, Matrix<_1, _2, 𝐙>(1, 2))
+    }
+    
+    func testSubmatrixCol() {
+        let a = Matrix2(1,2,3,4)
+        let a2 = a.submatrix(colRange: 1 ..< 2).as(Matrix<_2, _1, R>.self)
+        XCTAssertEqual(a2, Matrix<_2, _1, 𝐙>(2, 4))
+    }
+    
+    func testSubmatrixBoth() {
+        let a = Matrix2(1,2,3,4)
+        let a3 = a.submatrix(rowRange: 1 ..< 2, colRange: 0 ..< 1).as(Matrix1<R>.self)
+        XCTAssertEqual(a3, Matrix1(3))
+    }
+    
+    func testConcatHor() {
+        let a = Matrix2(1,2,3,4)
+        let b = Matrix2(5,6,7,8)
+        let y = a.concatHorizontally(b).as(Matrix<_2, _4, R>.self)
+        XCTAssertEqual(y, Matrix<_2, _4, R>(
+            1,2,5,6,
+            3,4,7,8
+        ))
+    }
+    
+    func testConcatVer() {
+        let a = Matrix2(1,2,3,4)
+        let b = Matrix2(5,6,7,8)
+        
+        let x = a.concatVertically(b).as(Matrix<_4, _2, R>.self)
+        XCTAssertEqual(x, Matrix<_4, _2, R>(
+            1,2,
+            3,4,
+            5,6,
+            7,8
+        ))
+    }
+    
+    func testConcatDiag() {
+        let a = Matrix2(1,2,3,4)
+        let b = Matrix2(5,6,7,8)
+        let x = a.concatDiagonally(b).as(Matrix4<R>.self)
+        XCTAssertEqual(x, Matrix4(
+            1,2,0,0,
+            3,4,0,0,
+            0,0,5,6,
+            0,0,7,8
+        ))
+    }
+    
+    func testTensorProduct() {
+        let a = Matrix2(1,2,0,3)
+        let b = Matrix2(1,2,3,4)
+        let x = (a ⊗ b).as(Matrix4<R>.self)
+        XCTAssertEqual(x, Matrix4(
+            1,2,2,4,
+            3,4,6,8,
+            0,0,3,6,
+            0,0,9,12
+        ))
+    }
     func testAsDynamic() {
         let a = Matrix<_2, _3, R>(1,2,3,4,5,6)
         let b = a.as(DMatrix<R>.self)
@@ -156,9 +226,9 @@ class MatrixTests: XCTestCase {
     }
     
     func testCodable() {
-        let a = M(1,2,3,4)
+        let a = Matrix2(1,2,3,4)
         let d = try! JSONEncoder().encode(a)
-        let b = try! JSONDecoder().decode(M.self, from: d)
+        let b = try! JSONDecoder().decode(Matrix2<R>.self, from: d)
         XCTAssertEqual(a, b)
     }
 }

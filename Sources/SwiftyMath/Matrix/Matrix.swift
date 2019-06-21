@@ -36,40 +36,16 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         }
     }
     
-    public static func ==(a: Matrix<n, m, R>, b: Matrix<n, m, R>) -> Bool {
-        return a.impl == b.impl
-    }
-    
-    public static func +(a: Matrix<n, m, R>, b: Matrix<n, m, R>) -> Matrix<n, m, R> {
-        return Matrix(a.impl + b.impl)
-    }
-    
-    public prefix static func -(a: Matrix<n, m, R>) -> Matrix<n, m, R> {
-        return Matrix(-a.impl)
-    }
-    
-    public static func -(a: Matrix<n, m, R>, b: Matrix<n, m, R>) -> Matrix<n, m, R> {
-        return a + (-b)
-    }
-    
-    public static func *(r: R, a: Matrix<n, m, R>) -> Matrix<n, m, R> {
-        return Matrix(r * a.impl)
-    }
-    
-    public static func *(a: Matrix<n, m, R>, r: R) -> Matrix<n, m, R> {
-        return Matrix(a.impl * r)
-    }
-    
-    public static func * <p>(a: Matrix<n, m, R>, b: Matrix<m, p, R>) -> Matrix<n, p, R> {
-        return Matrix<n, p, R>(a.impl * b.impl)
-    }
-    
     public var isZero: Bool {
         return impl.isZero
     }
     
     public var isIdentity: Bool {
         return impl.isIdentity
+    }
+    
+    public var isDiagonal: Bool {
+        return impl.isDiagonal
     }
     
     public var diagonal: [R] {
@@ -100,11 +76,89 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         return Matrix<n, m, R2>(impl.mapComponents(f))
     }
     
+    func submatrix(rowRange: CountableRange<Int>) -> Matrix<DynamicSize, m, R> {
+        return .init(impl.submatrix(rowRange: rowRange) )
+    }
+    
+    func submatrix(colRange: CountableRange<Int>) -> Matrix<n, DynamicSize, R> {
+        return .init(impl.submatrix(colRange: colRange) )
+    }
+    
+    func submatrix(rowRange: CountableRange<Int>,  colRange: CountableRange<Int>) -> DMatrix<R> {
+        return .init(impl.submatrix(rowRange, colRange))
+    }
+    
+    func concatHorizontally<m1>(_ B: Matrix<n, m1, R>) -> Matrix<n, DynamicSize, R> {
+        assert(rows == B.rows)
+        return .init(impl.concatHorizontally(B.impl))
+    }
+    
+    func concatVertically<n1>(_ B: Matrix<n1, m, R>) -> Matrix<n1, m, R> {
+        assert(cols == B.cols)
+        return .init(impl.concatVertically(B.impl))
+    }
+    
+    func concatDiagonally<n1, m1>(_ B: Matrix<n1, m1, R>) -> DMatrix<R> {
+        return .init(impl.concatDiagonally(B.impl))
+    }
+    
+    func blocks(rowSizes: [Int], colSizes: [Int]) -> [[DMatrix<R>]] {
+        var i = 0
+        return rowSizes.map { r -> [DMatrix<R>] in
+            defer { i += r }
+            
+            var j = 0
+            return colSizes.map { c -> DMatrix<R> in
+                defer { j += c }
+                return self.submatrix(rowRange: i ..< i + r, colRange: j ..< j + c)
+            }
+        }
+    }
+
     public func `as`<n, m>(_ type: Matrix<n, m, R>.Type) -> Matrix<n, m, R> {
         assert(n.isDynamic || n.intValue == rows)
         assert(m.isDynamic || m.intValue == cols)
         
         return Matrix<n, m, R>(impl)
+    }
+    
+    public static func ==(a: Matrix<n, m, R>, b: Matrix<n, m, R>) -> Bool {
+        return a.impl == b.impl
+    }
+    
+    public static func +(a: Matrix<n, m, R>, b: Matrix<n, m, R>) -> Matrix<n, m, R> {
+        return Matrix(a.impl + b.impl)
+    }
+    
+    public prefix static func -(a: Matrix<n, m, R>) -> Matrix<n, m, R> {
+        return Matrix(-a.impl)
+    }
+    
+    public static func -(a: Matrix<n, m, R>, b: Matrix<n, m, R>) -> Matrix<n, m, R> {
+        return a + (-b)
+    }
+    
+    public static func *(r: R, a: Matrix<n, m, R>) -> Matrix<n, m, R> {
+        return Matrix(r * a.impl)
+    }
+    
+    public static func *(a: Matrix<n, m, R>, r: R) -> Matrix<n, m, R> {
+        return Matrix(a.impl * r)
+    }
+    
+    public static func * <p>(a: Matrix<n, m, R>, b: Matrix<m, p, R>) -> Matrix<n, p, R> {
+        return Matrix<n, p, R>(a.impl * b.impl)
+    }
+    
+    static func ⊕ <n1, m1>(a: Matrix<n, m, R>, b: Matrix<n1, m1, R>) -> DMatrix<R> {
+        return DMatrix<R>(a.impl.concatDiagonally(b.impl))
+    }
+    
+    static func ⊗ <n1, m1>(a: Matrix<n, m, R>, b: Matrix<n1, m1, R>) -> DMatrix<R> {
+        let (n, m) = (b.rows, b.cols)
+        return DMatrix<R>(rows: a.rows * b.rows, cols: a.cols * b.cols) { (i, j) in
+            a[i / n, j / m] * b[i % n, j % m]
+        }
     }
     
     public var description: String {
@@ -319,56 +373,6 @@ public extension Matrix where n == DynamicSize, m == DynamicSize {
     
     mutating func transpose() {
         impl.transpose()
-    }
-    
-    static func ⊕ (a: DMatrix<R>, b: DMatrix<R>) -> DMatrix<R> {
-        return DMatrix<R>(a.impl.concatDiagonally(b.impl))
-    }
-    
-    static func ⊗ (a: DMatrix<R>, b: DMatrix<R>) -> DMatrix<R> {
-        let (n, m) = (b.rows, b.cols)
-        return DMatrix<R>(rows: a.rows * b.rows, cols: a.cols * b.cols) { (i, j) in
-            a[i / n, j / m] * b[i % n, j % m]
-        }
-    }
-    
-    func submatrix(rowRange: CountableRange<Int>) -> DMatrix<R> {
-        return Matrix<DynamicSize, m, R>(impl.submatrix(rowRange: rowRange) )
-    }
-    
-    func submatrix(colRange: CountableRange<Int>) -> DMatrix<R> {
-        return Matrix<n, DynamicSize, R>(impl.submatrix(colRange: colRange) )
-    }
-    
-    func submatrix(rowRange: CountableRange<Int>, colRange: CountableRange<Int>) -> DMatrix<R> {
-        return DMatrix(impl.submatrix(rowRange, colRange))
-    }
-    
-    func submatrix(rowsMatching r: (Int) -> Bool, colsMatching c: (Int) -> Bool) -> DMatrix<R> {
-        return DMatrix(impl.submatrix(r, c))
-    }
-    
-    func concatHorizontally(_ B: DMatrix<R>) -> DMatrix<R> {
-        assert(rows == B.rows)
-        return DMatrix<R>(impl.concatHorizontally(B.impl))
-    }
-    
-    func concatVertically(_ B: DMatrix<R>) -> DMatrix<R> {
-        assert(cols == B.cols)
-        return DMatrix<R>(impl.concatVertically(B.impl))
-    }
-    
-    func blocks(rowSizes: [Int], colSizes: [Int]) -> [[DMatrix<R>]] {
-        var i = 0
-        return rowSizes.map { r -> [DMatrix<R>] in
-            defer { i += r }
-            
-            var j = 0
-            return colSizes.map { c -> DMatrix<R> in
-                defer { j += c }
-                return self.submatrix(rowRange: i ..< i + r, colRange: j ..< j + c)
-            }
-        }
     }
 }
 
