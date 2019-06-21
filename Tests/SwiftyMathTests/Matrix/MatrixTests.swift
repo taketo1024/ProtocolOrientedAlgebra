@@ -145,11 +145,14 @@ class MatrixTests: XCTestCase {
     
     func testAsDynamic() {
         let a = Matrix<_2, _3, R>(1,2,3,4,5,6)
-        let b = a.asDynamic
+        let b = a.as(DMatrix<R>.self)
         XCTAssertEqual(b, DMatrix(rows: 2, cols: 3, grid: [1,2,3,4,5,6]))
-        
-        let c = b.as(Matrix<_2, _3, R>.self)
-        XCTAssertEqual(a, c)
+    }
+    
+    func testAsStatic() {
+        let a = DMatrix(rows: 2, cols: 3, grid: [1,2,3,4,5,6])
+        let b = a.as(Matrix<_2, _3, R>.self)
+        XCTAssertEqual(b, Matrix<_2, _3, R>(1,2,3,4,5,6))
     }
     
     func testCodable() {

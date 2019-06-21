@@ -40,18 +40,6 @@ public extension Matrix where n == _1 { // (D)RowVector
     }
 }
 
-public extension Matrix where n: StaticSizeType, m == _1 {
-    var asDynamic: DColVector<R> {
-        return DColVector(impl)
-    }
-}
-
-public extension Matrix where n == _1, m: StaticSizeType {
-    var asDynamic: DRowVector<R> {
-        return DRowVector(impl)
-    }
-}
-
 public extension Matrix where n == DynamicSize, m == _1 { // DColVector
     init(_ grid: [R]) {
         self.init(MatrixImpl(rows: grid.count, cols: 1, grid: grid))
@@ -67,11 +55,6 @@ public extension Matrix where n == DynamicSize, m == _1 { // DColVector
     
     init(size: Int, components: [MatrixComponent<R>]) {
         self.init(MatrixImpl(rows: size, cols: 1, components: components))
-    }
-    
-    func `as`<n>(_ type: ColVector<n, R>.Type) -> ColVector<n, R> {
-        assert(n.isDynamic || n.intValue == rows)
-        return ColVector<n, R>(impl)
     }
 }
 
@@ -90,10 +73,5 @@ public extension Matrix where n == _1, m == DynamicSize { // DRowVector
     
     init(size: Int, components: [MatrixComponent<R>]) {
         self.init(MatrixImpl(rows: 1, cols: size, components: components))
-    }
-    
-    func `as`<m>(_ type: RowVector<m, R>.Type) -> RowVector<m, R> {
-        assert(m.isDynamic || m.intValue == rows)
-        return RowVector<m, R>(impl)
     }
 }
