@@ -27,7 +27,7 @@ public struct IntegerIdeal<n: StaticSizeType>: EuclideanIdeal {
 
 extension IntegerIdeal: MaximalIdeal where n: PrimeSizeType {}
 
-public struct IntegerQuotientRing<n: StaticSizeType>: QuotientRingType, FiniteSetType, ExpressibleByIntegerLiteral, Codable {
+public struct IntegerQuotientRing<n: StaticSizeType>: QuotientRingType, FiniteSetType, Hashable, ExpressibleByIntegerLiteral, Codable {
     public typealias Base = 𝐙
     public typealias Sub = IntegerIdeal<n>
     

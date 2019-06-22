@@ -13,7 +13,7 @@ import Foundation
 
 public typealias 𝐇 = Quaternion
 
-public struct Quaternion: Ring, ExpressibleByIntegerLiteral, ExpressibleByFloatLiteral {
+public struct Quaternion: Ring, ExpressibleByIntegerLiteral, ExpressibleByFloatLiteral, Hashable {
     public typealias IntegerLiteralType = 𝐙
     public typealias FloatLiteralType = Double
     

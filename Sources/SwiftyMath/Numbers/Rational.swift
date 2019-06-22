@@ -2,7 +2,7 @@ import Foundation
 
 public typealias 𝐐 = RationalNumber
 
-public struct RationalNumber: Field, Comparable, ExpressibleByIntegerLiteral, Codable {
+public struct RationalNumber: Field, Comparable, ExpressibleByIntegerLiteral, Hashable, Codable {
     public typealias IntegerLiteralType = Int
     internal let p, q: 𝐙  // memo: (p, q) coprime, q > 0.
     

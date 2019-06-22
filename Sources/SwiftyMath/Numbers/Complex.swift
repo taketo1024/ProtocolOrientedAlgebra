@@ -10,7 +10,7 @@ import Foundation
 
 public typealias 𝐂 = ComplexNumber
 
-public struct ComplexNumber: Field, ExpressibleByIntegerLiteral, ExpressibleByFloatLiteral {
+public struct ComplexNumber: Field, ExpressibleByIntegerLiteral, ExpressibleByFloatLiteral, Hashable {
     public typealias IntegerLiteralType = Int
     public typealias FloatLiteralType = Double
     
