@@ -11,7 +11,7 @@ extension 𝐙: EuclideanRing, Randomable {
         return (self.abs == 1) ? self : nil
     }
 
-    public var normalizeUnit: 𝐙 {
+    public var normalizingUnit: 𝐙 {
         return (self > 0) ? 1 : -1
     }
 

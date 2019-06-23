@@ -96,7 +96,7 @@ public struct _Polynomial<T: PolynomialType, x: PolynomialIndeterminate, R: Ring
         return _Polynomial<T, y, R>(coeffs: coeffs)
     }
     
-    public var normalizeUnit: _Polynomial<T, x, R> {
+    public var normalizingUnit: _Polynomial<T, x, R> {
         if let a = leadCoeff.inverse {
             return _Polynomial(coeffs: a)
         } else {

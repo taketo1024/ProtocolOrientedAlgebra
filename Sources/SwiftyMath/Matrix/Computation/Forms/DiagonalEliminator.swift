@@ -18,7 +18,7 @@ internal final class DiagonalEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         return target.table.allSatisfy{ (i, list) in
             i < n && (list.count == 1)
                   && list.first!.0 == i
-                  && list.first!.1.normalizeUnit == .identity
+                  && list.first!.1.isNormalized
         }
     }
     

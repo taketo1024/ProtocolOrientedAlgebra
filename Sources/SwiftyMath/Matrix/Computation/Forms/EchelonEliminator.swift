@@ -37,8 +37,8 @@ internal final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R>
         let i0 = pivot.0
         var a0 = pivot.1
         
-        if a0.normalizeUnit != .identity {
-            apply(.MulRow(at: i0, by: a0.normalizeUnit))
+        if !a0.isNormalized {
+            apply(.MulRow(at: i0, by: a0.normalizingUnit))
             a0 = a0.normalized
         }
         
