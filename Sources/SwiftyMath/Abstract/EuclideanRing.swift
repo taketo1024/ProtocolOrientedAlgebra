@@ -55,7 +55,7 @@ public func bezout<R: EuclideanRing>(_ a: R, _ b: R) -> (x: R, y: R, r: R) {
         m * M(.zero, .identity, .identity, -q)
     }
     
-    return (x: m[.zero, .zero], y: m[.zero, .identity], r: r)
+    return (x: m[0, 0], y: m[0, 1], r: r)
 }
 
 public protocol EuclideanIdeal: Ideal where Super: EuclideanRing {
