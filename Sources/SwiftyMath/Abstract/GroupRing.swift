@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct GroupRing<G: Group, R: Ring>: Ring {
+public struct GroupRing<G: Group & Hashable, R: Ring>: Ring {
     private let elements: [G : R]
     public init(_ elements: [G : R]) {
         self.elements = elements

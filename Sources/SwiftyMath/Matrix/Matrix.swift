@@ -104,10 +104,6 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         return Double(nonZeroComponents.count) / Double(rows * cols)
     }
     
-    public var hashValue: Int {
-        return impl.hashValue
-    }
-    
     public var description: String {
         return "[" + (0 ..< rows).map({ i in
             return (0 ..< cols).map({ j in

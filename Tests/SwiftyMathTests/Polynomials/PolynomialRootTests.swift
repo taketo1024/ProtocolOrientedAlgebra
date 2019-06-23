@@ -16,7 +16,9 @@ class PolynomialRootTests: XCTestCase {
         let f = P(coeffs: 1, 0, 1)
         let i = 𝐂.imaginaryUnit
         let zs = f.findAllRoots()
-        XCTAssertEqual(Set(zs), Set([i, -i]))
+        XCTAssertEqual(zs.count, 2)
+        XCTAssertTrue(zs.contains(i))
+        XCTAssertTrue(zs.contains(-i))
     }
 
     func testPerformanceExample() {

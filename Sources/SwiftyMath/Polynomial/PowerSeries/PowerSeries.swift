@@ -111,12 +111,6 @@ public struct PowerSeries<x: PolynomialIndeterminate, R: Ring>: Ring, Module {
     public static var symbol: String {
         return "\(R.symbol)[[x]]"
     }
-    
-    public func hash(into hasher: inout Hasher) {
-        for i in 0 ..< 5 {
-            hasher.combine(coeff(i))
-        }
-    }
 }
 
 public extension PowerSeries {

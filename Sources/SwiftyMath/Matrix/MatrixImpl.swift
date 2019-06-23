@@ -10,7 +10,7 @@ import Foundation
 
 internal typealias ComputationSpecializedRing = 𝐙
 
-internal final class MatrixImpl<R: Ring>: Hashable, CustomStringConvertible {
+internal final class MatrixImpl<R: Ring>: Equatable, CustomStringConvertible {
     typealias Component = MatrixComponent<R>
     typealias Table =  [Int : [(Int, R)]]
     
@@ -474,10 +474,6 @@ internal final class MatrixImpl<R: Ring>: Hashable, CustomStringConvertible {
         
         result = result.filter{ $0.1 != .zero }
         return !result.isEmpty ? result : nil
-    }
-    
-    var hashValue: Int {
-        return isZero ? 0 : 1 // TODO
     }
     
     var description: String {

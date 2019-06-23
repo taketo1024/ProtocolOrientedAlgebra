@@ -8,7 +8,7 @@
 
 import Foundation
 
-public protocol SetType: Hashable, CustomStringConvertible {
+public protocol SetType: Equatable, CustomStringConvertible {
     static var symbol: String { get }
 }
 
@@ -123,10 +123,6 @@ public extension MapType {
     
     static var symbol: String {
         return "Map(\(Domain.symbol), \(Codomain.symbol))"
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        fatalError("MapType is not hashable.")
     }
     
     static func == (lhs: Self, rhs: Self) -> Bool {

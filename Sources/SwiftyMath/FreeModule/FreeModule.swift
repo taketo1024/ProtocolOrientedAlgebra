@@ -1,6 +1,6 @@
 import Foundation
 
-public protocol FreeModuleGenerator: SetType, Comparable {
+public protocol FreeModuleGenerator: Hashable, Comparable, CustomStringConvertible {
     var degree: Int { get }
 }
 
