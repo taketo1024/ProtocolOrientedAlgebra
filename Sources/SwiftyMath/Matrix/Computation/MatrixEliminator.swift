@@ -8,50 +8,29 @@
 
 import Foundation
 
-private var _debug = false
+public enum MatrixEliminationForm {
+    case RowEchelon
+    case ColEchelon
+    case RowHermite
+    case ColHermite
+    case Diagonal
+    case Smith
+}
 
-public class MatrixEliminator<R: EuclideanRing> {
-    public enum Form {
-        case RowEchelon
-        case ColEchelon
-        case RowHermite
-        case ColHermite
-        case Diagonal
-        case Smith
-    }
-    
-    public static func eliminate<n, m>(_ A: Matrix<n, m, R>, form: Form = .Diagonal) -> MatrixEliminationResult<n, m, R> {
-        let type: MatrixEliminator<R>.Type
-        
-        switch form {
-        case .RowEchelon: type = RowEchelonEliminator.self
-        case .ColEchelon: type = ColEchelonEliminator.self
-        case .RowHermite: type = RowHermiteEliminator.self
-        case .ColHermite: type = ColHermiteEliminator.self
-        case .Smith:      type = SmithEliminator     .self
-        default:          type = DiagonalEliminator  .self
-        }
-        
-        let elim = type.init(A.impl.copy())
-        let result = elim.run()
-        return MatrixEliminationResult(result)
-    }
-
+internal class MatrixEliminator<R: EuclideanRing> {
     var target: MatrixImpl<R>
     var rowOps: [ElementaryOperation]
     var colOps: [ElementaryOperation]
+    var debug: Bool
     
-    required init(_ target: MatrixImpl<R>) {
+    required init(_ target: MatrixImpl<R>, debug: Bool = false) {
         self.target = target
         self.rowOps = []
         self.colOps = []
+        self.debug = debug
     }
     
-    final var rows: Int { return target.rows }
-    final var cols: Int { return target.cols }
-    
-    @discardableResult
-    final func run() -> MatrixEliminationResultImpl<R> {
+    final func run() {
         log("-----Start:\(self)-----")
         
         prepare()
@@ -61,8 +40,6 @@ public class MatrixEliminator<R: EuclideanRing> {
         finish()
         
         log("-----Done:\(self), \(rowOps.count + colOps.count) steps)-----")
-        
-        return resultType.init(target, rowOps, colOps)
     }
     
     final func run(_ eliminator: MatrixEliminator.Type) {
@@ -94,16 +71,12 @@ public class MatrixEliminator<R: EuclideanRing> {
     }
     
     final func log(_ msg: @autoclosure () -> String) {
-        if MatrixEliminator.debug {
+        if debug {
             print(msg() + "\n" + DMatrix(target).detailDescription)
         }
     }
     
     // override points
-    
-    var resultType: MatrixEliminationResultImpl<R>.Type {
-        return MatrixEliminationResultImpl.self
-    }
     
     func prepare() {
         // override in subclass
@@ -187,11 +160,6 @@ public class MatrixEliminator<R: EuclideanRing> {
                 return .SwapRows(i, j)
             }
         }
-    }
-    
-    static var debug: Bool  {
-        get { return _debug }
-        set { _debug = newValue }
     }
 }
 

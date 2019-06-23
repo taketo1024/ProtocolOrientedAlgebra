@@ -9,19 +9,15 @@
 import Foundation
 
 internal final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
-    var targetRow = 0
-    var targetCol = 0
-    
-    override var resultType: MatrixEliminationResultImpl<R>.Type {
-        return RowEchelonEliminationResult.self
-    }
+    var currentRow = 0
+    var currentCol = 0
     
     override func prepare() {
         target.switchAlignment(.Rows)
     }
     
     override func isDone() -> Bool {
-        return targetRow >= target.table.count || targetCol >= cols
+        return currentRow >= target.table.count || currentCol >= target.cols
     }
     
     @_specialize(where R == ComputationSpecializedRing)
@@ -30,7 +26,7 @@ internal final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R>
         // find pivot point
         let elements = targetColElements()
         guard let pivot = findPivot(in: elements) else {
-            targetCol += 1
+            currentCol += 1
             return
         }
         
@@ -61,12 +57,12 @@ internal final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R>
         
         // final step
         
-        if i0 != targetRow {
-            apply(.SwapRows(i0, targetRow))
+        if i0 != currentRow {
+            apply(.SwapRows(i0, currentRow))
         }
         
-        targetRow += 1
-        targetCol += 1
+        currentRow += 1
+        currentCol += 1
     }
     
     @_specialize(where R == ComputationSpecializedRing)
@@ -75,19 +71,13 @@ internal final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R>
         // where (i >= targetRow && j == targetCol)
         return target.table.compactMap{ (i, list) -> (Int, R)? in
             let (j, a) = list.first!
-            return (i >= targetRow && j == targetCol) ? (i, a) : nil
+            return (i >= currentRow && j == currentCol) ? (i, a) : nil
         }.sorted{ (i, _) in i}
     }
     
     @_specialize(where R == ComputationSpecializedRing)
     private func findPivot(in candidates: [(Int, R)]) -> (Int, R)? {
         return candidates.min { $0.1.eucDegree < $1.1.eucDegree }
-    }
-}
-
-internal final class RowEchelonEliminationResult<R: EuclideanRing>: MatrixEliminationResultImpl<R> {
-    override func _rank() -> Int {
-        return result.table.count
     }
 }
 

@@ -376,6 +376,25 @@ public extension Matrix where n == DynamicSize, m == DynamicSize {
     }
 }
 
+extension Matrix where R: EuclideanRing {
+    public func eliminate(form: MatrixEliminationForm = .Diagonal, debug: Bool = false) -> MatrixEliminationResult<n, m, R> {
+        let type: MatrixEliminator<R>.Type
+        
+        switch form {
+        case .RowEchelon: type = RowEchelonEliminator.self
+        case .ColEchelon: type = ColEchelonEliminator.self
+        case .RowHermite: type = RowHermiteEliminator.self
+        case .ColHermite: type = ColHermiteEliminator.self
+        case .Smith:      type = SmithEliminator     .self
+        default:          type = DiagonalEliminator  .self
+        }
+        
+        let elim = type.init(impl.copy(), debug: debug)
+        elim.run()
+        return MatrixEliminationResult(elim.target, elim.rowOps, elim.colOps)
+    }
+}
+
 public extension Matrix where R: RealSubset {
     var asReal: Matrix<n, m, 𝐑> {
         return Matrix<n, m, 𝐑>(impl.mapComponents{ $0.asReal })
