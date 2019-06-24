@@ -140,11 +140,19 @@ extension ModuleHom where X: FreeModuleType, Y: FreeModuleType {
         }
     }
     
+    public static func linearlyExtend(from: [X.Generator], to: [Y.Generator], matrix: DMatrix<CoeffRing>) -> ModuleHom<X, Y> {
+        let indexer = from.indexer()
+        return ModuleHom.linearlyExtend { e in
+            guard let j = indexer(e) else { return .zero }
+            return Y(generators: to, components: matrix.colVector(j).grid)
+        }
+    }
+    
     public func asMatrix(from: [X.Generator], to: [Y.Generator]) -> DMatrix<CoeffRing> {
         let comps = from.enumerated().flatMap { (j, a) -> [MatrixComponent<CoeffRing>] in
             let w = self.applied(to: .wrap(a))
             return w.factorize(by: to).enumerated().compactMap { (i, a) in
-                a != .zero ? MatrixComponent(i, j, a) : nil
+                a != .zero ? (i, j, a) : nil
             }
         }
         return DMatrix(rows: to.count, cols: from.count, components: comps)
