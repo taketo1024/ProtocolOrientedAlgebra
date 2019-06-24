@@ -21,7 +21,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     private let _matrixCache: CacheDictionary<String, MatrixImpl<R>> = .empty
 
     public var rank: Int {
-        result.impl.table.count
+        return result.impl.table.count
     }
     
     public var left: Matrix<n, n, R> {
