@@ -76,33 +76,33 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         return Matrix<n, m, R2>(impl.mapComponents(f))
     }
     
-    func submatrix(rowRange: CountableRange<Int>) -> Matrix<DynamicSize, m, R> {
+    public func submatrix(rowRange: CountableRange<Int>) -> Matrix<DynamicSize, m, R> {
         return .init(impl.submatrix(rowRange: rowRange) )
     }
     
-    func submatrix(colRange: CountableRange<Int>) -> Matrix<n, DynamicSize, R> {
+    public func submatrix(colRange: CountableRange<Int>) -> Matrix<n, DynamicSize, R> {
         return .init(impl.submatrix(colRange: colRange) )
     }
     
-    func submatrix(rowRange: CountableRange<Int>,  colRange: CountableRange<Int>) -> DMatrix<R> {
+    public func submatrix(rowRange: CountableRange<Int>,  colRange: CountableRange<Int>) -> DMatrix<R> {
         return .init(impl.submatrix(rowRange, colRange))
     }
     
-    func concatHorizontally<m1>(_ B: Matrix<n, m1, R>) -> Matrix<n, DynamicSize, R> {
+    public func concatHorizontally<m1>(_ B: Matrix<n, m1, R>) -> Matrix<n, DynamicSize, R> {
         assert(rows == B.rows)
         return .init(impl.concatHorizontally(B.impl))
     }
     
-    func concatVertically<n1>(_ B: Matrix<n1, m, R>) -> Matrix<n1, m, R> {
+    public func concatVertically<n1>(_ B: Matrix<n1, m, R>) -> Matrix<n1, m, R> {
         assert(cols == B.cols)
         return .init(impl.concatVertically(B.impl))
     }
     
-    func concatDiagonally<n1, m1>(_ B: Matrix<n1, m1, R>) -> DMatrix<R> {
+    public func concatDiagonally<n1, m1>(_ B: Matrix<n1, m1, R>) -> DMatrix<R> {
         return .init(impl.concatDiagonally(B.impl))
     }
     
-    func blocks(rowSizes: [Int], colSizes: [Int]) -> [[DMatrix<R>]] {
+    public func blocks(rowSizes: [Int], colSizes: [Int]) -> [[DMatrix<R>]] {
         var i = 0
         return rowSizes.map { r -> [DMatrix<R>] in
             defer { i += r }
