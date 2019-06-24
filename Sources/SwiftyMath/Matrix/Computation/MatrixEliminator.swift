@@ -43,7 +43,7 @@ internal class MatrixEliminator<R: EuclideanRing> {
     }
     
     final func run(_ eliminator: MatrixEliminator.Type) {
-        let e = eliminator.init(target)
+        let e = eliminator.init(target, debug: debug)
         e.run()
         rowOps += e.rowOps
         colOps += e.colOps
@@ -51,7 +51,7 @@ internal class MatrixEliminator<R: EuclideanRing> {
     
     final func runTranpose(_ eliminator: MatrixEliminator.Type) {
         transpose()
-        let e = eliminator.init(target)
+        let e = eliminator.init(target, debug: debug)
         e.run()
         rowOps += e.colOps.map{ s in s.transpose }
         colOps += e.rowOps.map{ s in s.transpose }
