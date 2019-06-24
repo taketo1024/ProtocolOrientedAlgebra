@@ -155,7 +155,7 @@ extension ModuleHom where X: FreeModuleType, Y: FreeModuleType {
                 a != .zero ? (i, j, a) : nil
             }
         }
-        return DMatrix(rows: to.count, cols: from.count, components: comps)
+        return DMatrix(size: (to.count, from.count), components: comps)
     }
 }
 
