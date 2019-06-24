@@ -19,7 +19,7 @@ internal final class RowHermiteEliminator<R: EuclideanRing>: MatrixEliminator<R>
     }
     
     override func isDone() -> Bool {
-        return targetRow >= rank || targetCol >= target.cols
+        return targetRow >= rank || targetCol >= target.size.cols
     }
     
     @_specialize(where R == ComputationSpecializedRing)

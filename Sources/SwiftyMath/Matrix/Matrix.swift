@@ -8,7 +8,9 @@ public typealias Matrix4<R: Ring> = SquareMatrix<_4, R>
 
 public typealias DMatrix<R: Ring> = Matrix<DynamicSize, DynamicSize, R>
 
-public struct MatrixCoord: Hashable, Comparable, Codable, CustomStringConvertible {
+public typealias MatrixComponent<R: Ring> = (row: Int, col: Int, value: R)
+
+internal struct MatrixCoord: Hashable, Comparable, Codable, CustomStringConvertible {
     public let row, col: Int
     public init(_ row: Int, _ col: Int) {
         self.row = row
@@ -34,18 +36,23 @@ public struct MatrixCoord: Hashable, Comparable, Codable, CustomStringConvertibl
 
 public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType, Sequence {
     public typealias CoeffRing = R
-    public typealias MatrixData = [MatrixCoord : R]
+    internal typealias MatrixData = [MatrixCoord : R]
     
     public var size: (rows: Int, cols: Int)
     internal var data: MatrixData
     
-    public init(size: (Int, Int), data: MatrixData) {
+    internal init(size: (Int, Int), data: MatrixData) {
         assert(n.isDynamic || n.intValue == size.0)
         assert(m.isDynamic || m.intValue == size.1)
         assert(data.keys.allSatisfy{ c in (0 ..< size.0).contains(c.row) && (0 ..< size.1).contains(c.col)})
         
         self.size = size
         self.data = data.filter{ (_, a) in a != .zero }
+    }
+    
+    public init(size: (Int, Int), components: [MatrixComponent<R>]) {
+        let data = components.map{ (i, j, a) in (MatrixCoord(i, j), a)}
+        self.init(size: size, data: Dictionary(pairs: data))
     }
     
     // MEMO: do not use for a large matrix.
@@ -262,7 +269,13 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType, Sequence {
     }
     
     public func makeIterator() -> AnyIterator<(row: Int, col: Int, value: R)> {
-        return AnyIterator(data.sorted{ $0.key < $1.key }.lazy.compactMap{ (c, a) in a == .zero ? nil : (c.row, c.col, a) }.makeIterator())
+        let lazySeq = data
+            .sorted{ $0.key < $1.key }
+            .lazy
+            .compactMap{ (c, a) -> MatrixComponent<R>? in
+                a == .zero ? nil : (c.row, c.col, a)
+            }
+        return AnyIterator(lazySeq.makeIterator())
     }
     
     public var description: String {
@@ -333,7 +346,7 @@ extension Matrix: AdditiveGroup, Module where n: StaticSizeType, m: StaticSizeTy
         self.init(grid)
     }
     
-    public init(data: MatrixData) {
+    internal init(data: MatrixData) {
         let size = (n.intValue, m.intValue)
         self.init(size: size, data: data)
     }
@@ -450,10 +463,10 @@ extension Matrix where R: EuclideanRing {
         default:          type = DiagonalEliminator  .self
         }
         
-        let impl = MatrixImpl(rows: size.rows, cols: size.cols, components: nonZeroComponents)
-        let elim = type.init(impl, debug: debug)
+        let target = MatrixEliminationTarget(matrix: self)
+        let elim = type.init(target, debug: debug)
         elim.run()
-        return MatrixEliminationResult(elim.target, elim.rowOps, elim.colOps)
+        return MatrixEliminationResult(elim)
     }
 }
 
@@ -501,25 +514,6 @@ extension Matrix: Codable where R: Codable {
         try c.encode(size.rows, forKey: .rows)
         try c.encode(size.cols, forKey: .cols)
         try c.encode(grid, forKey: .grid)
-    }
-}
-
-// TODO delete after refac complete
-
-public typealias MatrixComponent<R: Ring> = (row: Int, col: Int, value: R)
-
-extension Matrix {
-    init(_ impl: MatrixImpl<R>) {
-        self.init(rows: impl.rows, cols: impl.cols, components: impl.components)
-    }
-    
-    public init(rows: Int, cols: Int, components: [MatrixComponent<R>]) {
-        let data = components.map{ (i, j, a) in (MatrixCoord(i, j), a)}
-        self.init(size: (rows, cols), data: Dictionary(pairs: data))
-    }
-    
-    public var nonZeroComponents: [MatrixComponent<R>] {
-        return exclude{ (_, _, a) in a == .zero }
     }
 }
 

@@ -9,61 +9,65 @@ import Foundation
 
 public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing> {
     public let result: Matrix<n, m, R>
-    let impl: MatrixImpl<R>
+    public let rank: Int
     let rowOps: [MatrixEliminator<R>.ElementaryOperation]
     let colOps: [MatrixEliminator<R>.ElementaryOperation]
 
-    internal init(_ impl: MatrixImpl<R>, _ rowOps: [MatrixEliminator<R>.ElementaryOperation], _ colOps: [MatrixEliminator<R>.ElementaryOperation]) {
-        self.result = Matrix(impl)
-        self.impl = impl
-        self.rowOps = rowOps
-        self.colOps = colOps
-    }
+    private let dataCache: CacheDictionary<String, [MatrixCoord : R]> = .empty
     
-    private let _matrixCache: CacheDictionary<String, MatrixImpl<R>> = .empty
-
-    public var rank: Int {
-        return impl.table.count
+    internal init(_ elim: MatrixEliminator<R>) {
+        self.result = Matrix(elim.target)
+        self.rank = elim.target.table.count
+        self.rowOps = elim.rowOps
+        self.colOps = elim.colOps
     }
     
     public var left: Matrix<n, n, R> {
-        return Matrix(_matrixCache.useCacheOrSet(key: "left") {
-            let P = MatrixImpl<R>.identity(size: result.size.rows, align: .Rows)
+        let n = result.size.rows
+        let data = dataCache.useCacheOrSet(key: "left") {
+            let P = MatrixEliminationTarget<R>.identity(size: n, align: .horizontal)
             for s in rowOps {
                 P.apply(s)
             }
-            return P
-        })
+            return P.asMatrixData
+        }
+        return .init(size: (n, n), data: data)
     }
     
     public var leftInverse: Matrix<n, n, R> {
-        return Matrix(_matrixCache.useCacheOrSet(key: "leftinv") {
-            let P = MatrixImpl<R>.identity(size: result.size.rows, align: .Rows)
+        let n = result.size.rows
+        let data = dataCache.useCacheOrSet(key: "leftinv") {
+            let P = MatrixEliminationTarget<R>.identity(size: n, align: .horizontal)
             for s in rowOps.reversed() {
                 P.apply(s.inverse)
             }
-            return P
-        })
+            return P.asMatrixData
+        }
+        return .init(size: (n, n), data: data)
     }
     
     public var right: Matrix<m, m, R> {
-        return Matrix(_matrixCache.useCacheOrSet(key: "right") {
-            let P = MatrixImpl<R>.identity(size: result.size.cols, align: .Cols)
+        let m = result.size.cols
+        let data = dataCache.useCacheOrSet(key: "right") {
+            let P = MatrixEliminationTarget<R>.identity(size: m, align: .vertical)
             for s in colOps {
                 P.apply(s)
             }
-            return P
-        })
+            return P.asMatrixData
+        }
+        return .init(size: (m, m), data: data)
     }
     
     public var rightInverse: Matrix<m, m, R> {
-        return Matrix(_matrixCache.useCacheOrSet(key: "rightinv") {
-            let P = MatrixImpl<R>.identity(size: result.size.cols, align: .Cols)
+        let m = result.size.cols
+        let data = dataCache.useCacheOrSet(key: "rightinv") {
+            let P = MatrixEliminationTarget<R>.identity(size: m, align: .vertical)
             for s in colOps.reversed() {
                 P.apply(s.inverse)
             }
-            return P
-        })
+            return P.asMatrixData
+        }
+        return .init(size: (m, m), data: data)
     }
     
     // The matrix made by the basis of Ker(A).

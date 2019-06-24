@@ -13,11 +13,11 @@ internal final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R>
     var currentCol = 0
     
     override func prepare() {
-        target.switchAlignment(.Rows)
+        target.switchAlignment(.horizontal)
     }
     
     override func isDone() -> Bool {
-        return currentRow >= target.table.count || currentCol >= target.cols
+        return currentRow >= target.table.count || currentCol >= target.size.cols
     }
     
     @_specialize(where R == ComputationSpecializedRing)

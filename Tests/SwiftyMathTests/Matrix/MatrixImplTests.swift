@@ -11,16 +11,16 @@ import Foundation
 import XCTest
 @testable import SwiftyMath
 
-class MatrixImplTests: XCTestCase {
+class MatrixEliminationTargetTests: XCTestCase {
     
     private typealias R = 𝐙
     
-    private func M2(_ xs: R...) -> MatrixImpl<R> {
-        return MatrixImpl(rows: 2, cols: 2, grid: xs)
+    private func M2(_ xs: R...) -> MatrixEliminationTarget<R> {
+        return MatrixEliminationTarget(matrix: Matrix2(xs))
     }
     
-    private func M2c(_ xs: R...) -> MatrixImpl<R> {
-        return MatrixImpl(rows: 2, cols: 2, align: .Cols, grid: xs)
+    private func M2c(_ xs: R...) -> MatrixEliminationTarget<R> {
+        return MatrixEliminationTarget(matrix: Matrix2(xs), align: .vertical)
     }
     
     func testEqual() {
@@ -37,13 +37,13 @@ class MatrixImplTests: XCTestCase {
     
     func testSwitchFromRow() {
         let a = M2(1,2,3,4)
-        a.switchAlignment(.Cols)
+        a.switchAlignment(.vertical)
         XCTAssertEqual(a, M2(1,2,3,4))
     }
     
     func testSwitchFromCol() {
         let a = M2c(1,2,3,4)
-        a.switchAlignment(.Rows)
+        a.switchAlignment(.horizontal)
         XCTAssertEqual(a, M2(1,2,3,4))
     }
     
@@ -61,50 +61,6 @@ class MatrixImplTests: XCTestCase {
         XCTAssertEqual(a[0, 1], 2)
         XCTAssertEqual(a[1, 0], 0)
         XCTAssertEqual(a[1, 1], 4)
-    }
-    
-    func testSubscriptSet() {
-        let a = M2(1,2,0,4)
-        a[0, 0] = 0
-        a[0, 1] = -1
-        a[1, 1] = 2
-        XCTAssertEqual(a.grid, [0, -1, 0, 2])
-    }
-
-    func testSubscriptSet_c() {
-        let a = M2c(1,2,0,4)
-        a[0, 0] = 0
-        a[0, 1] = -1
-        a[1, 1] = 2
-        XCTAssertEqual(a.grid, [0, -1, 0, 2])
-    }
-
-    func testAdd1() {
-        let a = M2(1,2,3,4)
-        let b = M2(2,3,6,4)
-        let c = a + b
-        XCTAssertEqual(c, M2(3,5,9,8))
-    }
-    
-    func testAdd2() {
-        let a = M2(1,2,3,4)
-        let b = M2c(2,3,6,4)
-        let c = a + b
-        XCTAssertEqual(c, M2(3,5,9,8))
-    }
-    
-    func testAdd3() {
-        let a = M2c(1,2,3,4)
-        let b = M2(2,3,6,4)
-        let c = a + b
-        XCTAssertEqual(c, M2(3,5,9,8))
-    }
-    
-    func testAdd4() {
-        let a = M2c(1,2,3,4)
-        let b = M2c(2,3,6,4)
-        let c = a + b
-        XCTAssertEqual(c, M2(3,5,9,8))
     }
     
     func testAddRow() {

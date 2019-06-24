@@ -18,12 +18,12 @@ public enum MatrixEliminationForm {
 }
 
 internal class MatrixEliminator<R: EuclideanRing> {
-    var target: MatrixImpl<R>
+    var target: MatrixEliminationTarget<R>
     var rowOps: [ElementaryOperation]
     var colOps: [ElementaryOperation]
     var debug: Bool
     
-    required init(_ target: MatrixImpl<R>, debug: Bool = false) {
+    required init(_ target: MatrixEliminationTarget<R>, debug: Bool = false) {
         self.target = target
         self.rowOps = []
         self.colOps = []
@@ -163,7 +163,7 @@ internal class MatrixEliminator<R: EuclideanRing> {
     }
 }
 
-extension MatrixImpl where R: EuclideanRing {
+extension MatrixEliminationTarget where R: EuclideanRing {
     func apply(_ s: MatrixEliminator<R>.ElementaryOperation) {
         switch s {
         case let .AddRow(i, j, r):

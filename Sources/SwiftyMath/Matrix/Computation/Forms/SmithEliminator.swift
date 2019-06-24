@@ -17,7 +17,7 @@ internal final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     }
     
     override func isDone() -> Bool {
-        return done || currentIndex >= min(target.rows, target.cols)
+        return done || currentIndex >= min(target.size.rows, target.size.cols)
     }
     
     @_specialize(where R == ComputationSpecializedRing)
