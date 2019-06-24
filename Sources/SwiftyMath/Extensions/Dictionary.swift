@@ -40,7 +40,7 @@ public extension Dictionary {
     }
     
     mutating func merge(_ other: [Key : Value], overwrite: Bool = false) {
-        return self.merge(other, uniquingKeysWith: { (v1, v2) in !overwrite ? v1 : v2 })
+        self.merge(other, uniquingKeysWith: { (v1, v2) in !overwrite ? v1 : v2 })
     }
     
     func merging(_ other: [Key : Value], overwrite: Bool = false) -> [Key : Value] {

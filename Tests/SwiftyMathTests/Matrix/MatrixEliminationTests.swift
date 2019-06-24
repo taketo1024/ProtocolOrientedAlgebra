@@ -88,7 +88,7 @@ class MatrixEliminationTests: XCTestCase {
     }
 
     func testZ46_zero() {
-        let A = M<_4, _6, 𝐙>.init(fill: 0)
+        let A = M<_4, _6, 𝐙>.zero
         let E = A.eliminate(form: .Smith)
         XCTAssertEqual(E.result, A)
     }
@@ -118,12 +118,11 @@ class MatrixEliminationTests: XCTestCase {
         let E = A.eliminate()
         let K = E.kernelMatrix
         
-        XCTAssertEqual(K.rows, 2)
-        XCTAssertEqual(K.cols, 1)
+        XCTAssertTrue(K.size == (2, 1))
         XCTAssertTrue((A * K).isZero)
 
         let T = E.kernelTransitionMatrix
-        XCTAssertEqual(T * K, DMatrix(rows: 1, cols: 1, grid: [1]))
+        XCTAssertEqual(T * K, DMatrix(size:(1, 1), grid: [1]))
     }
 
     public func testImage() {
@@ -131,8 +130,7 @@ class MatrixEliminationTests: XCTestCase {
         let E = A.eliminate()
         let I = E.imageMatrix
 
-        XCTAssertEqual(I.rows, 2)
-        XCTAssertEqual(I.cols, 1)
+        XCTAssertTrue(I.size == (2, 1))
         XCTAssertEqual(I.grid, [2, 2])
     }
     

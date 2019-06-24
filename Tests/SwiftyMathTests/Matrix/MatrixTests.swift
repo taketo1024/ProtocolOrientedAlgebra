@@ -31,8 +31,8 @@ class MatrixTests: XCTestCase {
         XCTAssertEqual(a, Matrix2(0,1,10,11))
     }
     
-    func testInitByComponents() {
-        let a = Matrix2(components: [(0,0,3), (0,1,2), (1,1,5)])
+    func testInitByData() {
+        let a = Matrix2(data: [MatrixCoord(0,0) : 3, MatrixCoord(0,1) : 2, MatrixCoord(1,1) : 5])
         XCTAssertEqual(a, Matrix2(3,2,0,5))
     }
     
@@ -168,38 +168,46 @@ class MatrixTests: XCTestCase {
     }
     
     func testConcatHor() {
-        let a = Matrix2(1,2,3,4)
+        var a = Matrix2(1,2,3,4).asDynamicMatrix
         let b = Matrix2(5,6,7,8)
-        let y = a.concatHorizontally(b).as(Matrix<_2, _4, R>.self)
-        XCTAssertEqual(y, Matrix<_2, _4, R>(
+        a.concatHorizontally(b)
+        
+        let r = Matrix<_2, _4, R>(
             1,2,5,6,
             3,4,7,8
-        ))
+        ).asDynamicMatrix
+        
+        XCTAssertEqual(a, r)
     }
     
     func testConcatVer() {
-        let a = Matrix2(1,2,3,4)
+        var a = Matrix2(1,2,3,4).asDynamicMatrix
         let b = Matrix2(5,6,7,8)
+        a.concatVertically(b)
         
-        let x = a.concatVertically(b).as(Matrix<_4, _2, R>.self)
-        XCTAssertEqual(x, Matrix<_4, _2, R>(
+        let r = Matrix<_4, _2, R>(
             1,2,
             3,4,
             5,6,
             7,8
-        ))
+        ).asDynamicMatrix
+        
+        XCTAssertEqual(a, r)
     }
     
     func testConcatDiag() {
-        let a = Matrix2(1,2,3,4)
+        var a = Matrix2(1,2,3,4).asDynamicMatrix
         let b = Matrix2(5,6,7,8)
-        let x = a.concatDiagonally(b).as(Matrix4<R>.self)
-        XCTAssertEqual(x, Matrix4(
+        a.concatDiagonally(b)
+        
+        let r = Matrix4(
             1,2,0,0,
             3,4,0,0,
             0,0,5,6,
             0,0,7,8
-        ))
+        ).asDynamicMatrix
+        
+        XCTAssertEqual(a, r)
     }
     
     func testTensorProduct() {
@@ -213,14 +221,15 @@ class MatrixTests: XCTestCase {
             0,0,9,12
         ))
     }
+    
     func testAsDynamic() {
         let a = Matrix<_2, _3, R>(1,2,3,4,5,6)
         let b = a.as(DMatrix<R>.self)
-        XCTAssertEqual(b, DMatrix(rows: 2, cols: 3, grid: [1,2,3,4,5,6]))
+        XCTAssertEqual(b, DMatrix(size: (2, 3), grid: [1,2,3,4,5,6]))
     }
     
     func testAsStatic() {
-        let a = DMatrix(rows: 2, cols: 3, grid: [1,2,3,4,5,6])
+        let a = DMatrix(size: (2, 3), grid: [1,2,3,4,5,6])
         let b = a.as(Matrix<_2, _3, R>.self)
         XCTAssertEqual(b, Matrix<_2, _3, R>(1,2,3,4,5,6))
     }

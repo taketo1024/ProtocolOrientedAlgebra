@@ -9,11 +9,13 @@ import Foundation
 
 public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing> {
     public let result: Matrix<n, m, R>
+    let impl: MatrixImpl<R>
     let rowOps: [MatrixEliminator<R>.ElementaryOperation]
     let colOps: [MatrixEliminator<R>.ElementaryOperation]
 
-    internal init(_ result: MatrixImpl<R>, _ rowOps: [MatrixEliminator<R>.ElementaryOperation], _ colOps: [MatrixEliminator<R>.ElementaryOperation]) {
-        self.result = Matrix(result)
+    internal init(_ impl: MatrixImpl<R>, _ rowOps: [MatrixEliminator<R>.ElementaryOperation], _ colOps: [MatrixEliminator<R>.ElementaryOperation]) {
+        self.result = Matrix(impl)
+        self.impl = impl
         self.rowOps = rowOps
         self.colOps = colOps
     }
@@ -21,12 +23,12 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     private let _matrixCache: CacheDictionary<String, MatrixImpl<R>> = .empty
 
     public var rank: Int {
-        return result.impl.table.count
+        return impl.table.count
     }
     
     public var left: Matrix<n, n, R> {
         return Matrix(_matrixCache.useCacheOrSet(key: "left") {
-            let P = MatrixImpl<R>.identity(size: result.rows, align: .Rows)
+            let P = MatrixImpl<R>.identity(size: result.size.rows, align: .Rows)
             for s in rowOps {
                 P.apply(s)
             }
@@ -36,7 +38,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     
     public var leftInverse: Matrix<n, n, R> {
         return Matrix(_matrixCache.useCacheOrSet(key: "leftinv") {
-            let P = MatrixImpl<R>.identity(size: result.rows, align: .Rows)
+            let P = MatrixImpl<R>.identity(size: result.size.rows, align: .Rows)
             for s in rowOps.reversed() {
                 P.apply(s.inverse)
             }
@@ -46,7 +48,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     
     public var right: Matrix<m, m, R> {
         return Matrix(_matrixCache.useCacheOrSet(key: "right") {
-            let P = MatrixImpl<R>.identity(size: result.cols, align: .Cols)
+            let P = MatrixImpl<R>.identity(size: result.size.cols, align: .Cols)
             for s in colOps {
                 P.apply(s)
             }
@@ -56,7 +58,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     
     public var rightInverse: Matrix<m, m, R> {
         return Matrix(_matrixCache.useCacheOrSet(key: "rightinv") {
-            let P = MatrixImpl<R>.identity(size: result.cols, align: .Cols)
+            let P = MatrixImpl<R>.identity(size: result.size.cols, align: .Cols)
             for s in colOps.reversed() {
                 P.apply(s.inverse)
             }
@@ -72,7 +74,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     
     public var kernelMatrix: Matrix<m, DynamicSize, R>  {
         assert(result.isDiagonal)
-        return right.submatrix(colRange: rank ..< result.cols)
+        return right.submatrix(colRange: rank ..< result.size.cols)
     }
 
     // The matrix made by the basis of Im(A).
@@ -97,16 +99,15 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     
     public var kernelTransitionMatrix: Matrix<DynamicSize, m, R> {
         assert(result.isDiagonal)
-        return rightInverse.submatrix(rowRange: rank ..< result.cols)
+        return rightInverse.submatrix(rowRange: rank ..< result.size.cols)
     }
 }
 
 extension MatrixEliminationResult where n == m {
     public var determinant: R {
-        assert(result.rows == result.cols)
         assert(result.isDiagonal)
         
-        if rank == result.rows {
+        if rank == result.size.rows {
             return rowOps.multiply { $0.determinant }.inverse!
                 * colOps.multiply { $0.determinant }.inverse!
                 * result.diagonal.multiplyAll()
@@ -116,7 +117,7 @@ extension MatrixEliminationResult where n == m {
     }
     
     public var inverse: Matrix<n, n, R>? {
-        assert(result.rows == result.cols)
+        assert(result.isSquare)
         return (result.isIdentity) ? right * left : nil
     }
 }
