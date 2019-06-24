@@ -97,31 +97,21 @@ internal final class MatrixEliminationTarget<R: Ring>: Equatable, CustomStringCo
     func multiplyRow(at i0: Int, by r: R) {
         switchAlignment(.horizontal)
         
-        guard var row = table[i0] else {
+        guard let row = table[i0] else {
             return
         }
-        
-        let n = row.count
-        var p = UnsafeMutablePointer(&row)
-        
-        for _ in 0 ..< n {
-            let (j, a) = p.pointee
-            p.pointee = (j, r * a)
-            p += 1
-        }
-        
-        row = row.filter{ $0.1 != .zero }
-        table[i0] = !row.isEmpty ? row : nil
+        table[i0] = mergeRows(row, [], { (a, _) in r * a })
     }
     
     @_specialize(where R == ComputationSpecializedRing)
     func addRow(at i0: Int, to i1: Int, multipliedBy r: R = .identity) {
         switchAlignment(.horizontal)
         
-        let row0 = table[i0]?.map{ (j, a) in (j, r * a) } ?? []
+        let row0 = table[i0] ?? []
         let row1 = table[i1] ?? []
         
-        table[i1] = MatrixEliminationTarget.mergeRows(row0, row1)
+        let merged = mergeRows(row0, row1, { r * $0 + $1 })
+        table[i1] = merged
     }
     
     func swapRows(_ i0: Int, _ i1: Int) {
@@ -151,63 +141,57 @@ internal final class MatrixEliminationTarget<R: Ring>: Equatable, CustomStringCo
     }
     
     @_specialize(where R == ComputationSpecializedRing)
-    private static func mergeRows(_ row0: [(Int, R)], _ row1: [(Int, R)]) -> [(Int, R)]? {
-        switch (row0.isEmpty, row1.isEmpty) {
-        case (true,  true): return nil
-        case (false, true): return row0
-        case (true, false): return row1
-        default: ()
+    private func mergeRows(_ row0: [(Int, R)], _ row1: [(Int, R)], _ f: (R, R) -> R) -> [(Int, R)]? {
+        func proceed(_ p: inout UnsafePointer<(Int, R)>, _ k: inout Int) {
+            p += 1
+            k += 1
         }
         
         var result: [(Int, R)] = []
+        
+        func append(_ j: Int, _ a: R) {
+            if a != .zero {
+                result.append( (j, a) )
+            }
+        }
         
         let (n0, n1) = (row0.count, row1.count)
         var (p0, p1) = (UnsafePointer(row0), UnsafePointer(row1))
         var (k0, k1) = (0, 0) // counters
         
+        result.reserveCapacity(n0 + n1)
+
         while k0 < n0 && k1 < n1 {
             let (j0, a0) = p0.pointee
             let (j1, a1) = p1.pointee
             
             if j0 == j1 {
-                result.append((j0, a0 + a1))
-                
-                p0 += 1
-                p1 += 1
-                k0 += 1
-                k1 += 1
+                append(j0, f(a0, a1))
+                proceed(&p0, &k0)
+                proceed(&p1, &k1)
                 
             } else if j0 < j1 {
-                result.append((j0, a0))
-                
-                p0 += 1
-                k0 += 1
+                append(j0, f(a0, .zero))
+                proceed(&p0, &k0)
                 
             } else if j0 > j1 {
-                result.append( (j1, a1) )
-                
-                p1 += 1
-                k1 += 1
+                append(j1, f(.zero, a1))
+                proceed(&p1, &k1)
             }
         }
         
         for _ in k0 ..< n0 {
             let (j0, a0) = p0.pointee
-            result.append((j0, a0))
-            
-            p0 += 1
-            k0 += 1
+            append(j0, f(a0, .zero))
+            proceed(&p0, &k0)
         }
         
         for _ in k1 ..< n1 {
             let (j1, a1) = p1.pointee
-            result.append((j1, a1))
-            
-            p1 += 1
-            k1 += 1
+            append(j1, f(.zero, a1))
+            proceed(&p1, &k1)
         }
         
-        result = result.filter{ $0.1 != .zero }
         return !result.isEmpty ? result : nil
     }
     
@@ -232,7 +216,11 @@ internal final class MatrixEliminationTarget<R: Ring>: Equatable, CustomStringCo
     }
     
     var description: String {
-        return ""
+        return DMatrix(self).description
+    }
+    
+    var detailDescription: String {
+        return DMatrix(self).detailDescription
     }
 }
 
