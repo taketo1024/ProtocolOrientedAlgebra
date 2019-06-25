@@ -7,12 +7,51 @@
 
 import Foundation
 
-public final class LinkedList<T>: Sequence {
+public final class LinkedList<T>: Sequence, CustomStringConvertible {
     public var value: T
     public var next: LinkedList<T>?
     
     public init(_ value: T) {
         self.value = value
+    }
+    
+    public static func generate<S: Sequence>(from seq: S) -> LinkedList<T>? where S.Element == T {
+        return seq.reduce(into: (nil, nil)) {
+            (res: inout (head: LinkedList<T>?, prev: LinkedList<T>?), value: T) in
+            
+            let curr = LinkedList(value)
+            if res.head == nil {
+                res.head = curr
+            }
+            res.prev?.next = curr
+            res.prev = curr
+        }.head
+    }
+    
+    public func insert(_ c: LinkedList<T>) {
+        let next = self.next
+        self.next = c
+        c.next = next
+    }
+    
+    public func drop(where shouldDrop: (T) -> Bool) -> LinkedList<T>? {
+        if let head = self.first(where: {c in !shouldDrop(c.value)}) {
+            var current = head
+            while let next = current.next {
+                if shouldDrop(next.value) {
+                    current.next = next.next
+                } else {
+                    current = next
+                }
+            }
+            return head
+        } else {
+            return nil
+        }
+    }
+    
+    public var values: [T] {
+        return self.map{ $0.value }
     }
     
     public func makeIterator() -> Iterator {
@@ -31,6 +70,10 @@ public final class LinkedList<T>: Sequence {
             }
             return current
         }
+    }
+    
+    public var description: String {
+        return "[\(value) \(next == nil ? "(end)" : "->")]"
     }
 }
 
