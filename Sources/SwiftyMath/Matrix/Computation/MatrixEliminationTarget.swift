@@ -205,7 +205,7 @@ internal final class MatrixEliminationTarget<R: Ring>: Equatable, CustomStringCo
             return false
         }
         func s(_ a: MatrixComponent<R>, _ b: MatrixComponent<R>) -> Bool {
-            (a.row < b.row) || (a.row == b.row && a.col < b.col)
+            return (a.row < b.row) || (a.row == b.row && a.col < b.col)
         }
         let (z1, z2) = (a.components.sorted(by: s), b.components.sorted(by: s))
         return z1.count == z2.count && zip(z1, z2).allSatisfy{ $0 == $1 }
