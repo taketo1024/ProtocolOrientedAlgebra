@@ -11,6 +11,44 @@ import Foundation
 import XCTest
 @testable import SwiftyMath
 
+class MatrixEliminatonWorkerTests: XCTestCase {
+    private typealias R = 𝐙
+    
+    private func M2(_ xs: R...) -> MatrixEliminationWorker<R> {
+        return MatrixEliminationWorker(from: Matrix2(xs))
+    }
+    
+    func testEqual() {
+        let a = M2(1,2,3,4)
+        XCTAssertEqual(a, M2(1,2,3,4))
+        XCTAssertNotEqual(a, M2(1,3,2,4))
+    }
+    
+    func testAddRow() {
+        let a = M2(1,2,3,4)
+        a.addRow(at: 0, to: 1, multipliedBy: 1)
+        XCTAssertEqual(a, M2(1,2,4,6))
+    }
+    
+    func testAddRowWithMul() {
+        let a = M2(1,2,3,4)
+        a.addRow(at: 0, to: 1, multipliedBy: 2)
+        XCTAssertEqual(a, M2(1,2,5,8))
+    }
+    
+    func testMulRow() {
+        let a = M2(1,2,3,4)
+        a.multiplyRow(at: 0, by: 2)
+        XCTAssertEqual(a, M2(2,4,3,4))
+    }
+    
+    func testSwapRows() {
+        let a = M2(1,2,3,4)
+        a.swapRows(0, 1)
+        XCTAssertEqual(a, M2(3,4,1,2))
+    }
+}
+
 class MatrixEliminationTests: XCTestCase {
     
     typealias M = Matrix
