@@ -18,9 +18,9 @@ public final class DiagonalEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     }
     
     override func iteration() {
-        subrun(RowHermiteEliminator(mode: mode, debug: debug))
+        subrun(RowEchelonEliminator(mode: mode, debug: debug))
         if shouldIterate() {
-            subrun(ColHermiteEliminator(mode: mode, debug: debug))
+            subrun(ColEchelonEliminator(mode: mode, debug: debug))
         }
     }
 }
