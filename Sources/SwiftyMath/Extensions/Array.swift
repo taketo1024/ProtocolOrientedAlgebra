@@ -67,9 +67,9 @@ public extension Array {
     }
 }
 
-public extension Array where Element: Equatable {
+extension Array where Element: Equatable {
     @discardableResult
-    mutating func remove(element: Element) -> Bool {
+    public mutating func remove(element: Element) -> Bool {
         if let i = firstIndex(of: element) {
             remove(at: i)
             return true
@@ -85,39 +85,9 @@ extension Array: Comparable where Element: Comparable {
     }
 }
 
-public extension Array where Element: Hashable {
-    func indexer() -> (Element) -> Int? {
-        let dict = Dictionary(pairs: self.unique().enumerated().map{ ($1, $0) })
+extension Array where Element: Hashable {
+    public func indexer() -> (Element) -> Int? {
+        let dict = Dictionary(pairs: self.enumerated().map{ ($1, $0) })
         return { dict[$0] }
-    }
-}
-
-public extension Array {
-    func binarySearch<T: Comparable>(_ needle: T, _ compare: (Element) -> T) -> (index: Int, element: Element)? {
-        var l = 0
-        var u = self.count - 1
-        
-        while l <= u {
-            let i = (l + u) / 2
-            let a = self[i]
-            let x = compare(a)
-            
-            if(needle == x) {
-                return (i, a)
-            } else {
-                if (needle < x) {
-                    u = i - 1
-                } else {
-                    l = i + 1
-                }
-            }
-        }
-        return nil
-    }
-}
-
-public extension Array where Element: Comparable {
-    func binarySearch(_ needle: Element) -> Int? {
-        return binarySearch(needle, { $0 }).map{ $0.index }
     }
 }
