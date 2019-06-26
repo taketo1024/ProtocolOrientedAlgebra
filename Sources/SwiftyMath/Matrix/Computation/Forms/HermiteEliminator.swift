@@ -31,7 +31,7 @@ public final class RowHermiteEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     
     @_specialize(where R == 𝐙)
     override func iteration() {
-        guard let (j0, a0) = worker.headElement(row: currentRow) else {
+        guard let (j0, a0) = worker.headElement(currentRow) else {
             return exit()
         }
         

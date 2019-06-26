@@ -32,7 +32,7 @@ class MatrixTests: XCTestCase {
     }
     
     func testInitByData() {
-        let a = Matrix2(data: [MatrixCoord(0,0) : 3, MatrixCoord(0,1) : 2, MatrixCoord(1,1) : 5])
+        let a = Matrix2(size: (2, 2), data: [MatrixCoord(0,0) : 3, MatrixCoord(0,1) : 2, MatrixCoord(1,1) : 5])
         XCTAssertEqual(a, Matrix2(3,2,0,5))
     }
     
@@ -60,6 +60,17 @@ class MatrixTests: XCTestCase {
         XCTAssertEqual(a[1, 1], 2)
     }
     
+    func testSubscriptSet_zeroExcluded() {
+        var a = Matrix2(1,2,3,4)
+        XCTAssertEqual(a.data.count, 4)
+        
+        a[0, 0] = 0
+        XCTAssertEqual(a.data.count, 3)
+        
+        a[0, 0] = 1
+        XCTAssertEqual(a.data.count, 4)
+    }
+    
     func testCopyOnMutate() {
         let a = Matrix2(1,2,0,4)
         var b = a
@@ -74,6 +85,12 @@ class MatrixTests: XCTestCase {
         let a = Matrix2(1,2,3,4)
         let b = Matrix2(2,3,4,5)
         XCTAssertEqual(a + b, Matrix2(3,5,7,9))
+    }
+    
+    func testSum_zeroExcluded() {
+        let a = Matrix2(1,2,3,4)
+        let b = Matrix2(-1,3,-3,5)
+        XCTAssertEqual((a + b).data.count, 2)
     }
     
     func testZero() {
@@ -98,6 +115,21 @@ class MatrixTests: XCTestCase {
         let a = Matrix2(1,2,3,4)
         XCTAssertEqual(2 * a, Matrix2(2,4,6,8))
         XCTAssertEqual(a * 3, Matrix2(3,6,9,12))
+    }
+    
+    func testScalarMul_zeroExcluded() {
+        let a = Matrix2(1,2,3,4)
+        XCTAssertEqual((0 * a).data.count, 0)
+    }
+    
+    func testMapComps() {
+        let a = Matrix2(1,2,0,4)
+        XCTAssertEqual(a.mapComponents{ $0 * 2 }, Matrix2(2,4,0,8))
+    }
+    
+    func testMapComps_zeroExcluded() {
+        let a = Matrix2(1,2,0,4)
+        XCTAssertEqual(a.mapComponents{ $0 * 0 }.data.count, 0)
     }
     
     func testId() {

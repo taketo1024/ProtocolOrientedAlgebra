@@ -15,7 +15,11 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
     private var working: Table
     private var result : Table
     
-    init<S: Sequence>(size: (Int, Int), components: S) where S.Element == MatrixComponent<R> {
+    private var trackRowInfos: Bool
+    private var headPositions: [Int : Set<Int>] // [col : { rows having head at col }]
+    private var rowWeights: [Int : Int]
+    
+    init<S: Sequence>(size: (Int, Int), components: S, trackRowInfos: Bool = false) where S.Element == MatrixComponent<R> {
         self.size = size
         self.working = components.group{ c in c.row }
             .mapValues { l in
@@ -24,27 +28,40 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
         }
         self.result = [:]
         result.reserveCapacity(working.count)
+        
+        self.trackRowInfos = trackRowInfos
+        if trackRowInfos {
+            self.headPositions = working
+                .map{ (i, head) in (i, head.value.col) }
+                .group{ (_, j) in j }
+                .mapValues{ l in Set( l.map{ (i, _) in i } ) }
+            
+            self.rowWeights = working.mapValues{ l in l.sum{ c in c.value.value.eucDegree } }
+            
+        } else {
+            self.headPositions = [:]
+            self.rowWeights = [:]
+        }
     }
     
-    convenience init<n, m>(from matrix: Matrix<n, m, R>) {
-        self.init(size: matrix.size, components: matrix)
+    convenience init<n, m>(from matrix: Matrix<n, m, R>, trackRowInfos: Bool = false) {
+        self.init(size: matrix.size, components: matrix, trackRowInfos: trackRowInfos)
     }
     
-    func headElement(row i: Int) -> (col: Int, value: R)? {
+    func headElement(_ i: Int) -> (col: Int, value: R)? {
         return working[i]?.value
     }
     
     @_specialize(where R == 𝐙)
-    func headElements(col j0: Int) -> [(row: Int, value: R)] {
-        return working.compactMap{ (i, head) -> (Int, R)? in
-            let (j, a) = head.value
-            return j == j0 ? (i, a) : nil
-        }.sorted{ (i, _) in i }
+    func headElements(ofCol j: Int) -> [(row: Int, value: R)] {
+        assert(trackRowInfos)
+        return headPositions[j]?.map { i in (i, working[i]!.value.value) } ?? []
     }
     
     @_specialize(where R == 𝐙)
     func weight(ofRow i: Int) -> Int {
-        return working[i]?.sum{ c in c.value.value.eucDegree } ?? 0
+        assert(trackRowInfos)
+        return rowWeights[i] ?? 0
     }
     
     func apply(_ s: MatrixEliminator<R>.ElementaryOperation) {
@@ -69,12 +86,25 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
         for t in row {
             t.value.value = r * t.value.value
         }
+        
+        if trackRowInfos {
+            updateRowWeight(i)
+        }
     }
     
     func swapRows(_ i: Int, _ j: Int) {
-        let r0 = working[i]
-        working[i] = working[j]
-        working[j] = r0
+        if trackRowInfos {
+            removeHeadPosition(i)
+            removeHeadPosition(j)
+        }
+
+        (working[i], working[j]) = (working[j], working[i])
+        
+        if trackRowInfos {
+            updateHeadPosition(i)
+            updateHeadPosition(j)
+            (rowWeights[i], rowWeights[j]) = (rowWeights[j], rowWeights[i])
+        }
     }
     
     @_specialize(where R == 𝐙)
@@ -85,6 +115,10 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
         
         guard var toHead = working[i2] else {
             fatalError("attempt to add into empty row: \(i2)")
+        }
+        
+        if trackRowInfos {
+            removeHeadPosition(i2)
         }
         
         if fromHead.value.col < toHead.value.col {
@@ -137,6 +171,11 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
         
         let result = toHead.drop{ c in c.value == .zero } // possibly nil
         working[i2] = result
+        
+        if trackRowInfos {
+            updateHeadPosition(i2)
+            updateRowWeight(i2)
+        }
     }
     
     func finished(row i: Int) {
@@ -161,6 +200,32 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
         working = result
         result = [:]
         result.reserveCapacity(working.count)
+    }
+    
+    private func removeHeadPosition(_ i: Int) {
+        guard let j = working[i]?.value.col else { return }
+        if headPositions[j]!.count == 1 {
+            headPositions[j] = nil
+        } else {
+            headPositions[j]!.remove(i)
+        }
+    }
+    
+    private func updateHeadPosition(_ i: Int) {
+        guard let j = working[i]?.value.col else { return }
+        if headPositions[j] == nil {
+            headPositions[j] = [i]
+        } else {
+            headPositions[j]!.insert(i)
+        }
+    }
+    
+    private func updateRowWeight(_ i: Int) {
+        if let head = working[i] {
+            rowWeights[i] = head.sum{ c in c.value.value.eucDegree }
+        } else {
+            rowWeights[i] = nil
+        }
     }
     
     static func identity(size n: Int) -> RowEliminationWorker<R> {

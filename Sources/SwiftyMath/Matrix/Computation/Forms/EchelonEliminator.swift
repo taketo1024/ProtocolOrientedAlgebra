@@ -18,7 +18,7 @@ public final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     }
     
     override func prepare() {
-        worker = RowEliminationWorker(from: target.pointee)
+        worker = RowEliminationWorker(from: target.pointee, trackRowInfos: true)
     }
     
     override func shouldIterate() -> Bool {
@@ -29,7 +29,7 @@ public final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     override func iteration() {
         
         // find pivot point
-        let elements = worker.headElements(col: currentCol)
+        let elements = worker.headElements(ofCol: currentCol)
         guard let pivot = findPivot(in: elements) else {
             currentCol += 1
             return
@@ -54,7 +54,11 @@ public final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
             apply(.AddRow(at: i0, to: i, mul: -q))
             
             if r != .zero {
-                again = true
+                if mode == .fast && r.isInvertible {
+                    return
+                } else {
+                    again = true
+                }
             }
         }
         
@@ -77,7 +81,7 @@ public final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     private func findPivot(in candidates: [(row: Int, value: R)]) -> (row: Int, value: R)? {
         switch mode {
         case .fast:
-            if let p = candidates.first(where: { c in c.value == .identity || c.value == -.identity}) {
+            if let p = candidates.first(where: { c in c.value.isInvertible }) {
                 return p
             }
             return candidates.min { (c1, c2) in

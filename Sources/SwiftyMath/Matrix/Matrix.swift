@@ -41,28 +41,31 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType, Sequence {
     public var size: (rows: Int, cols: Int)
     internal var data: MatrixData<R>
     
-    internal init(size: (Int, Int), data: MatrixData<R>) {
+    internal init(size: (Int, Int), data: MatrixData<R>, zerosExcluded: Bool = false) {
         assert(n.isDynamic || n.intValue == size.0)
         assert(m.isDynamic || m.intValue == size.1)
         assert(data.keys.allSatisfy{ c in (0 ..< size.0).contains(c.row) && (0 ..< size.1).contains(c.col)})
+        assert(!zerosExcluded || data.values.allSatisfy{ $0 != .zero} )
         
         self.size = size
-        self.data = data.filter{ (_, a) in a != .zero }
+        self.data = zerosExcluded ? data : data.exclude{ (_, a) in a == .zero }
     }
     
-    public init(size: (Int, Int), components: [MatrixComponent<R>]) {
+    public init(size: (Int, Int), components: [MatrixComponent<R>], zerosExcluded: Bool = false) {
         let data = components.map{ (i, j, a) in (MatrixCoord(i, j), a)}
-        self.init(size: size, data: Dictionary(pairs: data))
+        self.init(size: size, data: Dictionary(pairs: data), zerosExcluded: zerosExcluded)
     }
     
     // MEMO: do not use for a large matrix.
     public init<S: Sequence>(size: (Int, Int), grid: S) where S.Element == R {
         let cols = size.1
-        let data = Dictionary(pairs: grid.enumerated().map{ (k, a) -> (MatrixCoord, R) in
-            let (i, j) = (k / cols, k % cols)
-            return (MatrixCoord(i, j), a)
-        })
-        self.init(size: size, data: data)
+        let data = grid.enumerated()
+            .exclude{ (_, a) in a == .zero }
+            .map{ (k, a) -> (MatrixCoord, R) in
+                let (i, j) = (k / cols, k % cols)
+                return (MatrixCoord(i, j), a)
+            }
+        self.init(size: size, data: Dictionary(pairs: data), zerosExcluded: true)
     }
     
     // MEMO: do not use for a large matrix.
@@ -79,7 +82,7 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType, Sequence {
         get {
             return data[MatrixCoord(i, j)] ?? .zero
         } set {
-            data[MatrixCoord(i, j)] = newValue
+            data[MatrixCoord(i, j)] = (newValue != .zero) ? newValue : nil
         }
     }
     
@@ -180,8 +183,8 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType, Sequence {
         }
     }
     
-    public func mapNonZeroComponents<R2>(_ f: (R) -> R2) -> Matrix<n, m, R2> {
-        return .init(size: size, data: data.mapValues(f))
+    public func mapComponents<R2>(zerosExcluded: Bool = false, _ f: (R) -> R2) -> Matrix<n, m, R2> {
+        return .init(size: size, data: data.mapValues(f), zerosExcluded: zerosExcluded)
     }
     
     public func `as`<n, m>(_ type: Matrix<n, m, R>.Type) -> Matrix<n, m, R> {
@@ -222,7 +225,7 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType, Sequence {
     }
     
     public prefix static func -(a: Matrix<n, m, R>) -> Matrix<n, m, R> {
-        return a.mapNonZeroComponents(-)
+        return a.mapComponents(zerosExcluded: true, (-))
     }
     
     public static func -(a: Matrix<n, m, R>, b: Matrix<n, m, R>) -> Matrix<n, m, R> {
@@ -231,11 +234,11 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType, Sequence {
     }
     
     public static func *(r: R, a: Matrix<n, m, R>) -> Matrix<n, m, R> {
-        return a.mapNonZeroComponents{ r * $0 }
+        return a.mapComponents{ r * $0 }
     }
     
     public static func *(a: Matrix<n, m, R>, r: R) -> Matrix<n, m, R> {
-        return a.mapNonZeroComponents{ $0 * r }
+        return a.mapComponents{ $0 * r }
     }
     
     public static func * <p>(a: Matrix<n, m, R>, b: Matrix<m, p, R>) -> Matrix<n, p, R> {
@@ -269,13 +272,8 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType, Sequence {
     }
     
     public func makeIterator() -> AnyIterator<(row: Int, col: Int, value: R)> {
-        let lazySeq = data
-            .sorted{ $0.key < $1.key }
-            .lazy
-            .compactMap{ (c, a) -> MatrixComponent<R>? in
-                a == .zero ? nil : (c.row, c.col, a)
-            }
-        return AnyIterator(lazySeq.makeIterator())
+        let seq = data.map{ (c, a) -> MatrixComponent<R> in (c.row, c.col, a) }
+        return AnyIterator(seq.makeIterator())
     }
     
     public var description: String {
@@ -325,12 +323,8 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType, Sequence {
 
 extension Matrix: AdditiveGroup, Module where n: StaticSizeType, m: StaticSizeType {
     public init<S: Sequence>(_ grid: S) where S.Element == R {
-        let (rows, cols) = (n.intValue, m.intValue)
-        let data = Dictionary(pairs: grid.enumerated().map{ (k, a) -> (MatrixCoord, R) in
-            let (i, j) = (k / cols, k % cols)
-            return (MatrixCoord(i, j), a)
-        })
-        self.init(size: (rows, cols), data: data)
+        let size = (n.intValue, m.intValue)
+        self.init(size: size, grid: grid)
     }
     
     public init(_ grid: R...) {
@@ -338,17 +332,8 @@ extension Matrix: AdditiveGroup, Module where n: StaticSizeType, m: StaticSizeTy
     }
     
     public init(generator g: (Int, Int) -> R) {
-        let (rows, cols) = (n.intValue, m.intValue)
-        let grid = (0 ..< rows * cols).map{ k -> R in
-            let (i, j) = (k / cols, k % cols)
-            return g(i, j)
-        }
-        self.init(grid)
-    }
-    
-    internal init(data: MatrixData<R>) {
         let size = (n.intValue, m.intValue)
-        self.init(size: size, data: data)
+        self.init(size: size, generator: g)
     }
     
     public static var zero: Matrix<n, m, R> {
@@ -364,8 +349,9 @@ extension Matrix: AdditiveGroup, Module where n: StaticSizeType, m: StaticSizeTy
 
 extension Matrix: Monoid, Ring where n == m, n: StaticSizeType {
     public init(from a : 𝐙) {
-        let data = (0 ..< n.intValue).map{ i in (MatrixCoord(i, i), R(from: a)) }
-        self.init(data: Dictionary(pairs: data))
+        let size = (n.intValue, n.intValue)
+        let data = (a != .zero) ? (0 ..< n.intValue).map{ i in (MatrixCoord(i, i), R(from: a)) } : []
+        self.init(size: size, data: Dictionary(pairs: data), zerosExcluded: true)
     }
     
     public static var identity: SquareMatrix<n, R> {
@@ -474,27 +460,27 @@ extension Matrix where R: EuclideanRing {
 
 extension Matrix where R: RealSubset {
     public var asReal: Matrix<n, m, 𝐑> {
-        return mapNonZeroComponents{ $0.asReal }
+        return mapComponents(zerosExcluded: true){ $0.asReal }
     }
 }
 
 extension Matrix where R: ComplexSubset {
     public var asComplex: Matrix<n, m, 𝐂> {
-        return mapNonZeroComponents{ $0.asComplex }
+        return mapComponents(zerosExcluded: true){ $0.asComplex }
     }
 }
 
 extension Matrix where R == 𝐂 {
     public var realPart: Matrix<n, m, 𝐑> {
-        return mapNonZeroComponents{ $0.realPart }
+        return mapComponents{ $0.realPart }
     }
     
     public var imaginaryPart: Matrix<n, m, 𝐑> {
-        return mapNonZeroComponents{ $0.imaginaryPart }
+        return mapComponents{ $0.imaginaryPart }
     }
     
     public var adjoint: Matrix<m, n, R> {
-        return transposed.mapNonZeroComponents { $0.conjugate }
+        return transposed.mapComponents(zerosExcluded: true) { $0.conjugate }
     }
 }
 
