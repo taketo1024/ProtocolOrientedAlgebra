@@ -34,14 +34,14 @@ internal struct MatrixCoord: Hashable, Comparable, Codable, CustomStringConverti
     }
 }
 
+internal typealias MatrixData<R: Ring> = [MatrixCoord : R]
+
 public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType, Sequence {
     public typealias CoeffRing = R
-    internal typealias MatrixData = [MatrixCoord : R]
-    
     public var size: (rows: Int, cols: Int)
-    internal var data: MatrixData
+    internal var data: MatrixData<R>
     
-    internal init(size: (Int, Int), data: MatrixData) {
+    internal init(size: (Int, Int), data: MatrixData<R>) {
         assert(n.isDynamic || n.intValue == size.0)
         assert(m.isDynamic || m.intValue == size.1)
         assert(data.keys.allSatisfy{ c in (0 ..< size.0).contains(c.row) && (0 ..< size.1).contains(c.col)})
@@ -104,7 +104,7 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType, Sequence {
     }
     
     public var transposed: Matrix<m, n, R> {
-        return Matrix<m, n, R>(size: (size.cols, size.rows), data: data.mapKeys{$0.transposed} )
+        return Matrix<m, n, R>(size: (size.cols, size.rows), data: data.mapKeys{ $0.transposed } )
     }
     
     fileprivate var _trace: R {
@@ -172,7 +172,7 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType, Sequence {
         return .init(size: (rowRange.upperBound - rowRange.lowerBound, colRange.upperBound - colRange.lowerBound), data: subData(rowRange: rowRange, colRange: colRange))
     }
     
-    private func subData(rowRange: CountableRange<Int>,  colRange: CountableRange<Int>) -> MatrixData {
+    private func subData(rowRange: CountableRange<Int>,  colRange: CountableRange<Int>) -> MatrixData<R> {
         return data.filter{ (c, _) in
             rowRange.contains(c.row) && colRange.contains(c.col)
         }.mapKeys{ c in
@@ -346,7 +346,7 @@ extension Matrix: AdditiveGroup, Module where n: StaticSizeType, m: StaticSizeTy
         self.init(grid)
     }
     
-    internal init(data: MatrixData) {
+    internal init(data: MatrixData<R>) {
         let size = (n.intValue, m.intValue)
         self.init(size: size, data: data)
     }
@@ -432,6 +432,11 @@ extension Matrix where n == DynamicSize, m == DynamicSize {
         return (0 ..< p).reduce(I){ (res, _) in self * res }
     }
     
+    public mutating func transpose() {
+        self.size = (size.cols, size.rows)
+        self.data = data.mapKeys{ $0.transposed }
+    }
+    
     public mutating func concatVertically<n1, m1>(_ B: Matrix<n1, m1, R>) {
         assert(size.cols == B.size.cols)
         self.data.merge(B.data.mapKeys{ $0.shift(size.rows, 0) })
@@ -452,21 +457,18 @@ extension Matrix where n == DynamicSize, m == DynamicSize {
 
 extension Matrix where R: EuclideanRing {
     public func eliminate(form: MatrixEliminationForm = .Diagonal, debug: Bool = false) -> MatrixEliminationResult<n, m, R> {
-        let type: MatrixEliminator<R>.Type
+        let e: MatrixEliminator<R> = {
+            switch form {
+            case .RowEchelon: return RowEchelonEliminator(debug: debug)
+            case .ColEchelon: return ColEchelonEliminator(debug: debug)
+            case .RowHermite: return RowHermiteEliminator(debug: debug)
+            case .ColHermite: return ColHermiteEliminator(debug: debug)
+            case .Smith:      return SmithEliminator(debug: debug)
+            default:          return DiagonalEliminator(debug: debug)
+            }
+        }()
         
-        switch form {
-        case .RowEchelon: type = RowEchelonEliminator.self
-        case .ColEchelon: type = ColEchelonEliminator.self
-        case .RowHermite: type = RowHermiteEliminator.self
-        case .ColHermite: type = ColHermiteEliminator.self
-        case .Smith:      type = SmithEliminator     .self
-        default:          type = DiagonalEliminator  .self
-        }
-        
-        let target = MatrixEliminationTarget(matrix: self)
-        let elim = type.init(target, debug: debug)
-        elim.run()
-        return MatrixEliminationResult(elim)
+        return e.run(target: self)
     }
 }
 

@@ -8,53 +8,70 @@
 
 import Foundation
 
-internal final class RowHermiteEliminator<R: EuclideanRing>: MatrixEliminator<R> {
-    var targetRow = 0
-    var targetCol = 0
+public final class RowHermiteEliminator<R: EuclideanRing>: MatrixEliminator<R> {
+    var worker: RowEliminationWorker<R>!
+    var currentRow = 0
     var rank = 0
-
+    
+    override var form: MatrixEliminationForm {
+        return .RowHermite
+    }
+    
     override func prepare() {
-        run(RowEchelonEliminator.self)
-        rank = target.table.count
+        let e = RowEchelonEliminator<R>(debug: debug)
+        subrun(e)
+        
+        worker = e.worker
+        worker.redo()
     }
     
-    override func isDone() -> Bool {
-        return targetRow >= rank || targetCol >= target.size.cols
+    override func shouldIterate() -> Bool {
+        return currentRow < target.pointee.size.rows
     }
     
-    @_specialize(where R == ComputationSpecializedRing)
+    @_specialize(where R == 𝐙)
     override func iteration() {
-        let a0 = target[targetRow, targetCol]
-        if a0 == .zero {
-            targetCol += 1
-            return
+        guard let (j0, a0) = worker.headElement(row: currentRow) else {
+            return exit()
         }
         
-        for i in 0 ..< targetRow {
-            let a = target[i, targetCol]
+        for i in 0 ..< currentRow {
+            let a = target.pointee[i, j0]
             if a == .zero {
                 continue
             }
             
             let q = a / a0
             if q != .zero {
-                apply(.AddRow(at: targetRow, to: i, mul: -q))
+                apply(.AddRow(at: currentRow, to: i, mul: -q))
             }
         }
         
-        targetRow += 1
-        targetCol += 1
+        currentRow += 1
+    }
+    
+    override func apply(_ s: MatrixEliminator<R>.ElementaryOperation) {
+        worker.apply(s)
+        
+        if debug {
+            target.pointee.data = worker.resultData
+        }
+        
+        super.apply(s)
+    }
+    
+    override func finalize() {
+        target.pointee.data = worker.resultData
     }
 }
 
-internal final class ColHermiteEliminator<R: EuclideanRing>: MatrixEliminator<R> {
-    var done = false
-    override func isDone() -> Bool {
-        return done
+public final class ColHermiteEliminator<R: EuclideanRing>: MatrixEliminator<R> {
+    override var form: MatrixEliminationForm {
+        return .ColHermite
     }
-    
-    override func iteration() {
-        runTranpose(RowHermiteEliminator.self)
-        done = true
+
+    override func prepare() {
+        subrun(RowHermiteEliminator(debug: debug), transpose: true)
+        exit()
     }
 }

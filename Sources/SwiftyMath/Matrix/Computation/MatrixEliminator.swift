@@ -17,72 +17,83 @@ public enum MatrixEliminationForm {
     case Smith
 }
 
-internal class MatrixEliminator<R: EuclideanRing> {
-    var target: MatrixEliminationTarget<R>
-    var rowOps: [ElementaryOperation]
-    var colOps: [ElementaryOperation]
+public class MatrixEliminator<R: EuclideanRing> : CustomStringConvertible {
+    var target: UnsafeMutablePointer<DMatrix<R>>!
+    var rowOps: [ElementaryOperation] = []
+    var colOps: [ElementaryOperation] = []
     var debug: Bool
     
-    required init(_ target: MatrixEliminationTarget<R>, debug: Bool = false) {
-        self.target = target
-        self.rowOps = []
-        self.colOps = []
+    private var _exit: Bool = false
+    
+    public required init(debug: Bool = false) {
         self.debug = debug
     }
     
-    final func run() {
-        log("-----Start:\(self)-----")
+    public final func run<n, m>(target: Matrix<n, m, R>) -> MatrixEliminationResult<n, m, R> {
+        var copy = target.as(DMatrix.self)
+        self.target = UnsafeMutablePointer(mutating: &copy)
         
-        prepare()
-        while !isDone() {
-            iteration()
-        }
-        finish()
+        log("Start")
+        _run()
+        log("Done: \(rowOps.count + colOps.count) steps")
         
-        log("-----Done:\(self), \(rowOps.count + colOps.count) steps)-----")
+        return MatrixEliminationResult(form: form, result: copy.as(Matrix<n, m, R>.self), rowOps: rowOps, colOps: colOps)
     }
     
-    final func run(_ eliminator: MatrixEliminator.Type) {
-        let e = eliminator.init(target, debug: debug)
-        e.run()
+    private final func _run() {
+        prepare()
+        
+        while !_exit && shouldIterate() {
+            iteration()
+        }
+        
+        finalize()
+    }
+    
+    final func subrun(_ e: MatrixEliminator<R>, transpose: Bool = false) {
+        e.target = target
+        
+        if transpose {
+            e.transpose()
+        }
+        
+        e._run()
+            
+        if transpose {
+            e.transpose()
+        }
+        
         rowOps += e.rowOps
         colOps += e.colOps
     }
     
-    final func runTranpose(_ eliminator: MatrixEliminator.Type) {
-        transpose()
-        let e = eliminator.init(target, debug: debug)
-        e.run()
-        rowOps += e.colOps.map{ s in s.transpose }
-        colOps += e.rowOps.map{ s in s.transpose }
-        transpose()
-    }
-    
-    final func apply(_ s: ElementaryOperation) {
-        target.apply(s)
-        s.isRowOperation ? rowOps.append(s) : colOps.append(s)
-        
-        log("\(s)")
-    }
-    
     final func transpose() {
-        target.transpose()
+        target.pointee.transpose()
+        (rowOps, colOps) = (colOps.map{ s in s.transposed }, rowOps.map{ s in s.transposed })
         log("Transpose")
     }
     
     final func log(_ msg: @autoclosure () -> String) {
         if debug {
-            print(msg() + "\n" + DMatrix(target).detailDescription)
+            print("[\(form)]", msg(), "\n", target.pointee.detailDescription, "\n")
         }
     }
     
+    final func exit() {
+        _exit = true
+    }
+    
     // override points
+    
+    var form: MatrixEliminationForm {
+        fatalError("override in subclass")
+    }
     
     func prepare() {
         // override in subclass
     }
     
-    func isDone() -> Bool {
+    func shouldIterate() -> Bool {
         fatalError("override in subclass")
     }
     
@@ -90,8 +101,22 @@ internal class MatrixEliminator<R: EuclideanRing> {
         fatalError("override in subclass")
     }
     
-    func finish() {
+    func apply(_ s: ElementaryOperation) {
         // override in subclass
+        append(s)
+        log("\(s)")
+    }
+    
+    func append(_ s: ElementaryOperation) {
+        s.isRowOperation ? rowOps.append(s) : colOps.append(s)
+    }
+    
+    func finalize() {
+        // override in subclass
+    }
+    
+    public var description: String {
+        return "\(type(of: self))"
     }
     
     enum ElementaryOperation {
@@ -144,7 +169,7 @@ internal class MatrixEliminator<R: EuclideanRing> {
             }
         }
         
-        var transpose: ElementaryOperation {
+        var transposed: ElementaryOperation {
             switch self {
             case let .AddRow(i, j, r):
                 return .AddCol(at: i, to: j, mul: r)
@@ -159,25 +184,6 @@ internal class MatrixEliminator<R: EuclideanRing> {
             case let .SwapCols(i, j):
                 return .SwapRows(i, j)
             }
-        }
-    }
-}
-
-extension MatrixEliminationTarget where R: EuclideanRing {
-    func apply(_ s: MatrixEliminator<R>.ElementaryOperation) {
-        switch s {
-        case let .AddRow(i, j, r):
-            addRow(at: i, to: j, multipliedBy: r)
-        case let .AddCol(i, j, r):
-            addCol(at: i, to: j, multipliedBy: r)
-        case let .MulRow(i, r):
-            multiplyRow(at: i, by: r)
-        case let .MulCol(i, r):
-            multiplyCol(at: i, by: r)
-        case let .SwapRows(i, j):
-            swapRows(i, j)
-        case let .SwapCols(i, j):
-            swapCols(i, j)
         }
     }
 }

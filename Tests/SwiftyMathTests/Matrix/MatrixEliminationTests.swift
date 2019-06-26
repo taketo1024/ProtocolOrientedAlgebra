@@ -14,8 +14,8 @@ import XCTest
 class MatrixEliminatonWorkerTests: XCTestCase {
     private typealias R = 𝐙
     
-    private func M2(_ xs: R...) -> MatrixEliminationWorker<R> {
-        return MatrixEliminationWorker(from: Matrix2(xs))
+    private func M2(_ xs: R...) -> RowEliminationWorker<R> {
+        return RowEliminationWorker(from: Matrix2(xs))
     }
     
     func testEqual() {

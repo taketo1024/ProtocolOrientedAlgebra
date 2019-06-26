@@ -8,28 +8,28 @@
 import Foundation
 
 public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing> {
+    public let form: MatrixEliminationForm
     public let result: Matrix<n, m, R>
-    public let rank: Int
     let rowOps: [MatrixEliminator<R>.ElementaryOperation]
     let colOps: [MatrixEliminator<R>.ElementaryOperation]
 
-    private let dataCache: CacheDictionary<String, [MatrixCoord : R]> = .empty
+    private let dataCache: CacheDictionary<String, MatrixData<R>> = .empty
     
-    internal init(_ elim: MatrixEliminator<R>) {
-        self.result = Matrix(elim.target)
-        self.rank = elim.target.table.count
-        self.rowOps = elim.rowOps
-        self.colOps = elim.colOps
+    internal init(form: MatrixEliminationForm, result: Matrix<n, m, R>, rowOps: [MatrixEliminator<R>.ElementaryOperation], colOps: [MatrixEliminator<R>.ElementaryOperation]) {
+        self.form = form
+        self.result = result
+        self.rowOps = rowOps
+        self.colOps = colOps
     }
     
     public var left: Matrix<n, n, R> {
         let n = result.size.rows
         let data = dataCache.useCacheOrSet(key: "left") {
-            let P = MatrixEliminationTarget<R>.identity(size: n, align: .horizontal)
+            let P = RowEliminationWorker<R>.identity(size: n)
             for s in rowOps {
                 P.apply(s)
             }
-            return P.asMatrixData
+            return P.resultData
         }
         return .init(size: (n, n), data: data)
     }
@@ -37,11 +37,11 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     public var leftInverse: Matrix<n, n, R> {
         let n = result.size.rows
         let data = dataCache.useCacheOrSet(key: "leftinv") {
-            let P = MatrixEliminationTarget<R>.identity(size: n, align: .horizontal)
+            let P = RowEliminationWorker<R>.identity(size: n)
             for s in rowOps.reversed() {
                 P.apply(s.inverse)
             }
-            return P.asMatrixData
+            return P.resultData
         }
         return .init(size: (n, n), data: data)
     }
@@ -49,11 +49,11 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     public var right: Matrix<m, m, R> {
         let m = result.size.cols
         let data = dataCache.useCacheOrSet(key: "right") {
-            let P = MatrixEliminationTarget<R>.identity(size: m, align: .vertical)
+            let P = RowEliminationWorker<R>.identity(size: m)
             for s in colOps {
-                P.apply(s)
+                P.apply(s.transposed)
             }
-            return P.asMatrixData
+            return P.resultData.mapKeys{ $0.transposed }
         }
         return .init(size: (m, m), data: data)
     }
@@ -61,13 +61,19 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     public var rightInverse: Matrix<m, m, R> {
         let m = result.size.cols
         let data = dataCache.useCacheOrSet(key: "rightinv") {
-            let P = MatrixEliminationTarget<R>.identity(size: m, align: .vertical)
+            let P = RowEliminationWorker<R>.identity(size: m)
             for s in colOps.reversed() {
-                P.apply(s.inverse)
+                P.apply(s.inverse.transposed)
             }
-            return P.asMatrixData
+            return P.resultData.mapKeys{ $0.transposed }
         }
         return .init(size: (m, m), data: data)
+    }
+    
+    public var rank: Int {
+        // TODO support Echelon types
+        assert(result.isDiagonal)
+        return result.diagonal.count{ $0 != .zero }
     }
     
     // The matrix made by the basis of Ker(A).
