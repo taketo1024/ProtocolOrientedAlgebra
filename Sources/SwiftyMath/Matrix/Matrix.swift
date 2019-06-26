@@ -456,7 +456,7 @@ extension Matrix where n == DynamicSize, m == DynamicSize {
 }
 
 extension Matrix where R: EuclideanRing {
-    public func eliminate(mode: MatrixEliminator<R>.Mode = .fast, form: MatrixEliminator<R>.Form = .Diagonal, debug: Bool = false) -> MatrixEliminationResult<n, m, R> {
+    public func eliminate(mode: MatrixEliminator<R>.Mode = .balanced, form: MatrixEliminator<R>.Form = .Diagonal, debug: Bool = false) -> MatrixEliminationResult<n, m, R> {
         let e: MatrixEliminator<R> = {
             switch form {
             case .RowEchelon: return RowEchelonEliminator(mode: mode, debug: debug)

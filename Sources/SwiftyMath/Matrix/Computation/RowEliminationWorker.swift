@@ -11,7 +11,7 @@ import Foundation
 internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
     var size: (rows: Int, cols: Int)
     
-    typealias Table = [Int : LinkedList<(index: Int, value: R)>]
+    typealias Table = [Int : LinkedList<(col: Int, value: R)>]
     private var working: Table
     private var result : Table
     
@@ -30,16 +30,21 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
         self.init(size: matrix.size, components: matrix)
     }
     
-    func headElement(row i: Int) -> (Int, R)? {
+    func headElement(row i: Int) -> (col: Int, value: R)? {
         return working[i]?.value
     }
     
     @_specialize(where R == 𝐙)
-    func headElements(col j0: Int) -> [(Int, R)] {
+    func headElements(col j0: Int) -> [(row: Int, value: R)] {
         return working.compactMap{ (i, head) -> (Int, R)? in
             let (j, a) = head.value
             return j == j0 ? (i, a) : nil
-        }
+        }.sorted{ (i, _) in i }
+    }
+    
+    @_specialize(where R == 𝐙)
+    func weight(ofRow i: Int) -> Int {
+        return working[i]?.sum{ c in c.value.value.eucDegree } ?? 0
     }
     
     func apply(_ s: MatrixEliminator<R>.ElementaryOperation) {
@@ -82,11 +87,11 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
             fatalError("attempt to add into empty row: \(i2)")
         }
         
-        if fromHead.value.index < toHead.value.index {
+        if fromHead.value.col < toHead.value.col {
             // from: ●-->○-->○----->○-------->
             //   to:            ●------->○--->
             
-            toHead = LinkedList((fromHead.value.index, .zero), next: toHead)
+            toHead = LinkedList((fromHead.value.col, .zero), next: toHead)
 
             // from: ●-->○-->○----->○-------->
             //   to: ●--------->○------->○--->
@@ -96,22 +101,22 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
         
         while true {
             // At this point, it is assured that
-            // `from.value.index >= to.value.index`
+            // `from.value.col >= to.value.col`
             
             // from: ------------->●--->○-------->
             //   to: -->●----->○------------>○--->
             
-            while let next = to.next, next.value.index <= from.value.index {
+            while let next = to.next, next.value.col <= from.value.col {
                 to = next
             }
             
             // from: ------------->●--->○-------->
             //   to: -->○----->●------------>○--->
 
-            if from.value.index == to.value.index {
+            if from.value.col == to.value.col {
                 to.value.value = to.value.value + r * from.value.value
             } else {
-                let c = LinkedList((index: from.value.index, value: r * from.value.value))
+                let c = LinkedList((col: from.value.col, value: r * from.value.value))
                 to.insert(c)
                 to = c
             }
