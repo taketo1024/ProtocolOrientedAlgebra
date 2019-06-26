@@ -12,7 +12,7 @@ extension 𝐙: EuclideanRing, Randomable {
     }
 
     public var normalizingUnit: 𝐙 {
-        return (self > 0) ? 1 : -1
+        return (self >= 0) ? 1 : -1
     }
 
     public var eucDegree: Int {

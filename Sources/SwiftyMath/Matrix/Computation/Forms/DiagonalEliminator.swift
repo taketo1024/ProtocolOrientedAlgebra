@@ -8,23 +8,19 @@
 
 import Foundation
 
-internal final class DiagonalEliminator<R: EuclideanRing>: MatrixEliminator<R> {
-    override func isDone() -> Bool {
-        let n = target.table.keys.count
-        return target.table.allSatisfy{ (i, list) in
-            i < n && (list.count == 1)
-                  && list.first!.0 == i
-                  && list.first!.1.isNormalized
-        }
+public final class DiagonalEliminator<R: EuclideanRing>: MatrixEliminator<R> {
+    override var form: MatrixEliminationForm {
+        return .Diagonal
+    }
+    
+    override func shouldIterate() -> Bool {
+        return !(target.pointee.isDiagonal && target.pointee.diagonal.allSatisfy{ $0.isNormalized })
     }
     
     override func iteration() {
-        run(RowHermiteEliminator.self)
-        
-        if isDone() {
-            return
+        subrun(RowHermiteEliminator(debug: debug))
+        if shouldIterate() {
+            subrun(ColHermiteEliminator(debug: debug))
         }
-        
-        run(ColHermiteEliminator.self)
     }
 }

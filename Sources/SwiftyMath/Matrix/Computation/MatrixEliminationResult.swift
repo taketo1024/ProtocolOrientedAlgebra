@@ -8,60 +8,72 @@
 import Foundation
 
 public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing> {
+    public let form: MatrixEliminationForm
     public let result: Matrix<n, m, R>
     let rowOps: [MatrixEliminator<R>.ElementaryOperation]
     let colOps: [MatrixEliminator<R>.ElementaryOperation]
 
-    internal init(_ result: MatrixImpl<R>, _ rowOps: [MatrixEliminator<R>.ElementaryOperation], _ colOps: [MatrixEliminator<R>.ElementaryOperation]) {
-        self.result = Matrix(result)
+    private let dataCache: CacheDictionary<String, MatrixData<R>> = .empty
+    
+    internal init(form: MatrixEliminationForm, result: Matrix<n, m, R>, rowOps: [MatrixEliminator<R>.ElementaryOperation], colOps: [MatrixEliminator<R>.ElementaryOperation]) {
+        self.form = form
+        self.result = result
         self.rowOps = rowOps
         self.colOps = colOps
     }
     
-    private let _matrixCache: CacheDictionary<String, MatrixImpl<R>> = .empty
-
-    public var rank: Int {
-        result.impl.table.count
-    }
-    
     public var left: Matrix<n, n, R> {
-        return Matrix(_matrixCache.useCacheOrSet(key: "left") {
-            let P = MatrixImpl<R>.identity(size: result.rows, align: .Rows)
+        let n = result.size.rows
+        let data = dataCache.useCacheOrSet(key: "left") {
+            let P = RowEliminationWorker<R>.identity(size: n)
             for s in rowOps {
                 P.apply(s)
             }
-            return P
-        })
+            return P.resultData
+        }
+        return .init(size: (n, n), data: data)
     }
     
     public var leftInverse: Matrix<n, n, R> {
-        return Matrix(_matrixCache.useCacheOrSet(key: "leftinv") {
-            let P = MatrixImpl<R>.identity(size: result.rows, align: .Rows)
+        let n = result.size.rows
+        let data = dataCache.useCacheOrSet(key: "leftinv") {
+            let P = RowEliminationWorker<R>.identity(size: n)
             for s in rowOps.reversed() {
                 P.apply(s.inverse)
             }
-            return P
-        })
+            return P.resultData
+        }
+        return .init(size: (n, n), data: data)
     }
     
     public var right: Matrix<m, m, R> {
-        return Matrix(_matrixCache.useCacheOrSet(key: "right") {
-            let P = MatrixImpl<R>.identity(size: result.cols, align: .Cols)
+        let m = result.size.cols
+        let data = dataCache.useCacheOrSet(key: "right") {
+            let P = RowEliminationWorker<R>.identity(size: m)
             for s in colOps {
-                P.apply(s)
+                P.apply(s.transposed)
             }
-            return P
-        })
+            return P.resultData.mapKeys{ $0.transposed }
+        }
+        return .init(size: (m, m), data: data)
     }
     
     public var rightInverse: Matrix<m, m, R> {
-        return Matrix(_matrixCache.useCacheOrSet(key: "rightinv") {
-            let P = MatrixImpl<R>.identity(size: result.cols, align: .Cols)
+        let m = result.size.cols
+        let data = dataCache.useCacheOrSet(key: "rightinv") {
+            let P = RowEliminationWorker<R>.identity(size: m)
             for s in colOps.reversed() {
-                P.apply(s.inverse)
+                P.apply(s.inverse.transposed)
             }
-            return P
-        })
+            return P.resultData.mapKeys{ $0.transposed }
+        }
+        return .init(size: (m, m), data: data)
+    }
+    
+    public var rank: Int {
+        // TODO support Echelon types
+        assert(result.isDiagonal)
+        return result.diagonal.count{ $0 != .zero }
     }
     
     // The matrix made by the basis of Ker(A).
@@ -72,7 +84,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     
     public var kernelMatrix: Matrix<m, DynamicSize, R>  {
         assert(result.isDiagonal)
-        return right.submatrix(colRange: rank ..< result.cols)
+        return right.submatrix(colRange: rank ..< result.size.cols)
     }
 
     // The matrix made by the basis of Im(A).
@@ -97,16 +109,15 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     
     public var kernelTransitionMatrix: Matrix<DynamicSize, m, R> {
         assert(result.isDiagonal)
-        return rightInverse.submatrix(rowRange: rank ..< result.cols)
+        return rightInverse.submatrix(rowRange: rank ..< result.size.cols)
     }
 }
 
 extension MatrixEliminationResult where n == m {
     public var determinant: R {
-        assert(result.rows == result.cols)
         assert(result.isDiagonal)
         
-        if rank == result.rows {
+        if rank == result.size.rows {
             return rowOps.multiply { $0.determinant }.inverse!
                 * colOps.multiply { $0.determinant }.inverse!
                 * result.diagonal.multiplyAll()
@@ -116,7 +127,7 @@ extension MatrixEliminationResult where n == m {
     }
     
     public var inverse: Matrix<n, n, R>? {
-        assert(result.rows == result.cols)
+        assert(result.isSquare)
         return (result.isIdentity) ? right * left : nil
     }
 }

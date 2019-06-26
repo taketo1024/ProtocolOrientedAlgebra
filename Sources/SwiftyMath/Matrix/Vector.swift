@@ -42,7 +42,7 @@ public extension Matrix where n == _1 { // (D)RowVector
 
 public extension Matrix where n == DynamicSize, m == _1 { // DColVector
     init(_ grid: [R]) {
-        self.init(MatrixImpl(rows: grid.count, cols: 1, grid: grid))
+        self.init(size: (grid.count, 1), grid: grid)
     }
     
     init(_ grid: R...) {
@@ -50,17 +50,13 @@ public extension Matrix where n == DynamicSize, m == _1 { // DColVector
     }
 
     init(size: Int, generator g: (Int) -> R) {
-        self.init(MatrixImpl(rows: size, cols: 1, generator: { (i, _) in g(i) }))
-    }
-    
-    init(size: Int, components: [MatrixComponent<R>]) {
-        self.init(MatrixImpl(rows: size, cols: 1, components: components))
+        self.init(size: (size, 1), generator: { (i, _) in g(i) })
     }
 }
 
 public extension Matrix where n == _1, m == DynamicSize { // DRowVector
     init(_ grid: [R]) {
-        self.init(MatrixImpl(rows: 1, cols: grid.count, grid: grid))
+        self.init(size: (1, grid.count), grid: grid)
     }
     
     init(_ grid: R...) {
@@ -68,10 +64,6 @@ public extension Matrix where n == _1, m == DynamicSize { // DRowVector
     }
 
     init(size: Int, generator g: (Int) -> R) {
-        self.init(MatrixImpl(rows: 1, cols: size, generator: { (_, j) in g(j) }))
-    }
-    
-    init(size: Int, components: [MatrixComponent<R>]) {
-        self.init(MatrixImpl(rows: 1, cols: size, components: components))
+        self.init(size: (1, size), generator: { (_, j) in g(j) })
     }
 }

@@ -8,23 +8,28 @@
 
 import Foundation
 
-internal final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
+public final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
+    var worker: RowEliminationWorker<R>!
     var currentRow = 0
     var currentCol = 0
     
+    override var form: MatrixEliminationForm {
+        return .RowEchelon
+    }
+    
     override func prepare() {
-        target.switchAlignment(.Rows)
+        worker = RowEliminationWorker(from: target.pointee)
     }
     
-    override func isDone() -> Bool {
-        return currentRow >= target.table.count || currentCol >= target.cols
+    override func shouldIterate() -> Bool {
+        return !worker.isAllDone
     }
     
-    @_specialize(where R == ComputationSpecializedRing)
+    @_specialize(where R == 𝐙)
     override func iteration() {
         
         // find pivot point
-        let elements = targetColElements()
+        let elements = worker.headElements(col: currentCol)
         guard let pivot = findPivot(in: elements) else {
             currentCol += 1
             return
@@ -61,34 +66,38 @@ internal final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R>
             apply(.SwapRows(i0, currentRow))
         }
         
+        worker.finished(row: currentRow)
         currentRow += 1
         currentCol += 1
     }
     
-    @_specialize(where R == ComputationSpecializedRing)
-    private func targetColElements() -> [(Int, R)] {
-        // Take (i, a)'s from table = [ i : [ (j, a) ] ]
-        // where (i >= targetRow && j == targetCol)
-        return target.table.compactMap{ (i, list) -> (Int, R)? in
-            let (j, a) = list.first!
-            return (i >= currentRow && j == currentCol) ? (i, a) : nil
-        }.sorted{ (i, _) in i}
-    }
-    
-    @_specialize(where R == ComputationSpecializedRing)
+    @_specialize(where R == 𝐙)
     private func findPivot(in candidates: [(Int, R)]) -> (Int, R)? {
         return candidates.min { $0.1.eucDegree < $1.1.eucDegree }
     }
-}
-
-internal final class ColEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
-    var done = false
-    override func isDone() -> Bool {
-        return done
+    
+    override func apply(_ s: MatrixEliminator<R>.ElementaryOperation) {
+        worker.apply(s)
+        
+        if debug {
+            target.pointee.data = worker.resultData
+        }
+        
+        super.apply(s)
     }
     
-    override func iteration() {
-        runTranpose(RowEchelonEliminator.self)
-        done = true
+    override func finalize() {
+        target.pointee.data = worker.resultData
+    }
+}
+
+public final class ColEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
+    override var form: MatrixEliminationForm {
+        return .ColEchelon
+    }
+
+    override func prepare() {
+        subrun(RowEchelonEliminator(debug: debug), transpose: true)
+        exit()
     }
 }

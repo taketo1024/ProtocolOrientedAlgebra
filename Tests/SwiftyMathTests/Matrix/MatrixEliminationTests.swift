@@ -11,6 +11,44 @@ import Foundation
 import XCTest
 @testable import SwiftyMath
 
+class MatrixEliminatonWorkerTests: XCTestCase {
+    private typealias R = 𝐙
+    
+    private func M2(_ xs: R...) -> RowEliminationWorker<R> {
+        return RowEliminationWorker(from: Matrix2(xs))
+    }
+    
+    func testEqual() {
+        let a = M2(1,2,3,4)
+        XCTAssertEqual(a, M2(1,2,3,4))
+        XCTAssertNotEqual(a, M2(1,3,2,4))
+    }
+    
+    func testAddRow() {
+        let a = M2(1,2,3,4)
+        a.addRow(at: 0, to: 1, multipliedBy: 1)
+        XCTAssertEqual(a, M2(1,2,4,6))
+    }
+    
+    func testAddRowWithMul() {
+        let a = M2(1,2,3,4)
+        a.addRow(at: 0, to: 1, multipliedBy: 2)
+        XCTAssertEqual(a, M2(1,2,5,8))
+    }
+    
+    func testMulRow() {
+        let a = M2(1,2,3,4)
+        a.multiplyRow(at: 0, by: 2)
+        XCTAssertEqual(a, M2(2,4,3,4))
+    }
+    
+    func testSwapRows() {
+        let a = M2(1,2,3,4)
+        a.swapRows(0, 1)
+        XCTAssertEqual(a, M2(3,4,1,2))
+    }
+}
+
 class MatrixEliminationTests: XCTestCase {
     
     typealias M = Matrix
@@ -88,7 +126,7 @@ class MatrixEliminationTests: XCTestCase {
     }
 
     func testZ46_zero() {
-        let A = M<_4, _6, 𝐙>.init(fill: 0)
+        let A = M<_4, _6, 𝐙>.zero
         let E = A.eliminate(form: .Smith)
         XCTAssertEqual(E.result, A)
     }
@@ -118,12 +156,11 @@ class MatrixEliminationTests: XCTestCase {
         let E = A.eliminate()
         let K = E.kernelMatrix
         
-        XCTAssertEqual(K.rows, 2)
-        XCTAssertEqual(K.cols, 1)
+        XCTAssertTrue(K.size == (2, 1))
         XCTAssertTrue((A * K).isZero)
 
         let T = E.kernelTransitionMatrix
-        XCTAssertEqual(T * K, DMatrix(rows: 1, cols: 1, grid: [1]))
+        XCTAssertEqual(T * K, DMatrix(size:(1, 1), grid: [1]))
     }
 
     public func testImage() {
@@ -131,8 +168,7 @@ class MatrixEliminationTests: XCTestCase {
         let E = A.eliminate()
         let I = E.imageMatrix
 
-        XCTAssertEqual(I.rows, 2)
-        XCTAssertEqual(I.cols, 1)
+        XCTAssertTrue(I.size == (2, 1))
         XCTAssertEqual(I.grid, [2, 2])
     }
     

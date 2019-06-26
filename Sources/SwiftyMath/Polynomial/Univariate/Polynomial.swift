@@ -133,7 +133,8 @@ public struct _Polynomial<T: PolynomialType, x: PolynomialIndeterminate, R: Ring
         typealias M = SquareMatrix<n, R>
         let A = a.pow(lowestPower)
         let B = (lowestPower ..< highestPower).reversed().reduce(leadCoeff * M.identity) { (res, i) -> M in
-            M(scalar: coeff(i)) + a * res
+            let S = coeff(i) * M.identity
+            return S + a * res
         }
         return A * B
     }

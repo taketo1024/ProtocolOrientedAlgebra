@@ -4,7 +4,7 @@ public protocol Field: EuclideanRing {}
 
 public extension Field {
     var normalizingUnit: Self {
-        return self.inverse!
+        return self.inverse ?? .identity
     }
     
     var eucDegree: Int {
