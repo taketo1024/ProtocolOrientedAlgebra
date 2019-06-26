@@ -13,7 +13,7 @@ public protocol FreeModuleType: Module {
     var elements: [Generator : CoeffRing] { get }
     static func wrap(_ a: Generator) -> Self
     static func combine<n>(basis: [Generator], vector: ColVector<n, CoeffRing>) -> Self
-    func factorize(by: [Generator]) -> [CoeffRing]
+    func factorize(by: [Generator]) -> DVector<CoeffRing>
 }
 
 public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
@@ -60,12 +60,12 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
         return elements.keys.sorted().toArray()
     }
     
-    public var components: [R] {
-        return elements.keys.sorted().map{ self[$0] }
-    }
-    
-    public func factorize(by list: [A]) -> [R] {
-        return list.map{ self[$0] }
+    public func factorize(by basis: [A]) -> DVector<R> {
+        let indexer = basis.indexer()
+        let comps = elements.compactMap { (a, r) -> MatrixComponent<R>? in
+            indexer(a).map{ i in (i, 0, r) }
+        }
+        return DVector<R>(size: (basis.count, 1), components: comps, zerosExcluded: true)
     }
     
     public var isSingle: Bool {
@@ -151,9 +151,7 @@ extension ModuleHom where X: FreeModuleType, Y: FreeModuleType {
     public func asMatrix(from: [X.Generator], to: [Y.Generator]) -> DMatrix<CoeffRing> {
         let comps = from.enumerated().flatMap { (j, a) -> [MatrixComponent<CoeffRing>] in
             let w = self.applied(to: .wrap(a))
-            return w.factorize(by: to).enumerated().compactMap { (i, a) in
-                a != .zero ? (i, j, a) : nil
-            }
+            return w.factorize(by: to).map{ (i, _, a) in (i, j, a) }
         }
         return DMatrix(size: (to.count, from.count), components: comps, zerosExcluded: true)
     }
