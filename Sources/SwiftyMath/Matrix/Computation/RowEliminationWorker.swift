@@ -78,16 +78,26 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
             fatalError("attempt to add from empty row: \(i1)")
         }
         
-        guard let toHead = working[i2] else {
+        guard var toHead = working[i2] else {
             fatalError("attempt to add into empty row: \(i2)")
+        }
+        
+        if fromHead.value.index < toHead.value.index {
+            // from: ●-->○-->○----->○-------->
+            //   to:            ●------->○--->
+            
+            toHead = LinkedList((fromHead.value.index, .zero), next: toHead)
+
+            // from: ●-->○-->○----->○-------->
+            //   to: ●--------->○------->○--->
         }
         
         var (from, to) = (fromHead, toHead)
         
-        // must not insert before head
-        assert(to.value.index <= from.value.index)
-        
         while true {
+            // At this point, it is assured that
+            // `from.value.index >= to.value.index`
+            
             // from: ------------->●--->○-------->
             //   to: -->●----->○------------>○--->
             
@@ -120,7 +130,8 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
             }
         }
         
-        working[i2] = toHead.drop{ c in c.value == .zero } // possibly nil
+        let result = toHead.drop{ c in c.value == .zero } // possibly nil
+        working[i2] = result
     }
     
     func finished(row i: Int) {
@@ -132,9 +143,12 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
         return working.isEmpty
     }
     
-    var resultData: [MatrixCoord : R] {
+    var resultData: MatrixData<R> {
         return Dictionary(pairs: (result + working).flatMap{ (i, list) -> [(MatrixCoord, R)] in
-            list.values.map{ (j, a) in (MatrixCoord(i, j), a) }
+            list.map{ c in
+                let (j, a) = c.value
+                return (MatrixCoord(i, j), a)
+            }
         })
     }
     
@@ -142,6 +156,11 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
         working = result
         result = [:]
         result.reserveCapacity(working.count)
+    }
+    
+    static func identity(size n: Int) -> RowEliminationWorker<R> {
+        let comps = (0 ..< n).map { i in (i, i, R.identity) }
+        return RowEliminationWorker(size: (n, n), components: comps)
     }
 
     // for test
