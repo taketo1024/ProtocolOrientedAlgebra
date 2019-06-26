@@ -18,7 +18,7 @@ public final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     }
     
     override func prepare() {
-        worker = RowEliminationWorker(from: target.pointee, trackHeadPosition: true)
+        worker = RowEliminationWorker(from: target.pointee, trackRowInfos: true)
     }
     
     override func shouldIterate() -> Bool {
