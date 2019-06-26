@@ -11,8 +11,9 @@ public final class LinkedList<T>: Sequence, CustomStringConvertible {
     public var value: T
     public var next: LinkedList<T>?
     
-    public init(_ value: T) {
+    public init(_ value: T, next: LinkedList<T>? = nil) {
         self.value = value
+        self.next = next
     }
     
     public static func generate<S: Sequence>(from seq: S) -> LinkedList<T>? where S.Element == T {
@@ -48,10 +49,6 @@ public final class LinkedList<T>: Sequence, CustomStringConvertible {
         } else {
             return nil
         }
-    }
-    
-    public var values: [T] {
-        return self.map{ $0.value }
     }
     
     public func makeIterator() -> Iterator {
