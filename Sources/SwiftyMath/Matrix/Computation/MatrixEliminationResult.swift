@@ -8,14 +8,14 @@
 import Foundation
 
 public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing> {
-    public let form: MatrixEliminationForm
+    public let form: MatrixEliminator<R>.Form
     public let result: Matrix<n, m, R>
     let rowOps: [MatrixEliminator<R>.ElementaryOperation]
     let colOps: [MatrixEliminator<R>.ElementaryOperation]
 
     private let dataCache: CacheDictionary<String, MatrixData<R>> = .empty
     
-    internal init(form: MatrixEliminationForm, result: Matrix<n, m, R>, rowOps: [MatrixEliminator<R>.ElementaryOperation], colOps: [MatrixEliminator<R>.ElementaryOperation]) {
+    internal init(form: MatrixEliminator<R>.Form, result: Matrix<n, m, R>, rowOps: [MatrixEliminator<R>.ElementaryOperation], colOps: [MatrixEliminator<R>.ElementaryOperation]) {
         self.form = form
         self.result = result
         self.rowOps = rowOps

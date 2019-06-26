@@ -9,7 +9,7 @@
 import Foundation
 
 public final class DiagonalEliminator<R: EuclideanRing>: MatrixEliminator<R> {
-    override var form: MatrixEliminationForm {
+    override var form: Form {
         return .Diagonal
     }
     
@@ -18,9 +18,9 @@ public final class DiagonalEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     }
     
     override func iteration() {
-        subrun(RowHermiteEliminator(debug: debug))
+        subrun(RowHermiteEliminator(mode: mode, debug: debug))
         if shouldIterate() {
-            subrun(ColHermiteEliminator(debug: debug))
+            subrun(ColHermiteEliminator(mode: mode, debug: debug))
         }
     }
 }
