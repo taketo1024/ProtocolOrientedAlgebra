@@ -11,8 +11,8 @@ public extension FreeModuleGenerator {
 public protocol FreeModuleType: Module {
     associatedtype Generator: FreeModuleGenerator
     var elements: [Generator : CoeffRing] { get }
-    init(generators: [Generator], components: [CoeffRing])
     static func wrap(_ a: Generator) -> Self
+    static func combine<n>(basis: [Generator], vector: ColVector<n, CoeffRing>) -> Self
     func factorize(by: [Generator]) -> [CoeffRing]
 }
 
@@ -32,11 +32,6 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
         self.init(dict)
     }
     
-    public init(generators: [A], components: [R]) {
-        assert(generators.count == components.count)
-        self.init(Dictionary(pairs: zip(generators, components)))
-    }
-    
     @_transparent
     public static func wrap(_ a: A) -> FreeModule<A, R> {
         return FreeModule([a : .identity])
@@ -46,6 +41,11 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
     public func unwrap() -> A {
         assert(isSingle)
         return elements.anyElement!.key
+    }
+    
+    public static func combine<n>(basis: [A], vector: ColVector<n, R>) -> FreeModule<A, R> {
+        assert(basis.count == vector.size.rows)
+        return (basis.map{ .wrap($0) } * vector)[0]
     }
     
     public subscript(a: A) -> R {
@@ -144,7 +144,7 @@ extension ModuleHom where X: FreeModuleType, Y: FreeModuleType {
         let indexer = from.indexer()
         return ModuleHom.linearlyExtend { e in
             guard let j = indexer(e) else { return .zero }
-            return Y(generators: to, components: matrix.colVector(j).grid)
+            return Y.combine(basis: to, vector: matrix.colVector(j))
         }
     }
     
@@ -155,7 +155,7 @@ extension ModuleHom where X: FreeModuleType, Y: FreeModuleType {
                 a != .zero ? (i, j, a) : nil
             }
         }
-        return DMatrix(size: (to.count, from.count), components: comps)
+        return DMatrix(size: (to.count, from.count), components: comps, zerosExcluded: true)
     }
 }
 
