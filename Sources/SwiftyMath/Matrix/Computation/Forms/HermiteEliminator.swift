@@ -13,12 +13,12 @@ public final class RowHermiteEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     var currentRow = 0
     var rank = 0
     
-    override var form: MatrixEliminationForm {
+    override var form: Form {
         return .RowHermite
     }
     
     override func prepare() {
-        let e = RowEchelonEliminator<R>(debug: debug)
+        let e = RowEchelonEliminator<R>(mode: mode, debug: debug)
         subrun(e)
         
         worker = e.worker
@@ -66,12 +66,12 @@ public final class RowHermiteEliminator<R: EuclideanRing>: MatrixEliminator<R> {
 }
 
 public final class ColHermiteEliminator<R: EuclideanRing>: MatrixEliminator<R> {
-    override var form: MatrixEliminationForm {
+    override var form: Form {
         return .ColHermite
     }
 
     override func prepare() {
-        subrun(RowHermiteEliminator(debug: debug), transpose: true)
+        subrun(RowHermiteEliminator(mode: mode, debug: debug), transpose: true)
         exit()
     }
 }

@@ -12,12 +12,12 @@ public final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     var currentIndex = 0
     var diagonal: [R] = []
     
-    override var form: MatrixEliminationForm {
+    override var form: Form {
         return .Smith
     }
     
     override func prepare() {
-        subrun(DiagonalEliminator(debug: debug))
+        subrun(DiagonalEliminator(mode: mode, debug: debug))
         diagonal = target.pointee.diagonal.filter{ a in a != .zero }
     }
     

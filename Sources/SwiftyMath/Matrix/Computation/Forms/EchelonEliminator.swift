@@ -13,7 +13,7 @@ public final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     var currentRow = 0
     var currentCol = 0
     
-    override var form: MatrixEliminationForm {
+    override var form: Form {
         return .RowEchelon
     }
     
@@ -35,8 +35,10 @@ public final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
             return
         }
         
-        let i0 = pivot.0
-        var a0 = pivot.1
+        let i0 = pivot.row
+        var a0 = pivot.value
+        
+        log("Pivot: \((i0, currentCol)), \(a0)")
         
         if !a0.isNormalized {
             apply(.MulRow(at: i0, by: a0.normalizingUnit))
@@ -72,8 +74,25 @@ public final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     }
     
     @_specialize(where R == 𝐙)
-    private func findPivot(in candidates: [(Int, R)]) -> (Int, R)? {
-        return candidates.min { $0.1.eucDegree < $1.1.eucDegree }
+    private func findPivot(in candidates: [(row: Int, value: R)]) -> (row: Int, value: R)? {
+        switch mode {
+        case .fast:
+            if let p = candidates.first(where: { c in c.value == .identity || c.value == -.identity}) {
+                return p
+            }
+            return candidates.min { (c1, c2) in
+                c1.value.eucDegree < c2.value.eucDegree
+            }
+        case .balanced:
+            if let p = candidates.first(where: { c in worker.weight(ofRow: c.row) == 1 }) {
+                return p
+            }
+            return candidates.min { (c1, c2) in
+                let (i1, i2) = (c1.row, c2.row)
+                let (d1, d2) = (c1.value.eucDegree, c2.value.eucDegree)
+                return d1 < d2 || (d1 == d2 && worker.weight(ofRow: i1) < worker.weight(ofRow: i2))
+            }
+        }
     }
     
     override func apply(_ s: MatrixEliminator<R>.ElementaryOperation) {
@@ -92,12 +111,12 @@ public final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
 }
 
 public final class ColEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
-    override var form: MatrixEliminationForm {
+    override var form: Form {
         return .ColEchelon
     }
 
     override func prepare() {
-        subrun(RowEchelonEliminator(debug: debug), transpose: true)
+        subrun(RowEchelonEliminator(mode: mode, debug: debug), transpose: true)
         exit()
     }
 }

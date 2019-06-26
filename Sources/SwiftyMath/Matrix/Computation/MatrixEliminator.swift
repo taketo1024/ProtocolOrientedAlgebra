@@ -8,24 +8,31 @@
 
 import Foundation
 
-public enum MatrixEliminationForm {
-    case RowEchelon
-    case ColEchelon
-    case RowHermite
-    case ColHermite
-    case Diagonal
-    case Smith
-}
-
 public class MatrixEliminator<R: EuclideanRing> : CustomStringConvertible {
+    public enum Form {
+        case RowEchelon
+        case ColEchelon
+        case RowHermite
+        case ColHermite
+        case Diagonal
+        case Smith
+    }
+    
+    public enum Mode {
+        case fast, balanced
+    }
+    
+    let mode: Mode
+    var debug: Bool
+    
     var target: UnsafeMutablePointer<DMatrix<R>>!
     var rowOps: [ElementaryOperation] = []
     var colOps: [ElementaryOperation] = []
-    var debug: Bool
     
     private var _exit: Bool = false
     
-    public required init(debug: Bool = false) {
+    public required init(mode: Mode, debug: Bool = false) {
+        self.mode = mode
         self.debug = debug
     }
     
@@ -85,7 +92,7 @@ public class MatrixEliminator<R: EuclideanRing> : CustomStringConvertible {
     
     // override points
     
-    var form: MatrixEliminationForm {
+    var form: Form {
         fatalError("override in subclass")
     }
     
