@@ -11,9 +11,9 @@ public extension FreeModuleGenerator {
 public protocol FreeModuleType: Module {
     associatedtype Generator: FreeModuleGenerator
     var elements: [Generator : CoeffRing] { get }
-    init(generators: [Generator], components: [CoeffRing])
     static func wrap(_ a: Generator) -> Self
-    func factorize(by: [Generator]) -> [CoeffRing]
+    static func combine<n>(basis: [Generator], vector: ColVector<n, CoeffRing>) -> Self
+    func factorize(by: [Generator]) -> DVector<CoeffRing>
 }
 
 public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
@@ -32,11 +32,6 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
         self.init(dict)
     }
     
-    public init(generators: [A], components: [R]) {
-        assert(generators.count == components.count)
-        self.init(Dictionary(pairs: zip(generators, components)))
-    }
-    
     @_transparent
     public static func wrap(_ a: A) -> FreeModule<A, R> {
         return FreeModule([a : .identity])
@@ -46,6 +41,11 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
     public func unwrap() -> A {
         assert(isSingle)
         return elements.anyElement!.key
+    }
+    
+    public static func combine<n>(basis: [A], vector: ColVector<n, R>) -> FreeModule<A, R> {
+        assert(basis.count == vector.size.rows)
+        return (basis.map{ .wrap($0) } * vector)[0]
     }
     
     public subscript(a: A) -> R {
@@ -60,12 +60,12 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
         return elements.keys.sorted().toArray()
     }
     
-    public var components: [R] {
-        return elements.keys.sorted().map{ self[$0] }
-    }
-    
-    public func factorize(by list: [A]) -> [R] {
-        return list.map{ self[$0] }
+    public func factorize(by basis: [A]) -> DVector<R> {
+        let indexer = basis.indexer()
+        let comps = elements.compactMap { (a, r) -> MatrixComponent<R>? in
+            indexer(a).map{ i in (i, 0, r) }
+        }
+        return DVector<R>(size: (basis.count, 1), components: comps, zerosExcluded: true)
     }
     
     public var isSingle: Bool {
@@ -144,18 +144,16 @@ extension ModuleHom where X: FreeModuleType, Y: FreeModuleType {
         let indexer = from.indexer()
         return ModuleHom.linearlyExtend { e in
             guard let j = indexer(e) else { return .zero }
-            return Y(generators: to, components: matrix.colVector(j).grid)
+            return Y.combine(basis: to, vector: matrix.colVector(j))
         }
     }
     
     public func asMatrix(from: [X.Generator], to: [Y.Generator]) -> DMatrix<CoeffRing> {
         let comps = from.enumerated().flatMap { (j, a) -> [MatrixComponent<CoeffRing>] in
             let w = self.applied(to: .wrap(a))
-            return w.factorize(by: to).enumerated().compactMap { (i, a) in
-                a != .zero ? (i, j, a) : nil
-            }
+            return w.factorize(by: to).map{ (i, _, a) in (i, j, a) }
         }
-        return DMatrix(size: (to.count, from.count), components: comps)
+        return DMatrix(size: (to.count, from.count), components: comps, zerosExcluded: true)
     }
 }
 
