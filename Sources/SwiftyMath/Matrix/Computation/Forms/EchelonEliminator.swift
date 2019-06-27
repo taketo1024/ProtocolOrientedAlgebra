@@ -88,9 +88,6 @@ public final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
                 c1.value.eucDegree < c2.value.eucDegree
             }
         case .balanced:
-            if let p = candidates.first(where: { c in worker.weight(ofRow: c.row) == 1 }) {
-                return p
-            }
             return candidates.min { (c1, c2) in
                 let (i1, i2) = (c1.row, c2.row)
                 let (d1, d2) = (c1.value.eucDegree, c2.value.eucDegree)
