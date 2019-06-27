@@ -155,7 +155,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
             
             let comps = (0 ..< k).map{ j -> MatrixComponent<R> in (r + j, j, R.identity) }
             let Z = RowEliminationWorker<R>(size: size, components: comps)
-            for s in colOps {
+            for s in colOps.reversed() {
                 switch s {
                 case let .AddCol(at: i, to: j, mul: a):
                     Z.apply(.AddRow(at: j, to: i, mul: a))
