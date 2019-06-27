@@ -105,6 +105,12 @@ class MatrixTests: XCTestCase {
         XCTAssertEqual(-a, Matrix2(-1,-2,-3,-4))
     }
 
+    func testSub() {
+        let a = Matrix2(1,2,3,4)
+        let b = Matrix2(2,1,7,2)
+        XCTAssertEqual(a - b, Matrix2(-1,1,-4,2))
+    }
+    
     func testMul() {
         let a = Matrix2(1,2,3,4)
         let b = Matrix2(2,3,4,5)

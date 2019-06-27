@@ -78,6 +78,11 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType, Sequence {
         self.init(size: size, grid: grid)
     }
     
+    public init(size: (Int, Int), diagonal d: [R]) {
+        let comps = d.enumerated().map{ (i, a) -> MatrixComponent<R> in (i, i, a) }
+        self.init(size: size, components: comps)
+    }
+    
     public subscript(i: Int, j: Int) -> R {
         get {
             return data[MatrixCoord(i, j)] ?? .zero
@@ -228,11 +233,6 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType, Sequence {
         return a.mapComponents(zerosExcluded: true, (-))
     }
     
-    public static func -(a: Matrix<n, m, R>, b: Matrix<n, m, R>) -> Matrix<n, m, R> {
-        assert(a.size == b.size)
-        return Matrix(size: a.size, data: a.data.merging(b.data, uniquingKeysWith: -))
-    }
-    
     public static func *(r: R, a: Matrix<n, m, R>) -> Matrix<n, m, R> {
         return a.mapComponents{ r * $0 }
     }
@@ -334,6 +334,11 @@ extension Matrix: AdditiveGroup, Module where n: StaticSizeType, m: StaticSizeTy
     public init(generator g: (Int, Int) -> R) {
         let size = (n.intValue, m.intValue)
         self.init(size: size, generator: g)
+    }
+    
+    public init(diagonal d: [R]) {
+        let size = (n.intValue, m.intValue)
+        self.init(size: size, diagonal: d)
     }
     
     public static var zero: Matrix<n, m, R> {

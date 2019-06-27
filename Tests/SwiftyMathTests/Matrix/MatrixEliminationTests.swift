@@ -151,6 +151,20 @@ class MatrixEliminationTests: XCTestCase {
         XCTAssertEqual(E.leftInverse * B * E.rightInverse, A)
     }
     
+    func testQPolynomial() {
+        typealias R = xPolynomial<𝐐>
+        
+        let x = R.indeterminate
+        let I = Matrix3<R>.identity
+        let A = Matrix3(0, 2, 1,
+                        -4, 6, 2,
+                        4, -4, 0).mapComponents{ R($0) }
+        let P = x * I - A
+        let e = P.eliminate(form: .Smith, debug: true)
+        
+        XCTAssertEqual(e.result, Matrix3<R>(diagonal: [R(1), x - R(2), (x - R(2)).pow(2)]))
+    }
+    
     public func testKernel() {
         let A = M2(1, 2, 1, 2)
         let E = A.eliminate()
