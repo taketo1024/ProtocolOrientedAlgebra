@@ -12,8 +12,8 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     public let result: Matrix<n, m, R>
     let rowOps: [MatrixEliminator<R>.ElementaryOperation]
     let colOps: [MatrixEliminator<R>.ElementaryOperation]
-
-    private let dataCache: CacheDictionary<String, MatrixData<R>> = .empty
+    
+    private let matrixCache: CacheDictionary<String, DMatrix<R>> = .empty
     
     internal init(form: MatrixEliminator<R>.Form, result: Matrix<n, m, R>, rowOps: [MatrixEliminator<R>.ElementaryOperation], colOps: [MatrixEliminator<R>.ElementaryOperation]) {
         self.form = form
@@ -22,94 +22,182 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
         self.colOps = colOps
     }
     
+    // returns P of: P * A * Q = B
+    
     public var left: Matrix<n, n, R> {
-        let n = result.size.rows
-        let data = dataCache.useCacheOrSet(key: "left") {
+        return matrixCache.useCacheOrSet(key: "left") {
+            let n = result.size.rows
             let P = RowEliminationWorker<R>.identity(size: n)
             for s in rowOps {
                 P.apply(s)
             }
-            return P.resultData
-        }
-        return .init(size: (n, n), data: data)
+            return DMatrix(size: (n, n), data: P.resultData)
+        }.as(Matrix.self)
     }
     
+    // returns P^{-1} of: P * A * Q = B
+    
     public var leftInverse: Matrix<n, n, R> {
-        let n = result.size.rows
-        let data = dataCache.useCacheOrSet(key: "leftinv") {
+        return matrixCache.useCacheOrSet(key: "leftinv") {
+            let n = result.size.rows
             let P = RowEliminationWorker<R>.identity(size: n)
             for s in rowOps.reversed() {
                 P.apply(s.inverse)
             }
-            return P.resultData
-        }
-        return .init(size: (n, n), data: data)
+            return DMatrix(size: (n, n), data: P.resultData)
+        }.as(Matrix.self)
     }
+    
+    // returns Q of: P * A * Q = B
     
     public var right: Matrix<m, m, R> {
-        let m = result.size.cols
-        let data = dataCache.useCacheOrSet(key: "right") {
-            let P = RowEliminationWorker<R>.identity(size: m)
+        return matrixCache.useCacheOrSet(key: "right") {
+            let m = result.size.cols
+            let Q = ColEliminationWorker<R>.identity(size: m)
             for s in colOps {
-                P.apply(s.transposed)
+                Q.apply(s)
             }
-            return P.resultData.mapKeys{ $0.transposed }
-        }
-        return .init(size: (m, m), data: data)
+            return DMatrix(size: (m, m), data: Q.resultData)
+        }.as(Matrix.self)
     }
+    
+    // returns Q^{-1} of: P * A * Q = B
     
     public var rightInverse: Matrix<m, m, R> {
-        let m = result.size.cols
-        let data = dataCache.useCacheOrSet(key: "rightinv") {
-            let P = RowEliminationWorker<R>.identity(size: m)
+        return matrixCache.useCacheOrSet(key: "rightinv") {
+            let m = result.size.cols
+            let Q = ColEliminationWorker<R>.identity(size: m)
             for s in colOps.reversed() {
-                P.apply(s.inverse.transposed)
+                Q.apply(s.inverse)
             }
-            return P.resultData.mapKeys{ $0.transposed }
-        }
-        return .init(size: (m, m), data: data)
+            return DMatrix(size: (m, m), data: Q.resultData)
+        }.as(Matrix.self)
     }
     
+    // returns r of:
+    //
+    //  P * A * Q = [ D_r | O,  ]
+    //              [ O   | O_k ]
+
     public var rank: Int {
         // TODO support Echelon types
         assert(result.isDiagonal)
         return result.diagonal.count{ $0 != .zero }
     }
     
-    // The matrix made by the basis of Ker(A).
-    // Z = (z1, ..., zk) , k = col(A) - rank(A).
+    // Returns the matrix consisting of the basis vectors of Im(A).
+    // If
     //
-    // P * A * Q = [D_r; O_k]
-    // =>  Z := Q[:, r ..< m], then A * Z = O_k
-    
-    public var kernelMatrix: Matrix<m, DynamicSize, R>  {
-        assert(result.isDiagonal)
-        return right.submatrix(colRange: rank ..< result.size.cols)
-    }
-
-    // The matrix made by the basis of Im(A).
-    // B = (b1, ..., br) , r = rank(A)
+    //     P * A * Q = [ D_r | O   ]
+    //                 [   O | O_k ]
     //
-    // P * A * Q = [D_r; O_k]
-    // => [D; O] is the imageMatrix with basis P.
-    // => P^-1 * [D; O] is the imageMatrix with the standard basis.
+    // then
+    //
+    //     A * Q =  [ P^{-1} [D_r] | O ]
+    //              [        [O  ] | O ]
+    //
+    // so P^{-1} [D_r; O] gives the imageMatrix.
     
     public var imageMatrix: Matrix<n, DynamicSize, R> {
         assert(result.isDiagonal)
-        return leftInverse.submatrix(colRange: 0 ..< rank) * result.submatrix(rowRange: 0 ..< rank, colRange: 0 ..< rank)
+        return matrixCache.useCacheOrSet(key: "image") {
+            let n = result.size.rows
+            let r = rank
+            let size = (rows: n, cols: r)
+            
+            if size.rows == 0 || size.cols == 0 {
+                return DMatrix.zero(size: size)
+            }
+            
+            let diag = result.diagonal
+            let comps = (0 ..< r).map{ i -> MatrixComponent<R> in (i, i, diag[i]) }
+            let D = RowEliminationWorker<R>(size: size, components: comps)
+            for s in rowOps.reversed() {
+                D.apply(s.inverse)
+            }
+            
+            return DMatrix(size: size, data: D.resultData)
+        }.as(Matrix.self)
     }
     
-    // T: The basis transition matrix from (ei) to (zi),
-    // i.e. T * zi = ei.
+    // Returns the matrix consisting of the basis vectors of Ker(A).
+    // If
     //
-    // Z = Q * [O_r; I_k]
-    // =>  Q^-1 * Z = [O; I_k]
+    //     P * A * Q = [ D_r | O   ]
+    //                 [   O | O_k ]
     //
-    // T = Q^-1[r ..< m, :]  gives  T * Z = I_k.
+    // then for any j in (r <= j < m),
+    //
+    //     (A * Q) * e_j = A * (Q * e_j)
+    //                   = A * q_j
+    //                   = o
+    //
+    // so
+    //
+    //     Z = [q_r ... q_{m-1}] = Q * [O  ]
+    //                                 [I_k]
+    //
+    // gives the kernelMatrix.
+    //
+    // Note that Q is multiplied to [O; I_k] from the <left>,
+    // so we must consider the corresponding <row> operations.
+    
+    public var kernelMatrix: Matrix<m, DynamicSize, R>  {
+        assert(result.isDiagonal)
+        return matrixCache.useCacheOrSet(key: "kernel") {
+            let (m, r) = (result.size.cols, rank)
+            let k = m - r
+            let size = (rows: m, cols: k)
+            
+            if size.rows == 0 || size.cols == 0 {
+                return DMatrix.zero(size: size)
+            }
+            
+            let comps = (0 ..< k).map{ j -> MatrixComponent<R> in (r + j, j, R.identity) }
+            let Z = RowEliminationWorker<R>(size: size, components: comps)
+            for s in colOps {
+                switch s {
+                case let .AddCol(at: i, to: j, mul: a):
+                    Z.apply(.AddRow(at: j, to: i, mul: a))
+                default:
+                    Z.apply(s.transposed)
+                }
+            }
+            
+            return DMatrix(size: size, data: Z.resultData)
+        }.as(Matrix.self)
+    }
+    
+    // Returns the transition matrix T from Z to I,
+    // i.e.
+    //
+    //     z_j = q_{r + j} ∈ R^m  --T--> e_j ∈ R^k  (0 <= j < k)
+    //     <=> T * Z = I_k
+    //
+    // Sinze Z = Q * [O; I_k],
+    //
+    //     T = [O | I_k] Q^{-1}
+    //
+    // satisfies the desired equation.
     
     public var kernelTransitionMatrix: Matrix<DynamicSize, m, R> {
         assert(result.isDiagonal)
-        return rightInverse.submatrix(rowRange: rank ..< result.size.cols)
+        return matrixCache.useCacheOrSet(key: "kerneltrans") {
+            let (m, r) = (result.size.cols, rank)
+            let k = m - r
+            let size = (rows: k, cols: m)
+            
+            if size.rows == 0 || size.cols == 0 {
+                return DMatrix.zero(size: size)
+            }
+            
+            let comps = (0 ..< k).map{ i -> MatrixComponent<R> in (i, r + i, R.identity) }
+            let T = ColEliminationWorker<R>(size: size, components: comps)
+            for s in colOps.reversed() {
+                T.apply(s.inverse)
+            }
+            return DMatrix(size: size, data: T.resultData)
+        }.as(Matrix.self)
     }
 }
 

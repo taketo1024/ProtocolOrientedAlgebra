@@ -110,26 +110,25 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
     @_specialize(where R == 𝐙)
     func addRow(at i1: Int, to i2: Int, multipliedBy r: R) {
         guard let fromHead = working[i1] else {
-            fatalError("attempt to add from empty row: \(i1)")
+            return
         }
         
-        guard var toHead = working[i2] else {
-            fatalError("attempt to add into empty row: \(i2)")
-        }
-        
-        if trackRowInfos {
-            removeHeadPosition(i2)
-        }
-        
-        if fromHead.value.col < toHead.value.col {
-            // from: ●-->○-->○----->○-------->
-            //   to:            ●------->○--->
-            
-            toHead = LinkedList((fromHead.value.col, .zero), next: toHead)
-
-            // from: ●-->○-->○----->○-------->
-            //   to: ●--------->○------->○--->
-        }
+        let toHead = {() -> LinkedList<(col: Int, value: R)> in
+            var toHead = working[i2] // possibly nil
+            if toHead == nil || fromHead.value.col < toHead!.value.col {
+                
+                // from: ●-->○-->○----->○-------->
+                //   to:            ●------->○--->
+                
+                return LinkedList((fromHead.value.col, .zero), next: toHead)
+                
+                // from: ●-->○-->○----->○-------->
+                //   to: ●--------->○------->○--->
+                
+            } else {
+                return toHead!
+            }
+        }()
         
         var (from, to) = (fromHead, toHead)
         
@@ -170,6 +169,11 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
         }
         
         let result = toHead.drop{ c in c.value == .zero } // possibly nil
+        
+        if trackRowInfos {
+            removeHeadPosition(i2)
+        }
+
         working[i2] = result
         
         if trackRowInfos {
@@ -249,3 +253,37 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
     }
 }
 
+internal final class ColEliminationWorker<R: EuclideanRing>: Equatable {
+    private let rowWorker: RowEliminationWorker<R>
+    
+    init<S: Sequence>(size: (Int, Int), components: S, trackRowInfos: Bool = false) where S.Element == MatrixComponent<R> {
+        rowWorker = RowEliminationWorker(size: (size.1, size.0), components: components.map{(i, j, a) in (j, i, a)})
+    }
+    
+    convenience init<n, m>(from matrix: Matrix<n, m, R>, trackRowInfos: Bool = false) {
+        self.init(size: matrix.size, components: matrix)
+    }
+    
+    func apply(_ s: MatrixEliminator<R>.ElementaryOperation) {
+        switch s {
+        case .AddCol, .MulCol, .SwapCols:
+            rowWorker.apply(s.transposed)
+        default:
+            fatalError()
+        }
+    }
+    
+    var resultData: MatrixData<R> {
+        return rowWorker.resultData.mapKeys{ $0.transposed }
+    }
+    
+    static func identity(size n: Int) -> ColEliminationWorker<R> {
+        let comps = (0 ..< n).map { i in (i, i, R.identity) }
+        return ColEliminationWorker(size: (n, n), components: comps)
+    }
+    
+    // for test
+    static func ==(a: ColEliminationWorker, b: ColEliminationWorker) -> Bool {
+        return a.rowWorker == b.rowWorker
+    }
+}
