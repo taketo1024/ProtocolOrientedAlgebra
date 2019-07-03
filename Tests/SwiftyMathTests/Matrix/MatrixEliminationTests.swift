@@ -172,7 +172,7 @@ class MatrixEliminationTests: XCTestCase {
                         -4, 6, 2,
                         4, -4, 0).mapComponents{ R($0) }
         let P = x * I - A
-        let e = P.eliminate(form: .Smith, debug: true)
+        let e = P.eliminate(form: .Smith)
         
         XCTAssertEqual(e.result, Matrix3<R>(diagonal: [R(1), x - R(2), (x - R(2)).pow(2)]))
     }
