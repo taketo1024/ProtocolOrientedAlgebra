@@ -91,7 +91,7 @@ class MPolynomialTests: XCTestCase {
 
     func testEvaluate() {
         let a = A(coeffs: [[]: 2, [1]: -1, [0, 1]: 2, [1, 1]: 3]) // f(x,y) = 3xy - x + 2y + 2
-        XCTAssertEqual(a.evaluate{ i in (i == 0) ? 1 : 2}, 11)     // f(1, 2) = 6 - 1 + 4 + 2
+        XCTAssertEqual(a.evaluate(at: 1, 2), 11)                  // f(1, 2) = 6 - 1 + 4 + 2
     }
 
     func testSymmetricPolynomial() {

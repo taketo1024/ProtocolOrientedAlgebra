@@ -104,6 +104,15 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
         return f.map { $0 * r }
     }
     
+    public func evaluate(at values: [R]) -> R {
+        assert(xn.isFinite && values.count == xn.numberOfIndeterminates)
+        return evaluate{ i in values[i] }
+    }
+    
+    public func evaluate(at values: R...) -> R {
+        return evaluate(at: values)
+    }
+    
     public func evaluate(mapping: (Int) -> R) -> R {
         let indices = coeffs.keys.reduce(into: Set()) { (set: inout Set<Int>, I: IntList) in
             set = set.union( (0 ..< I.length).exclude{i in I[i] == 0} )
