@@ -81,7 +81,7 @@ public struct _Polynomial<T: PolynomialType, x: PolynomialIndeterminate, R: Ring
     }
     
     public var isConst: Bool {
-        return (highestPower, lowestPower) == (0, 0)
+        return coeffs.isEmpty || (coeffs.count == 1 && coeffs.keys.contains(0))
     }
     
     public var constTerm: R {

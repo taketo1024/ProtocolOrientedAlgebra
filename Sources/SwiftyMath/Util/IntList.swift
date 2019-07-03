@@ -8,20 +8,34 @@
 
 import Foundation
 
-public struct IntList: Hashable, Comparable, CustomStringConvertible, Codable {
+public struct IntList: ExpressibleByArrayLiteral, ExpressibleByDictionaryLiteral, Hashable, Comparable, CustomStringConvertible, Codable {
     public let components: [Int]
-    public init(_ components: Int ...) {
-        self.init(components)
-    }
     
     public init(_ components: [Int]) {
         // TODO trim last 0s.
         self.components = components
     }
     
-    public init(_ components: [Int : Int]) {
-        let n = (components.keys.max() ?? -1) + 1
-        self.components = (0 ..< n).map{ components[$0] ?? 0 }
+    public init(_ components: Int ...) {
+        self.init(components)
+    }
+    
+    public init(_ dict: [Int : Int]) {
+        assert(dict.keys.allSatisfy{ $0 >= 0 })
+        if dict.isEmpty {
+            self.init([])
+        } else {
+            let n = dict.keys.max()!
+            self.init( (0 ... n).map{ dict[$0] ?? 0 } )
+        }
+    }
+    
+    public init(arrayLiteral elements: Int...) {
+        self.init(elements)
+    }
+    
+    public init(dictionaryLiteral elements: (Int, Int)...) {
+        self.init(Dictionary(pairs: elements))
     }
     
     public subscript(i: Int) -> Int {
@@ -40,8 +54,12 @@ public struct IntList: Hashable, Comparable, CustomStringConvertible, Codable {
         return components.count
     }
     
+    public func enumerated() -> EnumeratedSequence<[Int]> {
+        return components.enumerated()
+    }
+    
     public func permuted<n>(by p: Permutation<n>) -> IntList {
-        let indices = self.components.enumerated().map{ (i, j) in (p[i], j)}
+        let indices = self.enumerated().map{ (i, j) in (p[i], j)}
         return IntList(Dictionary(pairs: indices))
     }
     
