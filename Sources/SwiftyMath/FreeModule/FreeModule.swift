@@ -10,17 +10,17 @@ public extension FreeModuleGenerator {
 
 public protocol FreeModuleType: Module {
     associatedtype Generator: FreeModuleGenerator
-    var elements: [Generator : CoeffRing] { get }
     static func wrap(_ a: Generator) -> Self
-    static func combine<n>(basis: [Generator], vector: ColVector<n, CoeffRing>) -> Self
+    static func combine<n>(generators: [Generator], vector: ColVector<n, CoeffRing>) -> Self
     func factorize(by: [Generator]) -> DVector<CoeffRing>
+    func decomposed() -> [(Generator, CoeffRing)]
 }
 
 public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
     public typealias CoeffRing = R
     public typealias Generator = A
     
-    public let elements: [A: R]
+    private let elements: [A: R]
     
     // root initializer
     public init(_ elements: [A : R]) {
@@ -32,24 +32,22 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
         self.init(dict)
     }
     
+    public subscript(a: A) -> R {
+        return elements[a] ?? .zero
+    }
+    
     @_transparent
     public static func wrap(_ a: A) -> FreeModule<A, R> {
         return FreeModule([a : .identity])
     }
 
-    @_transparent
-    public func unwrap() -> A {
-        assert(isSingle)
-        return elements.anyElement!.key
+    public static var zero: FreeModule<A, R> {
+        return FreeModule([])
     }
     
-    public static func combine<n>(basis: [A], vector: ColVector<n, R>) -> FreeModule<A, R> {
-        assert(basis.count == vector.size.rows)
-        return (basis.map{ .wrap($0) } * vector)[0]
-    }
-    
-    public subscript(a: A) -> R {
-        return elements[a] ?? .zero
+    public static func combine<n>(generators: [A], vector: ColVector<n, R>) -> FreeModule<A, R> {
+        assert(generators.count == vector.size.rows)
+        return (generators.map{ .wrap($0) } * vector)[0]
     }
     
     public var degree: Int {
@@ -60,23 +58,30 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
     }
     
     public var generators: [A] {
-        return elements.keys.sorted().toArray()
+        return elements.keys.sorted()
     }
     
-    public func factorize(by basis: [A]) -> DVector<R> {
-        let indexer = basis.indexer()
+    public func factorize(by generators: [A]) -> DVector<R> {
+        return factorize(by: generators, indexer: generators.indexer())
+    }
+    
+    public func factorize(by generators: [A], indexer: (A) -> Int?) -> DVector<R> {
         let comps = elements.compactMap { (a, r) -> MatrixComponent<R>? in
             indexer(a).map{ i in (i, 0, r) }
         }
-        return DVector<R>(size: (basis.count, 1), components: comps, zerosExcluded: true)
+        return DVector<R>(size: (generators.count, 1), components: comps, zerosExcluded: true)
     }
     
-    public var isSingle: Bool {
-        return elements.count == 1 && elements.anyElement!.value == .identity
+    public func decomposed() -> [(A, R)] {
+        return generators.map { a in (a, self[a]) }
     }
     
-    public static var zero: FreeModule<A, R> {
-        return FreeModule([])
+    public func mapGenerators<A2>(_ f: (A) -> A2) -> FreeModule<A2, R> {
+        return FreeModule<A2, R>(elements.mapKeys(f))
+    }
+    
+    public func mapComponents<R2>(_ f: (R) -> R2) -> FreeModule<A, R2> {
+        return FreeModule<A, R2>(elements.mapValues(f))
     }
     
     public static func + (a: FreeModule<A, R>, b: FreeModule<A, R>) -> FreeModule<A, R> {
@@ -107,14 +112,6 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
         return FreeModule(sum)
     }
     
-    public func mapGenerators<A2>(_ f: (A) -> A2) -> FreeModule<A2, R> {
-        return FreeModule<A2, R>(elements.mapKeys(f))
-    }
-    
-    public func mapComponents<R2>(_ f: (R) -> R2) -> FreeModule<A, R2> {
-        return FreeModule<A, R2>(elements.mapValues(f))
-    }
-    
     public var description: String {
         return Format.terms("+", generators.map { a in (self[a], a.description, 1) })
     }
@@ -139,7 +136,7 @@ extension FreeModule where R: ComplexSubset {
 extension ModuleHom where X: FreeModuleType, Y: FreeModuleType {
     public static func linearlyExtend(_ f: @escaping (X.Generator) -> Codomain) -> ModuleHom<X, Y> {
         return ModuleHom { (m: Domain) in
-            m.elements.map{ (a, r) in r * f(a) }.sumAll()
+            m.decomposed().sum { (a, r) in r * f(a) }
         }
     }
     
@@ -147,7 +144,7 @@ extension ModuleHom where X: FreeModuleType, Y: FreeModuleType {
         let indexer = from.indexer()
         return ModuleHom.linearlyExtend { e in
             guard let j = indexer(e) else { return .zero }
-            return Y.combine(basis: to, vector: matrix.colVector(j))
+            return Y.combine(generators: to, vector: matrix.colVector(j))
         }
     }
     
