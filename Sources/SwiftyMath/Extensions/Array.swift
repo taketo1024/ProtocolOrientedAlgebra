@@ -9,20 +9,8 @@
 import Foundation
 
 public extension Array {
-    func dropLast(while predicate: (Element) throws -> Bool) rethrows -> ArraySlice<Element> {
-        let rev = self.reversed().enumerated()
-        for (i, a) in rev {
-            let p: Bool
-            do {
-                p = try predicate(a)
-            } catch let e {
-                throw e
-            }
-            if !p {
-                return i == 0 ? ArraySlice(self) : self[0 ..< count - i]
-            }
-        }
-        return ArraySlice([])
+    static var empty: [Element] {
+        return []
     }
     
     func appended(_ e: Element) -> [Element] {
@@ -48,6 +36,21 @@ public extension Array {
         var a = self
         a.remove(at: i)
         return a
+    }
+    
+    mutating func dropLast(while predicate: (Element) -> Bool) {
+        while let e = popLast() {
+            if !predicate(e) {
+                append(e)
+                return
+            }
+        }
+    }
+    
+    func droppedLast(while predicate: (Element) -> Bool) -> [Element] {
+        var copy = self
+        copy.dropLast(while: predicate)
+        return copy
     }
     
     func repeated(_ count: Int) -> [Element] {

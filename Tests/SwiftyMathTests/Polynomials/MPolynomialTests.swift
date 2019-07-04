@@ -18,7 +18,7 @@ class MPolynomialTests: XCTestCase {
         XCTAssertEqual(_xy.degree(1), 1)
         XCTAssertEqual(_xy.symbol(0), "x")
         XCTAssertEqual(_xy.symbol(1), "y")
-        XCTAssertEqual(_xy.degree(exponents: [2, 3]), 5)
+        XCTAssertEqual(_xy.totalDegree(exponents: [2, 3]), 5)
     }
     
     func testIndeterminates_xn() {
@@ -28,7 +28,7 @@ class MPolynomialTests: XCTestCase {
         XCTAssertEqual(_xn.degree(1), 1)
         XCTAssertEqual(_xn.symbol(0), "x₀")
         XCTAssertEqual(_xn.symbol(1), "x₁")
-        XCTAssertEqual(_xn.degree(exponents: [2, 3, 7]), 12)
+        XCTAssertEqual(_xn.totalDegree(exponents: [2, 3, 7]), 12)
     }
     
     func testInitFromInt() {
@@ -47,7 +47,19 @@ class MPolynomialTests: XCTestCase {
         XCTAssertEqual(a.coeff(0, 1), 1)
         XCTAssertEqual(a.coeff(2, 1), 3)
     }
-
+    
+    func testUniqueness() {
+        let a = A(13)
+        let b = A(coeffs: [[0,0]: 13])
+        XCTAssertEqual(a, b)
+    }
+    
+    func testUniqueness2() {
+        let a = A(coeffs: [[1]: 1])
+        let b = A(coeffs: [[1,0]: 1, [0,1]: 0])
+        XCTAssertEqual(a, b)
+    }
+    
     func testSum() {
         let a = A(coeffs: [[]: 1, [1]: 1, [0, 1]: 1]) // x + y + 1
         let b = A(coeffs: [[1]: -1, [0, 1]: 2, [1, 1]: 3]) // 3xy - x + 2y

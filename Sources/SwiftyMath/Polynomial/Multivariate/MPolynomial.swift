@@ -14,21 +14,22 @@ public typealias  xnPolynomial<R: Ring> = MPolynomial<_xn,  R>
 
 public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
     public typealias CoeffRing = R
+    public typealias MultiDegree = [Int]
     
-    // e.g. [(2, 1, 3) : 5] -> 5 * x^2 * y * z^3
-    private let coeffs: [IntList : R]
+    // e.g. [[2, 1, 3] : 5] -> 5 * x^2 * y * z^3
+    private let coeffs: [MultiDegree : R]
     
     public init(from n: 𝐙) {
         self.init(R(from: n))
     }
     
     public init(_ a: R) {
-        self.init(coeffs: [IntList.empty : a])
+        self.init(coeffs: [MultiDegree.empty : a])
     }
     
-    public init(coeffs: [IntList : R]) {
-        assert(!xn.isFinite || coeffs.keys.allSatisfy{ I in I.length <= xn.numberOfIndeterminates } )
-        self.coeffs = coeffs.filter{ $0.value != .zero }
+    public init(coeffs: [MultiDegree : R]) {
+        assert(!xn.isFinite || coeffs.keys.allSatisfy{ I in I.count <= xn.numberOfIndeterminates } )
+        self.coeffs = coeffs.filter{ $0.value != .zero }.mapKeys{ $0.droppedLast{ $0 == 0 } }
     }
     
     public static var zero: MPolynomial<xn, R> {
@@ -39,28 +40,28 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
         return (isConst) ? constTerm.inverse.map{ inv in MPolynomial(inv) } : nil
     }
     
-    internal var multiIndices: [IntList] {
+    internal var multiDegrees: [MultiDegree] {
         return coeffs.keys.sorted()
     }
     
-    public func coeff(_ I: IntList) -> R {
+    public var degree: Int {
+        return coeffs.keys.map { I in xn.totalDegree(exponents: I)}.max() ?? 0
+    }
+    
+    public func coeff(_ I: MultiDegree) -> R {
         return coeffs[I] ?? .zero
     }
     
     public func coeff(_ indices: Int ...) -> R {
-        return coeff(IntList(indices))
+        return coeff(MultiDegree(indices))
     }
     
-    public var leadCoeff: R {
-        return self.coeff(leadDegree)
+    public var isMonomial: Bool {
+        return coeffs.count <= 1
     }
     
-    public var leadDegree: IntList {
-        return multiIndices.last ?? .empty // lex-order
-    }
-    
-    public var totalDegree: Int {
-        return coeffs.keys.map { I in xn.degree(exponents: I)}.max() ?? 0
+    public var isMonic: Bool {
+        return leadCoeff == .identity
     }
     
     public var isConst: Bool {
@@ -71,8 +72,25 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
         return self.coeff(.empty)
     }
     
+    public var leadCoeff: R {
+        return self.coeff(leadMultiDegree)
+    }
+    
+    public var leadMultiDegree: MultiDegree {
+        return multiDegrees.last ?? .empty // lex-order
+    }
+    
+    public var leadTerm: MPolynomial<xn, R> {
+        return MPolynomial(coeffs: [leadMultiDegree : leadCoeff])
+    }
+    
     public func map(_ f: ((R) -> R)) -> MPolynomial<xn, R> {
         return MPolynomial(coeffs: coeffs.mapValues(f) )
+    }
+    
+    // decompose into pairs of (monic monomial, coeff)
+    public func decompose() -> [(MPolynomial<xn, R>, R)] {
+        return coeffs.map{ (I, a) in (MPolynomial(coeffs: [I : .identity]), a) }
     }
     
     public static func + (f: MPolynomial<xn, R>, g: MPolynomial<xn, R>) -> MPolynomial<xn, R> {
@@ -88,9 +106,14 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
     }
     
     public static func * (f: MPolynomial<xn, R>, g: MPolynomial<xn, R>) -> MPolynomial<xn, R> {
-        var coeffs = [IntList : R]()
-        for (I, J) in f.multiIndices.allCombinations(with: g.multiIndices) {
-            let K = I + J
+        func merge(_ I: MultiDegree, _ J: MultiDegree) -> MultiDegree {
+            let l = max(I.count, J.count)
+            return (0 ..< l).map{ i in (I.indices.contains(i) ? I[i] : 0) + (J.indices.contains(i) ? J[i] : 0) }
+        }
+        
+        var coeffs = [MultiDegree : R]()
+        for (I, J) in f.multiDegrees.allCombinations(with: g.multiDegrees) {
+            let K = merge(I, J)
             coeffs[K] = coeffs[K, default: .zero] + f.coeff(I) * g.coeff(J)
         }
         return MPolynomial(coeffs: coeffs)
@@ -114,8 +137,8 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
     }
     
     public func evaluate(mapping: (Int) -> R) -> R {
-        let indices = coeffs.keys.reduce(into: Set()) { (set: inout Set<Int>, I: IntList) in
-            set = set.union( (0 ..< I.length).exclude{i in I[i] == 0} )
+        let indices = coeffs.keys.reduce(into: Set()) { (set: inout Set<Int>, I: MultiDegree) in
+            set = set.union( (0 ..< I.count).exclude{i in I[i] == 0} )
         }
         let dict = Dictionary(keys: indices) { i in mapping(i) }
         return coeffs.sum{ (I, a) in a * I.enumerated().multiply{ (i, k) in dict[i]!.pow(k) } }
@@ -130,10 +153,10 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
             return .zero
         }
         
-        let mInds = n.choose(i).map { combi -> IntList in
+        let mInds = n.choose(i).map { combi -> MultiDegree in
             // e.g.  [0, 1, 3] -> (1, 1, 0, 1)
             let l = combi.last.flatMap{ $0 + 1 } ?? 0
-            return IntList( (0 ..< l).map { combi.contains($0) ? 1 : 0 } )
+            return MultiDegree( (0 ..< l).map { combi.contains($0) ? 1 : 0 } )
         }
         
         let coeffs = Dictionary(pairs: mInds.map{ ($0, R.identity) } )
@@ -141,7 +164,7 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
     }
     
     public var description: String {
-        func toTerm(_ I: IntList) -> String {
+        func toTerm(_ I: MultiDegree) -> String {
             return I.enumerated().compactMap { (i, n) -> String? in
                 if n > 0 {
                     return (n > 1) ? "\(xn.symbol(i))\(Format.sup(n))" : xn.symbol(i)
@@ -151,7 +174,7 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
             }.joined()
         }
         
-        let res = multiIndices.reversed().map { i -> String in
+        let res = multiDegrees.reversed().map { i -> String in
             let a = self.coeff(i)
             let x = toTerm(i)
             switch (a, x) {

@@ -53,8 +53,8 @@ public extension MPolynomialIndeterminate {
         return 1
     }
     
-    static func degree(exponents: IntList) -> Int {
-        assert(!isFinite || exponents.length <= numberOfIndeterminates)
+    static func totalDegree(exponents: [Int]) -> Int {
+        assert(!isFinite || exponents.count <= numberOfIndeterminates)
         return exponents.enumerated().sum { (i, k) in
             k * degree(i)
         }
