@@ -13,6 +13,7 @@ public protocol FreeModuleType: Module {
     static func wrap(_ a: Generator) -> Self
     static func combine<n>(generators: [Generator], vector: ColVector<n, CoeffRing>) -> Self
     func factorize(by: [Generator]) -> DVector<CoeffRing>
+    func factorize(by: [Generator], indexer: (Generator) -> Int?) -> DVector<CoeffRing>
     func decomposed() -> [(Generator, CoeffRing)]
 }
 
@@ -149,9 +150,10 @@ extension ModuleHom where X: FreeModuleType, Y: FreeModuleType {
     }
     
     public func asMatrix(from: [X.Generator], to: [Y.Generator]) -> DMatrix<CoeffRing> {
+        let toIndexer = to.indexer()
         let comps = from.enumerated().flatMap { (j, a) -> [MatrixComponent<CoeffRing>] in
             let w = self.applied(to: .wrap(a))
-            return w.factorize(by: to).map{ (i, _, a) in (i, j, a) }
+            return w.factorize(by: to, indexer: toIndexer).map{ (i, _, a) in (i, j, a) }
         }
         return DMatrix(size: (to.count, from.count), components: comps, zerosExcluded: true)
     }
