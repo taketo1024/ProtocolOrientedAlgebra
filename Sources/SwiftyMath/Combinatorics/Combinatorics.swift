@@ -9,7 +9,6 @@
 import Foundation
 
 public extension 𝐙 {
-    // TODO use IntList
     func choose(_ k: Int) -> [[Int]] {
         let n = self
         switch (n, k) {
@@ -22,7 +21,6 @@ public extension 𝐙 {
         }
     }
     
-    // TODO use IntList
     func multichoose(_ k: Int) -> [[Int]] {
         let n = self
         switch (n, k) {
@@ -37,24 +35,24 @@ public extension 𝐙 {
         }
     }
     
-    var partitions: [IntList] {
+    var partitions: [[Int]] {
         assert(self >= 0)
         if self == 0 {
-            return [IntList.empty]
+            return [[]]
         } else {
             return self.partitions(lowerBound: 1)
         }
     }
     
-    internal func partitions(lowerBound: Int) -> [IntList] {
+    internal func partitions(lowerBound: Int) -> [[Int]] {
         let n = self
         if lowerBound > n {
             return []
         } else {
-            return (lowerBound ... n).flatMap { i -> [IntList] in
+            return (lowerBound ... n).flatMap { i -> [[Int]] in
                 let ps = (n - i).partitions(lowerBound: Swift.max(i, lowerBound))
-                return ps.map { I in IntList([i] + I.components) }
-            } + [IntList(n)]
+                return ps.map { I in [i] + I }
+            } + [[n]]
         }
     }
 }
