@@ -53,7 +53,10 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
     }
     
     public var degree: Int {
-        return elements.anyElement?.0.degree ?? 0
+        guard let a = elements.anyElement?.0 else {
+            return 0
+        }
+        return self[a].degree + a.degree
     }
     
     public var generators: [A] {

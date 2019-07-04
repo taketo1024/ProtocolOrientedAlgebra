@@ -7,6 +7,7 @@ public protocol Ring: AdditiveGroup, Monoid {
     var normalizingUnit: Self { get }
     var normalized: Self { get }
     var isNormalized: Bool { get }
+    var degree: Int { get }
     static var isField: Bool { get }
 }
 
@@ -25,6 +26,10 @@ public extension Ring {
     
     var isNormalized: Bool {
         return normalizingUnit == .identity
+    }
+    
+    var degree: Int {
+        return 0
     }
     
     func pow(_ n: Int) -> Self {
