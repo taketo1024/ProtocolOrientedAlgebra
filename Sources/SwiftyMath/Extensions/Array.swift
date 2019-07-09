@@ -64,6 +64,12 @@ public extension Array {
     func takeOdd() -> [Element] {
         return self.enumerated().filter{ $0.offset.isOdd  }.map{ $0.element }
     }
+    
+    func merging(_ other: [Element], with f: (Element, Element) -> Element) -> [Element] {
+        let (n, m) = (self.count, other.count)
+        let l = Swift.min(n, m)
+        return zip(self, other).map(f) + self[l ..< n] + other[l ..< m]
+    }
 
     func toDictionary() -> [Index: Element] {
         return Dictionary(pairs: self.enumerated().map{ (i, a) in (i, a) })
