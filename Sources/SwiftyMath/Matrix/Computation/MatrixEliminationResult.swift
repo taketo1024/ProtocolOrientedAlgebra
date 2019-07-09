@@ -199,6 +199,40 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
             return DMatrix(size: size, data: T.resultData)
         }.as(Matrix.self)
     }
+    
+    // Returns the transition matrix T from B = Im(A) to D_r,
+    //
+    //     B = P^{-1} [D_r; O]
+    //     <=> D_r = [I_r | O] (P * B)
+    //
+    // so  T = [I_r | O] * P.
+    //
+    // Note that P is multiplied to [I_r | O] from the <right>,
+    // so we must consider the corresponding <col> operations.
+
+    public var imageTransitionMatrix: Matrix<DynamicSize, m, R> {
+        assert(result.isDiagonal)
+        return matrixCache.useCacheOrSet(key: "imagetrans") {
+            let (n, r) = (result.size.rows, rank)
+            let size = (rows: r, cols: n)
+            
+            if size.rows == 0 || size.cols == 0 {
+                return DMatrix.zero(size: size)
+            }
+            
+            let comps = (0 ..< r).map{ i -> MatrixComponent<R> in (i, i, R.identity) }
+            let T = ColEliminationWorker<R>(size: size, components: comps)
+            for s in rowOps.reversed() {
+                switch s {
+                case let .AddRow(at: i, to: j, mul: a):
+                    T.apply(.AddCol(at: j, to: i, mul: a))
+                default:
+                    T.apply(s.transposed)
+                }
+            }
+            return DMatrix(size: size, data: T.resultData)
+        }.as(Matrix.self)
+    }
 }
 
 extension MatrixEliminationResult where n == m {

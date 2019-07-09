@@ -204,9 +204,12 @@ class MatrixEliminationTests: XCTestCase {
         let A = M2(2, 4, 2, 4)
         let E = A.eliminate()
         let I = E.imageMatrix
-
+        
         XCTAssertTrue(I.size == (2, 1))
         XCTAssertEqual(I.grid, [2, 2])
+        
+        let T = E.imageTransitionMatrix
+        print(T.detailDescription)
     }
     
     public func testDet() {
