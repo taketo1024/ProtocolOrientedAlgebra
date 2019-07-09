@@ -89,8 +89,40 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
     }
     
     // decompose into pairs of (monic monomial, coeff)
-    public func decompose() -> [(MPolynomial<xn, R>, R)] {
+    public func decomposed() -> [(MPolynomial<xn, R>, R)] {
         return coeffs.map{ (I, a) in (MPolynomial(coeffs: [I : .identity]), a) }
+    }
+    
+    public static func indeterminate(_ i: Int) -> MPolynomial {
+        return .init(coeffs: [[0].repeated(i) + [1] : R.identity] )
+    }
+    
+    public static func monomial(ofMultiDegree I: MultiDegree) -> MPolynomial<xn, R> {
+        return .init(coeffs: [I: .identity])
+    }
+    
+    public static func monomials(ofDegree degree: Int) -> [MPolynomial<xn, R>] {
+        assert(xn.isFinite)
+        return monomials(ofDegree: degree, usingIndeterminates: (0 ..< xn.numberOfIndeterminates).toArray())
+    }
+    
+    public static func monomials(ofDegree degree: Int, usingIndeterminates indices: [Int]) -> [MPolynomial<xn, R>] {
+        assert(indices.allSatisfy{ i in xn.degree(i) != 0 })
+        
+        func multiDegs(_ degree: Int, _ index: Int) -> [[Int]] {
+            guard index >= 0 else {
+                return (degree == 0) ? [[]] : []
+            }
+            
+            let d = xn.degree(indices[index])
+            let m = degree.abs / d.abs // max exponent of x_i
+            return (0 ... m).flatMap { c -> [[Int]] in
+                multiDegs(degree - c * d, index - 1).map{ $0.appended(c) }
+            }
+        }
+        
+        let last = indices.count - 1
+        return multiDegs(degree, last).map{ I in .monomial(ofMultiDegree: I) }
     }
     
     public static func + (f: MPolynomial<xn, R>, g: MPolynomial<xn, R>) -> MPolynomial<xn, R> {
@@ -106,14 +138,9 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
     }
     
     public static func * (f: MPolynomial<xn, R>, g: MPolynomial<xn, R>) -> MPolynomial<xn, R> {
-        func merge(_ I: MultiDegree, _ J: MultiDegree) -> MultiDegree {
-            let l = max(I.count, J.count)
-            return (0 ..< l).map{ i in (I.indices.contains(i) ? I[i] : 0) + (J.indices.contains(i) ? J[i] : 0) }
-        }
-        
         var coeffs = [MultiDegree : R]()
         for (I, J) in f.multiDegrees.allCombinations(with: g.multiDegrees) {
-            let K = merge(I, J)
+            let K = I.merging(J, with: +)
             coeffs[K] = coeffs[K, default: .zero] + f.coeff(I) * g.coeff(J)
         }
         return MPolynomial(coeffs: coeffs)
@@ -191,9 +218,9 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
     public static var symbol: String {
         if xn.isFinite {
             let n = xn.numberOfIndeterminates
-            return "\(R.symbol)\( (0 ..< n).map{ i in xn.symbol(i) })"
+            return "\(R.symbol)[\( (0 ..< n).map{ i in xn.symbol(i) }.joined(separator: ", "))]"
         } else {
-            return "\(R.symbol)\( (0 ..< 3).map{ i in xn.symbol(i) } + ["…"])"
+            return "\(R.symbol)[\( (0 ..< 3).map{ i in xn.symbol(i) }.appended("…").joined(separator: ", "))]"
         }
     }
 }

@@ -1,13 +1,5 @@
 import Foundation
 
-public protocol FreeModuleGenerator: Hashable, Comparable, CustomStringConvertible {
-    var degree: Int { get }
-}
-
-public extension FreeModuleGenerator {
-    var degree: Int { return 1 }
-}
-
 public protocol FreeModuleType: Module {
     associatedtype Generator: FreeModuleGenerator
     static func wrap(_ a: Generator) -> Self

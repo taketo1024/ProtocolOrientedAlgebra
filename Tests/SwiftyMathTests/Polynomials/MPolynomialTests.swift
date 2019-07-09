@@ -111,4 +111,10 @@ class MPolynomialTests: XCTestCase {
         XCTAssertEqual(A.elementarySymmetric(1), A(coeffs: [[1]: 1, [0, 1]: 1]))
         XCTAssertEqual(A.elementarySymmetric(2), A(coeffs: [[1, 1]: 1]))
     }
+    
+    func testMonomials() {
+        let mons = xnPolynomial<𝐙>.monomials(ofDegree: 3, usingIndeterminates: [0, 1, 2])
+        XCTAssertEqual(mons.count, 10)
+        XCTAssertTrue(mons.allSatisfy{ $0.degree == 3 })
+    }
 }
