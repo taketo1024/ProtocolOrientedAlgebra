@@ -233,6 +233,33 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
             return DMatrix(size: size, data: T.resultData)
         }.as(Matrix.self)
     }
+    
+    // Find a solution x to: Ax = b.
+    // With PAQ = B,
+    //
+    //    Ax = b  <==>  (PAQ) Q^{-1}x = Pb
+    //            <==>    B      y    = Pb
+    //
+    // where y = Q^{-1}x <==> x = Qy.
+    
+    public func solution(to b: ColVector<n, R>) -> ColVector<m, R>? {
+        assert(result.isDiagonal)
+        let B = result
+        let P = left
+        let Pb = P * b
+        
+        if B.diagonal.enumerated().contains(where: { (i, d) in
+            (d == .zero && Pb[i] != .zero) || (d != .zero && Pb[i] % d != .zero)
+        }) {
+            return nil // no solution
+        }
+        
+        let Q = right
+        let y = ColVector<m, R>(size: (B.size.cols, 1), grid: B.diagonal.enumerated().map{ (i, d) in
+            (d == .zero) ? .zero : Pb[i] / d
+        })
+        return Q * y
+    }
 }
 
 extension MatrixEliminationResult where n == m {

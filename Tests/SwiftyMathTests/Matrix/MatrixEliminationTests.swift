@@ -207,9 +207,6 @@ class MatrixEliminationTests: XCTestCase {
         
         XCTAssertTrue(I.size == (2, 1))
         XCTAssertEqual(I.grid, [2, 2])
-        
-        let T = E.imageTransitionMatrix
-        print(T.detailDescription)
     }
     
     public func testDet() {
@@ -219,5 +216,16 @@ class MatrixEliminationTests: XCTestCase {
                         0,-2,1,3)
         let E = A.eliminate()
         XCTAssertEqual(E.determinant, 66)
+    }
+    
+    public func testLinEq() {
+        let A = Matrix4(3,-1,2,4,
+                        2,1,1,3,
+                        -2,0,3,-1,
+                        0,-2,1,3)
+        let b = Vector4(19, 10, -2, 14)
+        let x = A.eliminate().solution(to: b)
+        
+        XCTAssertEqual(x, Vector4(1,-2,1,3))
     }
 }
