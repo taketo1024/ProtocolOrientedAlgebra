@@ -77,6 +77,10 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
         return FreeModule<A, R2>(elements.mapValues(f))
     }
     
+    public func map<A2, R2>(_ f: (A, R) -> (A2, R2)) -> FreeModule<A2, R2> {
+        return FreeModule<A2, R2>(elements.mapPairs(f))
+    }
+    
     public static func + (a: FreeModule<A, R>, b: FreeModule<A, R>) -> FreeModule<A, R> {
         var d = a.elements
         for (a, r) in b.elements {
