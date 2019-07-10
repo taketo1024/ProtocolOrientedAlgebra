@@ -444,6 +444,16 @@ extension Matrix where n == DynamicSize, m == DynamicSize {
         self.data.merge(B.data.mapKeys{ $0.shift(size.rows, size.cols) })
         self.size = (size.rows + B.size.cols, size.cols + B.size.cols)
     }
+    
+    public static func concat(_ vs: [DVector<R>]) -> DMatrix<R> {
+        if vs.isEmpty {
+            return .zero(size: (0, 0))
+        }
+        
+        let size = (vs.first!.size.rows, vs.count)
+        let comps = vs.enumerated().flatMap{ (j, v) in v.map{ (i, _, a) in MatrixComponent(i, j, a) } }
+        return .init(size: size, components: comps)
+    }
 }
 
 extension Matrix where R: EuclideanRing {
