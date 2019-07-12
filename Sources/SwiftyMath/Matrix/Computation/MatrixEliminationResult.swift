@@ -242,15 +242,20 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     //
     // where y = Q^{-1}x <==> x = Qy.
     
-    public func solution(to b: ColVector<n, R>) -> ColVector<m, R>? {
+    public func invert(_ b: ColVector<n, R>) -> ColVector<m, R>? {
         assert(result.isDiagonal)
         let B = result
+        let r = rank
         let P = left
         let Pb = P * b
         
         if B.diagonal.enumerated().contains(where: { (i, d) in
             (d == .zero && Pb[i] != .zero) || (d != .zero && Pb[i] % d != .zero)
         }) {
+            return nil // no solution
+        }
+        
+        if Pb.contains(where: { (i, _, a) in i >= r && a != .zero } ) {
             return nil // no solution
         }
         

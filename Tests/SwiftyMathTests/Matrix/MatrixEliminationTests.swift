@@ -219,13 +219,20 @@ class MatrixEliminationTests: XCTestCase {
     }
     
     public func testLinEq() {
-        let A = Matrix4(3,-1,2,4,
-                        2,1,1,3,
-                        -2,0,3,-1,
-                        0,-2,1,3)
-        let b = Vector4(19, 10, -2, 14)
-        let x = A.eliminate().solution(to: b)
+        let A = M<_6, _4, 𝐙>(8, -6, 14, -10, -14, 6, 12, -8, 18, -18, -20, 8, -16, 7, -23, 22, 23, -7, 32, -17, 44, -49, -49, 17)
+        let E = A.eliminate()
+        let y = A * Vector4(1,2,3,4)
         
-        XCTAssertEqual(x, Vector4(1,-2,1,3))
+        if let x = E.invert(y) {
+            XCTAssertEqual(A * x, y)
+        } else {
+            XCTFail()
+        }
+        
+        let y2 = ColVector<_6, 𝐙>(243996, -422477, 555238, -482263, 689731, 1363066)
+        XCTAssertNil(E.invert(y2))
+        
+        let y3 = ColVector<_6, 𝐙>(520530, -901291, 1184519, -1028837, 1471438, 2907903)
+        XCTAssertNil(E.invert(y3))
     }
 }
