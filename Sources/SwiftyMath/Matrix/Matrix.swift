@@ -233,6 +233,10 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType, Sequence {
         return a.mapComponents(zerosExcluded: true, (-))
     }
     
+    public static func -(a: Matrix<n, m, R>, b: Matrix<n, m, R>) -> Matrix<n, m, R> {
+        return a + (-b)
+    }
+    
     public static func *(r: R, a: Matrix<n, m, R>) -> Matrix<n, m, R> {
         return a.mapComponents{ r * $0 }
     }
