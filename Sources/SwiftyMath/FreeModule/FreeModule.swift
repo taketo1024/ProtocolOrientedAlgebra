@@ -3,6 +3,7 @@ import Foundation
 public protocol FreeModuleType: Module {
     associatedtype Generator: FreeModuleGenerator
     static func wrap(_ a: Generator) -> Self
+    func unwrap() -> Generator
     static func combine<n>(generators: [Generator], vector: ColVector<n, CoeffRing>) -> Self
     func factorize(by: [Generator]) -> DVector<CoeffRing>
     func factorize(by: [Generator], indexer: (Generator) -> Int?) -> DVector<CoeffRing>
@@ -32,6 +33,11 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
     @_transparent
     public static func wrap(_ a: A) -> FreeModule<A, R> {
         return FreeModule([a : .identity])
+    }
+    
+    public func unwrap() -> A {
+        assert(elements.count == 1 && elements.first!.value == .identity)
+        return elements.first!.key
     }
 
     public static var zero: FreeModule<A, R> {
