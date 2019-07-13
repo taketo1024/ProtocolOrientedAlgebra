@@ -139,7 +139,7 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
     
     public static func * (f: MPolynomial<xn, R>, g: MPolynomial<xn, R>) -> MPolynomial<xn, R> {
         var coeffs = [MultiDegree : R]()
-        for (I, J) in f.multiDegrees.allCombinations(with: g.multiDegrees) {
+        for (I, J) in (f.multiDegrees * g.multiDegrees) {
             let K = I.merging(J, with: +)
             coeffs[K] = coeffs[K, default: .zero] + f.coeff(I) * g.coeff(J)
         }

@@ -18,11 +18,13 @@ public extension Sequence {
     }
     
     var count: Int {
-        return toArray().count
+        return count { _ in true }
     }
     
     func count(where predicate: (Element) -> Bool) -> Int {
-        return self.lazy.filter(predicate).count
+        return self.reduce(into: 0) { (c, x) in
+            if predicate(x) { c += 1 }
+        }
     }
     
     func exclude(_ isExcluded: (Self.Element) throws -> Bool) rethrows -> [Self.Element] {
@@ -37,12 +39,12 @@ public extension Sequence {
         return Dictionary(grouping: self, by: keyGenerator)
     }
     
-    func allCombinations<S: Sequence>(with s2: S) -> [(Self.Element, S.Element)] {
+    static func *<S: Sequence>(s1: Self, s2: S) -> AnySequence<(Self.Element, S.Element)> {
         typealias X = Self.Element
         typealias Y = S.Element
-        return self.flatMap{ (x) -> [(X, Y)] in
-            s2.map{ (y) -> (X, Y) in (x, y) }
-        }
+        return AnySequence(s1.lazy.flatMap{ (x) -> [(X, Y)] in
+            s2.lazy.map{ (y) -> (X, Y) in (x, y) }
+        })
     }
 }
 

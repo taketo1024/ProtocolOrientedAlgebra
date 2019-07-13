@@ -42,7 +42,7 @@ public struct GroupRing<G: Group & Hashable, R: Ring>: Ring {
     
     public static func * (a: GroupRing<G, R>, b: GroupRing<G, R>) -> GroupRing<G, R> {
         var elements = [G : R]()
-        for (g1, g2) in a.elements.keys.allCombinations(with: b.elements.keys) {
+        for (g1, g2) in (a.elements.keys * b.elements.keys) {
             let g = g1 * g2
             elements[g] = elements[g, default: .zero] + a[g1] * b[g2]
         }
