@@ -22,6 +22,11 @@ public struct Permutation<n: SizeType>: Group, MapType { // SymmetricGroup<n>
         self.init(Dictionary(pairs: elements))
     }
     
+    public init<S: Sequence>(_ sequence: S) where S.Element == Int {
+        let dict = Dictionary(pairs: sequence.enumerated().map{ ($0, $1) })
+        self.init(dict)
+    }
+    
     public init(_ elements: [Int: Int]) {
         assert(Set(elements.keys) == Set(elements.values))
         self.elements = elements.filter{ (k, v) in k != v }
@@ -111,31 +116,11 @@ public struct Permutation<n: SizeType>: Group, MapType { // SymmetricGroup<n>
     public static var symbol: String {
         return "S_\(n.intValue)"
     }
-    
-    internal static func allRawPermutations(ofLength l: Int) -> [[Int : Int]] {
-        typealias RawPermutation = [Int : Int]
-        
-        assert(l >= 0)
-        if l > 1 {
-            let prev = allRawPermutations(ofLength: l - 1)
-            return (0 ..< l).flatMap { (i: Int) -> [RawPermutation] in
-                prev.map { (p) -> RawPermutation in
-                    let d = [(l - 1, i)] + (0 ..< l - 1).map { (j) -> (Int, Int) in
-                        let a = p[j] ?? j
-                        return (j, (a < i) ? a : a + 1)
-                    }
-                    return Dictionary(pairs: d)
-                }
-            }
-        } else {
-            return [[:]]
-        }
-    }
 }
 
 extension Permutation: FiniteSetType where n: StaticSizeType {
     public static var allElements: [Permutation<n>] {
-        return Permutation.allRawPermutations(ofLength: n.intValue).map{ Permutation<n>($0) }
+        return DPermutation.rawPermutations(length: n.intValue).map{ Permutation<n>($0) }
     }
     
     public static var countElements: Int {
@@ -143,14 +128,32 @@ extension Permutation: FiniteSetType where n: StaticSizeType {
     }
 }
 
-public extension Permutation where n == DynamicSize {
-    static func allPermutations(ofLength l: Int) -> [DPermutation] {
-        return DPermutation.allRawPermutations(ofLength: l).map{ DPermutation($0) }
+extension Permutation where n == DynamicSize {
+    public static func rawPermutations(length l: Int) -> [[Int]] {
+        typealias RawPermutation = [Int]
+        
+        assert(l >= 0)
+        
+        func permutations(in elements: [Int]) -> [RawPermutation] {
+            if elements.isEmpty {
+                return [[]]
+            } else {
+                return elements.enumerated().flatMap { (i, x) -> [RawPermutation] in
+                    permutations(in: elements.removed(at: i)).map{ [x] + $0 }
+                }
+            }
+        }
+        
+        return permutations(in: (0 ..< l).toArray())
+    }
+
+    public static func permutations(length l: Int) -> [DPermutation] {
+        return DPermutation.rawPermutations(length: l).map{ DPermutation($0) }
     }
 }
 
-public extension Array where Element: Hashable {
-    func permuted<n>(by p: Permutation<n>) -> [Element] {
+extension Array where Element: Hashable {
+    public func permuted<n>(by p: Permutation<n>) -> [Element] {
         return (0 ..< count).map{ i in self[p[i]] }
     }
 }
