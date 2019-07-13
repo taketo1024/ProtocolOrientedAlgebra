@@ -84,7 +84,7 @@ public struct Format {
         }
     }
     
-    public static func terms<R: Ring>(_ op: String, _ terms: [(R, String, Int)], skipZero: Bool = false) -> String {
+    public static func terms<S: Sequence, R: Ring>(_ op: String, _ terms: S, skipZero: Bool = false) -> String where S.Element == (R, String, Int) {
         let ts = terms.compactMap{ (a, x, n) -> String? in
             let t = term(a, x, n, skipZero: skipZero)
             return (skipZero && t.isEmpty) ? nil : t
@@ -92,13 +92,13 @@ public struct Format {
         return ts.isEmpty ? "0" : ts
     }
     
-    public static func table<T1, T2, T3>(rows: [T1], cols: [T2], symbol: String = "", separator s: String = "\t", printHeaders: Bool = true, op: (T1, T2) -> T3) -> String {
+    public static func table<S1: Sequence, S2: Sequence, T>(rows: S1, cols: S2, symbol: String = "", separator s: String = "\t", printHeaders: Bool = true, op: (S1.Element, S2.Element) -> T) -> String {
         
-        let head = printHeaders ? [[symbol] + (0 ..< cols.count).map{ j in "\(cols[j])" }] : []
-        let body = (0 ..< rows.count).map { i -> [String] in
-            let head = printHeaders ? ["\(rows[i])"] : []
-            let line = (0 ..< cols.count).map { j in
-                "\(op(rows[i], cols[j]))"
+        let head = printHeaders ? [[symbol] + cols.map{ y in "\(y)" }] : []
+        let body = rows.enumerated().map { (i, x) -> [String] in
+            let head = printHeaders ? ["\(x)"] : []
+            let line = cols.enumerated().map { (j, y) in
+                "\(op(x, y))"
             }
             return head + line
         }
