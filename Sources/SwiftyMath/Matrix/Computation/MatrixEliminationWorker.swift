@@ -45,7 +45,7 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
     }
     
     convenience init<n, m>(from matrix: Matrix<n, m, R>, trackRowInfos: Bool = false) {
-        self.init(size: matrix.size, components: matrix, trackRowInfos: trackRowInfos)
+        self.init(size: matrix.size, components: matrix.components, trackRowInfos: trackRowInfos)
     }
     
     func headElement(_ i: Int) -> (col: Int, value: R)? {
@@ -261,7 +261,7 @@ internal final class ColEliminationWorker<R: EuclideanRing>: Equatable {
     }
     
     convenience init<n, m>(from matrix: Matrix<n, m, R>, trackRowInfos: Bool = false) {
-        self.init(size: matrix.size, components: matrix)
+        self.init(size: matrix.size, components: matrix.components)
     }
     
     func apply(_ s: MatrixEliminator<R>.ElementaryOperation) {

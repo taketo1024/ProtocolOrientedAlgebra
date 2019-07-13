@@ -36,7 +36,7 @@ internal struct MatrixCoord: Hashable, Comparable, Codable, CustomStringConverti
 
 internal typealias MatrixData<R: Ring> = [MatrixCoord : R]
 
-public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType, Sequence {
+public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
     public typealias CoeffRing = R
     public var size: (rows: Int, cols: Int)
     internal var data: MatrixData<R>
@@ -130,7 +130,7 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType, Sequence {
             return .identity
         }
         
-        return rowVector(0).sum{ (_, j, a) in a * _cofactor(0, j) }
+        return rowVector(0).components.sum{ (_, j, a) in a * _cofactor(0, j) }
     }
     
     fileprivate func _cofactor(_ i: Int, _ j: Int) -> R {
@@ -186,6 +186,10 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType, Sequence {
         }.mapKeys{ c in
             MatrixCoord(c.row - rowRange.lowerBound, c.col - colRange.lowerBound)
         }
+    }
+    
+    public var components: AnySequence<MatrixComponent<R>> {
+        return AnySequence(data.lazy.map{ (c, a) -> MatrixComponent<R> in (c.row, c.col, a) })
     }
     
     public func mapComponents<R2>(zerosExcluded: Bool = false, _ f: (R) -> R2) -> Matrix<n, m, R2> {
@@ -273,11 +277,6 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType, Sequence {
         return cRowBlocks.reduce(into: start) { (res, rowBlock) in
             res.concatVertically(rowBlock)
         }
-    }
-    
-    public func makeIterator() -> AnyIterator<(row: Int, col: Int, value: R)> {
-        let seq = data.map{ (c, a) -> MatrixComponent<R> in (c.row, c.col, a) }
-        return AnyIterator(seq.makeIterator())
     }
     
     public var description: String {
@@ -455,7 +454,7 @@ extension Matrix where n == DynamicSize, m == DynamicSize {
         }
         
         let size = (vs.first!.size.rows, vs.count)
-        let comps = vs.enumerated().flatMap{ (j, v) in v.map{ (i, _, a) in MatrixComponent(i, j, a) } }
+        let comps = vs.enumerated().flatMap{ (j, v) in v.components.map{ (i, _, a) in MatrixComponent(i, j, a) } }
         return .init(size: size, components: comps)
     }
 }

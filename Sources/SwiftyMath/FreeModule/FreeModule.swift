@@ -155,7 +155,7 @@ extension ModuleHom where X: FreeModuleType, Y: FreeModuleType {
         let toIndexer = to.indexer()
         let comps = from.enumerated().flatMap { (j, a) -> [MatrixComponent<CoeffRing>] in
             let w = self.applied(to: .wrap(a))
-            return w.factorize(by: to, indexer: toIndexer).map{ (i, _, a) in (i, j, a) }
+            return w.factorize(by: to, indexer: toIndexer).components.map{ (i, _, a) in (i, j, a) }
         }
         return DMatrix(size: (to.count, from.count), components: comps, zerosExcluded: true)
     }

@@ -255,7 +255,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
             return nil // no solution
         }
         
-        if Pb.contains(where: { (i, _, a) in i >= r && a != .zero } ) {
+        if Pb.components.contains(where: { (i, _, a) in i >= r && a != .zero } ) {
             return nil // no solution
         }
         
