@@ -150,6 +150,17 @@ extension Permutation where n == DynamicSize {
     public static func permutations(length l: Int) -> [DPermutation] {
         return DPermutation.rawPermutations(length: l).map{ DPermutation($0) }
     }
+    
+    public static func transpositions(within l: Int) -> [DPermutation] {
+        if l <= 1 {
+            return []
+        }
+        return (0 ..< l - 1).flatMap { i in
+            (i + 1 ..< l).map{ j in
+                DPermutation([i : j, j : i])
+            }
+        }
+    }
 }
 
 extension Array where Element: Hashable {
