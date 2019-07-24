@@ -38,6 +38,12 @@ public extension Array {
         return a
     }
     
+    func swappedAt(_ i: Int, _ j: Int) -> [Element] {
+        var a = self
+        a.swapAt(i, j)
+        return a
+    }
+    
     mutating func dropLast(while predicate: (Element) -> Bool) {
         while let e = popLast() {
             if !predicate(e) {
