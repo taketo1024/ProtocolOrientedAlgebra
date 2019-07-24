@@ -14,7 +14,11 @@ public extension AdditiveGroup {
     }
     
     static func sum(_ elements: [Self]) -> Self {
-        return elements.reduce(.zero){ (res, e) in res + e }
+        if elements.count == 1 {
+            return elements.first!
+        } else {
+            return elements.reduce(.zero){ (res, e) in res + e }
+        }
     }
 }
 

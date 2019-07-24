@@ -154,6 +154,17 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
         return f.map { $0 * r }
     }
     
+    public static func sum(_ elements: [MPolynomial]) -> MPolynomial {
+        if elements.count == 1 {
+            return elements.first!
+        } else {
+            let sum = elements.reduce(into: [:]) { (res: inout [MultiDegree : R], x) in
+                res.merge(x.coeffs) { (r1, r2) in r1 + r2 }
+            }
+            return MPolynomial(coeffs: sum)
+        }
+    }
+    
     public func evaluate(at values: [R]) -> R {
         assert(xn.isFinite && values.count == xn.numberOfIndeterminates)
         return evaluate{ i in values[i] }
