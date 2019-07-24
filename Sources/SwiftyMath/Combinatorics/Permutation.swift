@@ -32,23 +32,23 @@ public struct Permutation<n: SizeType>: Group, MapType { // SymmetricGroup<n>
         self.elements = elements.filter{ (k, v) in k != v }
     }
     
-    public init(cyclic: Int...) {
-        self.init(cyclic: cyclic)
-    }
-    
-    internal init(cyclic c: [Int]) {
+    public static func cyclic(_ elements: [Int]) -> Permutation {
         var d = [Int : Int]()
-        for (i, a) in c.enumerated() {
-            d[a] = c[(i + 1) % c.count]
+        let l = elements.count
+        for (i, a) in elements.enumerated() {
+            d[a] = elements[(i + 1) % l]
         }
-        self.init(d)
+        return .init(d)
     }
     
-    public init(length: Int, generator g: ((Int) -> Int)) {
-        let elements = (0 ..< length).map{ i in (i, g(i)) }
-        self.init(Dictionary(pairs: elements))
+    public static func cyclic(_ elements: Int...) -> Permutation {
+        return cyclic(elements)
     }
     
+    public static func transposition(_ i: Int, _ j: Int) -> Permutation {
+        return .init([i : j, j : i])
+    }
+
     public static var identity: Permutation<n> {
         return Permutation([:])
     }
@@ -92,7 +92,7 @@ public struct Permutation<n: SizeType>: Group, MapType { // SymmetricGroup<n>
             }
             
             if c.count > 1 {
-                let p = Permutation(cyclic: c)
+                let p = Permutation.cyclic(c)
                 result.append(p)
             }
         }
@@ -129,36 +129,48 @@ extension Permutation: FiniteSetType where n: StaticSizeType {
 }
 
 extension Permutation where n == DynamicSize {
-    public static func rawPermutations(length l: Int) -> [[Int]] {
-        typealias RawPermutation = [Int]
+    
+    // MEMO Heap's algorithm: https://en.wikipedia.org/wiki/Heap%27s_algorithm
+    public static func rawPermutations(length n: Int) -> [[Int]] {
+        assert(n >= 0)
         
-        assert(l >= 0)
-        
-        func permutations(in elements: [Int]) -> [RawPermutation] {
-            if elements.isEmpty {
-                return [[]]
+        func generate(_ k: Int, _ arr: inout [Int], _ result: inout [[Int]]) {
+            if k == 1 {
+                result.append(arr)
             } else {
-                return elements.enumerated().flatMap { (i, x) -> [RawPermutation] in
-                    permutations(in: elements.removed(at: i)).map{ [x] + $0 }
+                generate(k - 1, &arr, &result)
+                for i in 0 ..< k - 1 {
+                    let swap = k.isEven ? (i, k - 1) : (0, k - 1)
+                    arr.swapAt(swap.0, swap.1)
+                    generate(k - 1, &arr, &result)
                 }
             }
         }
         
-        return permutations(in: (0 ..< l).toArray())
+        var arr = (0 ..< n).toArray()
+        var result: [[Int]] = []
+        
+        generate(n, &arr, &result)
+        
+        return result
     }
 
-    public static func permutations(length l: Int) -> [DPermutation] {
-        return DPermutation.rawPermutations(length: l).map{ DPermutation($0) }
+    public static func permutations(length n: Int) -> [DPermutation] {
+        return DPermutation.rawPermutations(length: n).map{ DPermutation($0) }
     }
     
-    public static func transpositions(within l: Int) -> [DPermutation] {
-        if l <= 1 {
+    public static func rawTranspositions(within n: Int) -> [(Int, Int)] {
+        if n <= 1 {
             return []
         }
-        return (0 ..< l - 1).flatMap { i in
-            (i + 1 ..< l).map{ j in
-                DPermutation([i : j, j : i])
-            }
+        return (0 ..< n - 1).flatMap { i in
+            (i + 1 ..< n).map{ j in (i, j) }
+        }
+    }
+    
+    public static func transpositions(within n: Int) -> [DPermutation] {
+        return rawTranspositions(within: n).map{ (i, j) in
+            DPermutation.transposition(i, j)
         }
     }
 }
