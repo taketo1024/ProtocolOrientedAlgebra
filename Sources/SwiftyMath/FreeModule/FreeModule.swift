@@ -4,6 +4,7 @@ public protocol FreeModuleType: Module {
     associatedtype Generator: FreeModuleGenerator
     static func wrap(_ a: Generator) -> Self
     func unwrap() -> Generator
+    var isGenerator: Bool { get }
     static func combine<n>(generators: [Generator], vector: ColVector<n, CoeffRing>) -> Self
     func factorize(by: [Generator]) -> DVector<CoeffRing>
     func factorize(by: [Generator], indexer: (Generator) -> Int?) -> DVector<CoeffRing>
@@ -36,8 +37,12 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
     }
     
     public func unwrap() -> A {
-        assert(elements.count == 1 && elements.first!.value == .identity)
+        assert(isGenerator)
         return elements.first!.key
+    }
+    
+    public var isGenerator: Bool {
+        return (elements.count == 1) && (elements.first!.value == .identity)
     }
 
     public static var zero: FreeModule<A, R> {
@@ -142,7 +147,7 @@ extension FreeModule where R: ComplexSubset {
 extension ModuleHom where X: FreeModuleType, Y: FreeModuleType {
     public static func linearlyExtend(_ f: @escaping (X.Generator) -> Codomain) -> ModuleHom<X, Y> {
         return ModuleHom { (m: Domain) in
-            m.decomposed().sum { (a, r) in r * f(a) }
+            m.isGenerator ? f(m.unwrap()) : m.decomposed().sum { (a, r) in r * f(a) }
         }
     }
     
