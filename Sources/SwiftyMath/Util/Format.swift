@@ -93,7 +93,6 @@ public struct Format {
     }
     
     public static func table<S1: Sequence, S2: Sequence, T>(rows: S1, cols: S2, symbol: String = "", separator s: String = "\t", printHeaders: Bool = true, op: (S1.Element, S2.Element) -> T) -> String {
-        
         let head = printHeaders ? [[symbol] + cols.map{ y in "\(y)" }] : []
         let body = rows.enumerated().map { (i, x) -> [String] in
             let head = printHeaders ? ["\(x)"] : []
@@ -103,6 +102,26 @@ public struct Format {
             return head + line
         }
         return (head + body).map{ $0.joined(separator: s) }.joined(separator: "\n")
+    }
+    
+    public static func table<S: Sequence, T>(elements: S, default d: String = "", symbol: String = "j\\i", separator s: String = "\t", printHeaders: Bool = true) -> String where S.Element == (Int, Int, T) {
+        let dict = Dictionary(pairs: elements.map{ (i, j, t) in ([i, j], t) } )
+        if dict.isEmpty {
+            return "empty"
+        }
+        
+        let (I, J) = (dict.keys.map{$0[0]}, dict.keys.map{$0[1]})
+        let (iMax, iMin) = (I.max()!, I.min()!)
+        let (jMax, jMin) = (J.max()!, J.min()!)
+        
+        return Format.table(rows: (jMin ... jMax).reversed(),
+                            cols: (iMin ... iMax),
+                            symbol: symbol,
+                            separator: s,
+                            printHeaders: printHeaders)
+        { (j, i) -> String in
+            dict[ [i, j] ].map{ "\($0)" } ?? d
+        }
     }
 }
 

@@ -11,20 +11,28 @@ import Foundation
 public class Debug {
     private static let precision = 1000.0
     
-    public static func measure<T>(_ f: () -> T) -> T {
-        return measure("", f)
-    }
-    
-    public static func measure<T>(_ label: String, _ f: () -> T) -> T {
+    public static func measure<T>(_ label: String? = nil, _ f: () -> T) -> T {
+        if let label = label {
+            print("Start: \(label)")
+        }
+        
         let date = Date()
+        
         defer {
             let intv = -date.timeIntervalSinceNow
+            let time: String
             if intv < 1 {
-                print(label, ":\t\(round(intv * precision * 1000) / precision) msec.")
+                time = "\(round(intv * precision * 1000) / precision) msec."
             } else {
-                print(label, ":\t\(round(intv * precision) / precision) sec.")
+                time = "\(round(intv * precision) / precision) sec."
+            }
+            if let label = label {
+                print("End: \(label), \(time)")
+            } else {
+                print(time)
             }
         }
+        
         return f()
     }
 }

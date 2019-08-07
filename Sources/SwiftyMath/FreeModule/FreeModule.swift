@@ -2,6 +2,7 @@ import Foundation
 
 public protocol FreeModuleType: Module {
     associatedtype Generator: FreeModuleGenerator
+    init<S: Sequence>(_ elements: S) where S.Element == (Generator, CoeffRing)
     static func wrap(_ a: Generator) -> Self
     func unwrap() -> Generator
     var isGenerator: Bool { get }
