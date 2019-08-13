@@ -88,11 +88,11 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
         return MPolynomial(coeffs: coeffs.mapValues(f) )
     }
     
-    // decompose into pairs of (monic monomial, coeff)
-    public func decomposed() -> [(MPolynomial<xn, R>, R)] {
-        return coeffs.map{ (I, a) in (MPolynomial(coeffs: [I : .identity]), a) }
+    // decompose into pairs of (multidegree, coeff)
+    public func decomposed() -> [(MultiDegree, R)] {
+        return coeffs.map{ (I, a) in (I, a) }
     }
-    
+
     public static func indeterminate(_ i: Int) -> MPolynomial {
         return .init(coeffs: [[0].repeated(i) + [1] : R.identity] )
     }
