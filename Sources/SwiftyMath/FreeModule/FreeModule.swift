@@ -108,6 +108,11 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
         } else {
             var dict: [A : R] = [:]
             var gens: [A] = []
+            
+            let size = elements.sum { z in z.elements.count }
+            dict.reserveCapacity(size)
+            gens.reserveCapacity(size)
+            
             for z in elements {
                 for (a, r) in z.elements {
                     if let r0 = dict[a] {
