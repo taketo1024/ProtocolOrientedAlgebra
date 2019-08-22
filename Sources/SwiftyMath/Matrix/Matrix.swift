@@ -204,7 +204,7 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         return self.as(DMatrix<R>.self)
     }
     
-    internal var grid: [R] {
+    public var asArray: [R] {
         return (0 ..< size.rows * size.cols).map { k in
             let (i, j) = (k / size.cols, k % size.cols)
             return self[i, j]
@@ -280,7 +280,7 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
     }
     
     public var description: String {
-        let grid = self.grid
+        let grid = self.asArray
         return "[" + (0 ..< size.rows).map({ i in
             return (0 ..< size.cols).map({ j in
                 return "\(grid[i * size.cols + j])"
@@ -292,7 +292,7 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         if size.rows == 0 || size.cols == 0 {
             return "[\(size)]"
         } else {
-            let grid = self.grid
+            let grid = self.asArray
             return "[\t" + (0 ..< size.rows).map({ i in
                 return (0 ..< size.cols).map({ j in
                     return "\(grid[i * size.cols + j])"
@@ -519,7 +519,7 @@ extension Matrix: Codable where R: Codable {
         var c = encoder.container(keyedBy: CodingKeys.self)
         try c.encode(size.rows, forKey: .rows)
         try c.encode(size.cols, forKey: .cols)
-        try c.encode(grid, forKey: .grid)
+        try c.encode(asArray, forKey: .grid)
     }
 }
 

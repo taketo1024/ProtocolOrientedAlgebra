@@ -15,7 +15,7 @@ class MatrixTests: XCTestCase {
     
     func testInit() {
         let a = Matrix2(1,2,3,4)
-        XCTAssertEqual(a.grid, [1,2,3,4])
+        XCTAssertEqual(a.asArray, [1,2,3,4])
     }
     
     func testEquality() {
