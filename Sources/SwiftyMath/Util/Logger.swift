@@ -37,14 +37,18 @@ public final class Logger {
     }
     
     public let id: Id
-    public private(set) var isActive: Bool
     public var level: Level
-    public var outputStream: TextOutputStream? = nil
+    public private(set) var handlers: [FileHandle]
+    
+    public var storeLog: Bool
+    public private(set) var log = ""
     
     private init(_ id: Id) {
         self.id = id
-        self.isActive = true
         self.level = .warning
+        self.handlers = [FileHandle.standardOutput]
+        self.storeLog = false
+        self.log = ""
     }
     
     public static func get(_ id: Id) -> Logger {
@@ -57,21 +61,24 @@ public final class Logger {
         }
     }
     
-    public func activate() {
-        self.isActive = true
+    public func addHandler(_ handler: FileHandle) {
+        handlers.append(handler)
     }
     
-    public func deactivate() {
-        self.isActive = false
+    public func removeHandler(_ handler: FileHandle) {
+        handlers.remove(element: handler)
     }
     
     public func log(level: Level = .info, _ msg: @autoclosure () -> String) {
-        if isActive && level >= self.level {
-            let str = "[\(id):\(level)] \(msg())"
-            if outputStream != nil {
-                outputStream!.write(str + "\n")
-            } else {
-                print(str)
+        if level >= self.level {
+            let str = "[\(id):\(level)] \(msg())\n"
+            if storeLog {
+                log += str
+            }
+            
+            let data = str.data(using: .utf8)!
+            for hdl in handlers {
+                hdl.write(data)
             }
         }
     }
@@ -86,5 +93,33 @@ public final class Logger {
     
     public func error(_ msg: @autoclosure () -> String) {
         log(level: .error, msg())
+    }
+    
+    @discardableResult
+    public func measure(_ label: String? = nil, _ block: () -> Void) -> Double {
+        let precision = 3.0
+        let dec = pow(10.0, precision)
+        
+        let aLabel = label ?? "measure"
+        log("start: \(aLabel)")
+        
+        let date = Date()
+        
+        block()
+        
+        let time = -date.timeIntervalSinceNow
+        let timeStr = (time < 1)
+            ? "\(round(time * dec * 1000) / dec) msec."
+            : "\(round(time * dec) / dec) sec."
+        
+        log("end: \(aLabel), \(timeStr)")
+        
+        return time
+    }
+    
+    @discardableResult
+    public func clear() -> String {
+        defer { log = "" }
+        return log
     }
 }

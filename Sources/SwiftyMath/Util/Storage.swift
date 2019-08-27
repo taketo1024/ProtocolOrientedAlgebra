@@ -27,7 +27,21 @@ public final class Storage {
         self.dir = (dir.last! == "/") ? dir : dir + "/"
         self.logger = logger ?? Logger.get(.storage)
     }
-
+    
+    public func prepare() throws {
+        let fm = FileManager()
+        if fm.fileExists(atPath: dir) { return }
+        
+        let dirURL = URL(fileURLWithPath: dir)
+        do {
+            try fm.createDirectory(at: dirURL, withIntermediateDirectories: false, attributes: nil)
+        } catch let e {
+            logger.error("failed to create dir: \(dir)")
+            throw e
+        }
+        logger.info("created dir: \(dir)")
+    }
+    
     public func exists(name: String) -> Bool {
         return fm.fileExists(atPath: fileURL(name).path)
     }
@@ -76,7 +90,7 @@ public final class Storage {
             throw e
         }
     }
-
+    
     public func loadText(name: String) throws -> String {
         let data = try loadData(name: name)
         guard let text = String(bytes: data, encoding: .utf8) else {
@@ -106,21 +120,7 @@ public final class Storage {
         }
         logger.info("delete: \(file.path)")
     }
-
-    private func prepare() throws {
-        let fm = FileManager()
-        if fm.fileExists(atPath: dir) { return }
-
-        let dirURL = URL(fileURLWithPath: dir)
-        do {
-            try fm.createDirectory(at: dirURL, withIntermediateDirectories: false, attributes: nil)
-        } catch let e {
-            logger.error("failed to create dir: \(dir)")
-            throw e
-        }
-        logger.info("created dir: \(dir)")
-    }
-
+    
     private func fileURL(_ name: String) -> URL {
         return URL(fileURLWithPath: dir + name)
     }
