@@ -39,16 +39,12 @@ public final class Logger {
     public let id: Id
     public var level: Level
     public private(set) var handlers: [FileHandle]
-    
-    public var storeLog: Bool
-    public private(set) var log = ""
+    public weak var bypass: Logger? = nil
     
     private init(_ id: Id) {
         self.id = id
         self.level = .warning
         self.handlers = [FileHandle.standardOutput]
-        self.storeLog = false
-        self.log = ""
     }
     
     public static func get(_ id: Id) -> Logger {
@@ -71,11 +67,16 @@ public final class Logger {
     
     public func log(level: Level = .info, _ msg: @autoclosure () -> String) {
         if level >= self.level {
-            let str = "[\(id):\(level)] \(msg())\n"
-            if storeLog {
-                log += str
-            }
-            
+            let label = "\(id)\( level > .info ? ":\(level)" : "" )"
+            let str = "[\(label)] \(msg())\n"
+            write(str)
+        }
+    }
+    
+    private func write(_ str: String) {
+        if let bypass = bypass {
+            bypass.write(str)
+        } else {
             let data = str.data(using: .utf8)!
             for hdl in handlers {
                 hdl.write(data)
@@ -117,9 +118,13 @@ public final class Logger {
         return time
     }
     
-    @discardableResult
-    public func clear() -> String {
-        defer { log = "" }
-        return log
+    public func newLine(_ count: Int = 1) {
+        let str = String(repeating: "\n", count: count)
+        write(str)
+    }
+    
+    public func newSection() {
+        let str = "\n------------------------------\n"
+        write(str)
     }
 }
