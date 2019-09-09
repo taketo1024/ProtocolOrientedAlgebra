@@ -155,13 +155,8 @@ extension FreeModule where R: ComplexSubset {
 
 extension ModuleHom where X: FreeModuleType, Y: FreeModuleType {
     public static func linearlyExtend(_ f: @escaping (X.Generator) -> Codomain) -> ModuleHom<X, Y> {
-        let cache = CacheDictionary<X.Generator, Y>.empty
-        let f_cache = { (x: X.Generator) -> Y in
-            cache.useCacheOrSet(key: x) { f(x) }
-        }
-        
         return ModuleHom { (m: Domain) in
-            m.isGenerator ? f_cache(m.unwrap()!) : m.decomposed().sum { (a, r) in r * f_cache(a) }
+            m.isGenerator ? f(m.unwrap()!) : m.decomposed().sum { (a, r) in r * f(a) }
         }
     }
 }
