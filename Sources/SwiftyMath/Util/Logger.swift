@@ -38,13 +38,19 @@ public final class Logger {
     
     public let id: Id
     public var level: Level
+    
     public private(set) var handlers: [FileHandle]
     public weak var bypass: Logger? = nil
+    
+    private let dateFormatter: DateFormatter
     
     private init(_ id: Id) {
         self.id = id
         self.level = .warning
         self.handlers = [FileHandle.standardOutput]
+        
+        self.dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
     }
     
     public static func get(_ id: Id) -> Logger {
@@ -68,7 +74,8 @@ public final class Logger {
     public func log(level: Level = .info, _ msg: @autoclosure () -> String) {
         if level >= self.level {
             let label = "\(id)\( level > .info ? ":\(level)" : "" )"
-            let str = "[\(label)] \(msg())\n"
+            let date = dateFormatter.string(from: Date())
+            let str = "\(date) [\(label)] \(msg())\n"
             write(str)
         }
     }
@@ -97,7 +104,7 @@ public final class Logger {
     }
     
     @discardableResult
-    public func measure(_ label: String? = nil, _ block: () -> Void) -> Double {
+    public func measure(_ label: String? = nil, _ block: () throws -> Void) rethrows -> Double {
         let precision = 3.0
         let dec = pow(10.0, precision)
         
@@ -106,18 +113,18 @@ public final class Logger {
         
         let date = Date()
         
-        block()
+        try block()
         
         let time = -date.timeIntervalSinceNow
         let timeStr = (time < 1)
             ? "\(round(time * dec * 1000) / dec) msec."
             : "\(round(time * dec) / dec) sec."
         
-        log("end: \(aLabel), \(timeStr)")
+        log("end:   \(aLabel), \(timeStr)")
         
         return time
     }
-    
+
     public func newLine(_ count: Int = 1) {
         let str = String(repeating: "\n", count: count)
         write(str)
