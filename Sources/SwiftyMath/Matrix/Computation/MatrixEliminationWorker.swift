@@ -114,7 +114,7 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
         }
         
         let toHead = {() -> LinkedList<(col: Int, value: R)> in
-            var toHead = working[i2] // possibly nil
+            let toHead = working[i2] // possibly nil
             if toHead == nil || fromHead.value.col < toHead!.value.col {
                 
                 // from: ●-->○-->○----->○-------->

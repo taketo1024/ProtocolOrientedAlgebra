@@ -206,7 +206,7 @@ class MatrixEliminationTests: XCTestCase {
         let I = E.imageMatrix
         
         XCTAssertTrue(I.size == (2, 1))
-        XCTAssertEqual(I.grid, [2, 2])
+        XCTAssertEqual(I.asArray, [2, 2])
     }
     
     public func testDet() {
