@@ -83,12 +83,12 @@ public final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
                 return p
             }
             return candidates.min { (c1, c2) in
-                c1.value.eucDegree < c2.value.eucDegree
+                c1.value.euclideanDegree < c2.value.euclideanDegree
             }
         case .balanced:
             return candidates.sorted{ c in c.row }.min { (c1, c2) in
                 let (i1, i2) = (c1.row, c2.row)
-                let (d1, d2) = (c1.value.eucDegree, c2.value.eucDegree)
+                let (d1, d2) = (c1.value.euclideanDegree, c2.value.euclideanDegree)
                 return d1 < d2 || (d1 == d2 && worker.weight(ofRow: i1) < worker.weight(ofRow: i2))
             }
         }

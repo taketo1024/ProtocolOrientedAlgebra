@@ -15,7 +15,7 @@ class EuclideanRingTests: XCTestCase {
     func testEucDiv() {
         let a = 7
         let b = 3
-        let (q, r) = a.eucDiv(by: b)
+        let (q, r) = a /% b
         XCTAssertEqual(q, 2)
         XCTAssertEqual(r, 1)
     }
@@ -41,4 +41,5 @@ class EuclideanRingTests: XCTestCase {
         let r = a % b
         XCTAssertEqual(r, 1)
     }
+    
 }

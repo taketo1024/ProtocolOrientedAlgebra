@@ -15,10 +15,6 @@ extension 𝐙: EuclideanRing, Randomable {
         (self >= 0) ? 1 : -1
     }
 
-    public var eucDegree: Int {
-        Swift.abs(self)
-    }
-    
     public static var zero: 𝐙 {
         0
     }
@@ -53,8 +49,11 @@ extension 𝐙: EuclideanRing, Randomable {
         }
     }
 
-    public func eucDiv(by b: 𝐙) -> (q: 𝐙, r: 𝐙) {
-        let a = self
+    public var euclideanDegree: Int {
+        Swift.abs(self)
+    }
+    
+    public static func /%(a: 𝐙, b: 𝐙) -> (q: 𝐙, r: 𝐙) {
         let q = a / b
         return (q: q, r: a - q * b)
     }

@@ -191,30 +191,29 @@ public extension _Polynomial where R: Field {
 }
 
 extension _Polynomial: EuclideanRing where R: Field {
-    public var eucDegree: Int {
+    public var euclideanDegree: Int {
         T.isNormal ? highestPower : highestPower - lowestPower
     }
     
-    public func eucDiv(by g: _Polynomial<T, x, R>) -> (q: _Polynomial<T, x, R>, r: _Polynomial<T, x, R>) {
+    public static func /%(f: _Polynomial<T, x, R>, g: _Polynomial<T, x, R>) -> (q: _Polynomial<T, x, R>, r: _Polynomial<T, x, R>) {
         assert(!g.isZero)
         
         typealias P = _Polynomial<T, x, R>
         let x = P.indeterminate
-        let f = self
         
         func eucDivMonomial(_ f: P, _ g: P) -> (q: P, r: P) {
-            if f.eucDegree < g.eucDegree {
+            if f.euclideanDegree < g.euclideanDegree {
                 return (.zero, f)
             } else {
                 let a = f.leadCoeff / g.leadCoeff
-                let n = T.isNormal ? f.eucDegree - g.eucDegree : (f.eucDegree - g.eucDegree) + (f.lowestPower - g.lowestPower)
+                let n = T.isNormal ? f.euclideanDegree - g.euclideanDegree : (f.euclideanDegree - g.euclideanDegree) + (f.lowestPower - g.lowestPower)
                 let q = a * x.pow(n)
                 let r = f - q * g
                 return (q, r)
             }
         }
         
-        return (0 ... max(0, f.eucDegree - g.eucDegree))
+        return (0 ... max(0, f.euclideanDegree - g.euclideanDegree))
             .reversed()
             .reduce( (.zero, f) ) { (result: (P, P), degree: Int) in
                 let (q, r) = result

@@ -1,25 +1,20 @@
 public protocol EuclideanRing: Ring {
-    var  eucDegree: Int { get }
-    func eucDiv(by b: Self) -> (q: Self, r: Self) // override point
+    var  euclideanDegree: Int { get }
     func divides(_ a: Self) -> Bool
     func isDivible(by a: Self) -> Bool
-
+    
     static func /% (a: Self, b: Self) -> (q: Self, r: Self)
     static func / (a: Self, b: Self) -> Self
     static func % (a: Self, b: Self) -> Self
 }
 
 public extension EuclideanRing {
-    static func /% (_ a: Self, b: Self) -> (q: Self, r: Self) {
-        a.eucDiv(by: b)
-    }
-    
     static func / (_ a: Self, b: Self) -> Self {
-        a.eucDiv(by: b).q
+        (a /% b).q
     }
     
     static func % (_ a: Self, b: Self) -> Self {
-        a.eucDiv(by: b).r
+        (a /% b).r
     }
     
     func divides(_ b: Self) -> Bool {
@@ -40,7 +35,7 @@ public func lcm<R: EuclideanRing>(_ a: R, _ b: R) -> R {
     (a * b) / gcd(a, b)
 }
 
-public func bezout<R: EuclideanRing>(_ a: R, _ b: R) -> (x: R, y: R, r: R) {
+public func extendedGcd<R: EuclideanRing>(_ a: R, _ b: R) -> (x: R, y: R, gcd: R) {
     typealias M = SquareMatrix<_2, R>
     
     func euclid(_ a: R, _ b: R, _ qs: [R]) -> (qs: [R], r: R) {
@@ -49,17 +44,17 @@ public func bezout<R: EuclideanRing>(_ a: R, _ b: R) -> (x: R, y: R, r: R) {
             return (qs, a)
         default:
             let (q, r) = a /% b
-            return euclid(b, r, [q] + qs)
+            return euclid(b, r, qs.appended(q))
         }
     }
     
     let (qs, r) = euclid(a, b, [])
     
-    let m = qs.reduce(M.identity) { (m: M, q: R) -> M in
+    let m = qs.reversed().reduce(M.identity) { (m: M, q: R) -> M in
         m * M(.zero, .identity, .identity, -q)
     }
     
-    return (x: m[0, 0], y: m[0, 1], r: r)
+    return (x: m[0, 0], y: m[0, 1], gcd: r)
 }
 
 public protocol EuclideanIdeal: Ideal where Super: EuclideanRing {
@@ -78,7 +73,7 @@ public extension EuclideanIdeal {
     static func quotientInverse(of a: Super) -> Super? {
         // find: a * x + b * y = u  (u: unit)
         // then: a^-1 = u^-1 * x (mod b)
-        let (x, _, u) = bezout(a, mod)
+        let (x, _, u) = extendedGcd(a, mod)
         if let uInv = u.inverse {
             return uInv * x
         } else {

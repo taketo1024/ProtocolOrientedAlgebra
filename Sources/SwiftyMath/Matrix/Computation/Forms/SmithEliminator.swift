@@ -81,7 +81,7 @@ public final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         diagonal
             .enumerated()
             .filter{ (i, _) in i >= currentIndex }
-            .min { (c1, c2) in c1.1.eucDegree < c2.1.eucDegree }
+            .min { (c1, c2) in c1.1.euclideanDegree < c2.1.euclideanDegree }
     }
     
     private func diagonalGCD(_ d1: (Int, R), _ d2: (Int, R)) {
@@ -91,7 +91,7 @@ public final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         // d = gcd(a, b) = pa + qb
         // m = lcm(a, b) = -a * b / d
         
-        let (p, q, d) = bezout(a, b)
+        let (p, q, d) = extendedGcd(a, b)
         let m = -(a * b) / d
         
         set(i, d)

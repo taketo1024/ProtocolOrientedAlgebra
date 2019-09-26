@@ -34,7 +34,7 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
                 .group{ (_, j) in j }
                 .mapValues{ l in Set( l.map{ (i, _) in i } ) }
             
-            self.rowWeights = working.mapValues{ l in l.sum{ c in c.value.value.eucDegree } }
+            self.rowWeights = working.mapValues{ l in l.sum{ c in c.value.value.euclideanDegree } }
             
         } else {
             self.headPositions = [:]
@@ -224,7 +224,7 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
     
     private func updateRowWeight(_ i: Int) {
         if let head = working[i] {
-            rowWeights[i] = head.sum{ c in c.value.value.eucDegree }
+            rowWeights[i] = head.sum{ c in c.value.value.euclideanDegree }
         } else {
             rowWeights[i] = nil
         }

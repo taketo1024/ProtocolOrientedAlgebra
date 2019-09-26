@@ -77,7 +77,7 @@ class IntegerTests: XCTestCase {
     func testEucDiv() {
         let a = A(7)
         let b = A(3)
-        let (q, r) = a.eucDiv(by: b)
+        let (q, r) = a /% b
         XCTAssertEqual(q, A(2))
         XCTAssertEqual(r, A(1))
     }

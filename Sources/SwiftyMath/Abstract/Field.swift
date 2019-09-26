@@ -5,12 +5,12 @@ public extension Field {
         self.inverse ?? .identity
     }
     
-    var eucDegree: Int {
+    var euclideanDegree: Int {
         isZero ? 0 : 1
     }
     
-    func eucDiv(by b: Self) -> (q: Self, r: Self) {
-        (self / b, .zero)
+    static func /%(a: Self, b: Self) -> (q: Self, r: Self) {
+        (a / b, .zero)
     }
     
     static func / (a: Self, b: Self) -> Self {
