@@ -14,7 +14,7 @@ public protocol SetType: Equatable, CustomStringConvertible {
 
 public extension SetType {
     static var symbol: String {
-        return String(describing: self)
+        String(describing: self)
     }
 }
 
@@ -32,7 +32,7 @@ public protocol SubsetType: SetType {
 
 public extension SubsetType {
     var description: String {
-        return asSuper.description
+        asSuper.description
     }
 }
 
@@ -54,11 +54,11 @@ public protocol ProductSetType: SetType {
 
 public extension ProductSetType {
     var description: String {
-        return "(\(left), \(right))"
+        "(\(left), \(right))"
     }
     
     static var symbol: String {
-        return "\(Left.symbol)×\(Right.symbol)"
+        "\(Left.symbol)×\(Right.symbol)"
     }
 }
 
@@ -80,15 +80,15 @@ public protocol QuotientSetType: SetType {
 
 public extension QuotientSetType {
     var description: String {
-        return representative.description
+        representative.description
     }
     
     static func == (a: Self, b: Self) -> Bool {
-        return isEquivalent(a.representative, b.representative)
+        isEquivalent(a.representative, b.representative)
     }
     
     static var symbol: String {
-        return "\(Base.symbol)/~"
+        "\(Base.symbol)/~"
     }
 }
 
@@ -105,7 +105,7 @@ public struct QuotientSet<X, E: EquivalenceRelation>: QuotientSetType where X ==
     }
     
     public static func isEquivalent(_ x: X, _ y: X) -> Bool {
-        return E.isEquivalent(x, y)
+        E.isEquivalent(x, y)
     }
 }
 
@@ -118,11 +118,11 @@ public protocol MapType: SetType {
 
 public extension MapType {
     var description: String {
-        return "\(Domain.symbol) -> \(Codomain.symbol)"
+        "\(Domain.symbol) -> \(Codomain.symbol)"
     }
     
     static var symbol: String {
-        return "Map(\(Domain.symbol), \(Codomain.symbol))"
+        "Map(\(Domain.symbol), \(Codomain.symbol))"
     }
     
     static func == (lhs: Self, rhs: Self) -> Bool {
@@ -141,15 +141,15 @@ public struct Map<X: SetType, Y: SetType>: MapType {
     }
     
     public func applied(to x: X) -> Y {
-        return f(x)
+        f(x)
     }
     
     public func composed<W>(with g: Map<W, X>) -> Map<W, Y> {
-        return Map<W, Y>{ x in self.applied( to: g.applied(to: x) ) }
+        Map<W, Y>{ x in self.applied( to: g.applied(to: x) ) }
     }
     
     public static func ∘<W>(g: Map<X, Y>, f: Map<W, X>) -> Map<W, Y> {
-        return g.composed(with: f)
+        g.composed(with: f)
     }
 }
 
@@ -161,15 +161,15 @@ public protocol EndType: MapType where Domain == Codomain {
 
 public extension EndType {
     static var identity: Self {
-        return Self { $0 }
+        Self { $0 }
     }
     
     func composed(with g: Self) -> Self {
-        return Self { x in self.applied( to: g.applied(to: x) ) }
+        Self { x in self.applied( to: g.applied(to: x) ) }
     }
 
     static func ∘(g: Self, f: Self) -> Self {
-        return g.composed(with: f)
+        g.composed(with: f)
     }
 }
 

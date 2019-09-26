@@ -10,7 +10,7 @@ import Foundation
 
 public extension Array {
     static var empty: [Element] {
-        return []
+        []
     }
     
     func appended(_ e: Element) -> [Element] {
@@ -60,15 +60,15 @@ public extension Array {
     }
     
     func repeated(_ count: Int) -> [Element] {
-        return (Array<[Element]>(repeating: self, count: count)).flatMap{ $0 }
+        (Array<[Element]>(repeating: self, count: count)).flatMap{ $0 }
     }
     
     func takeEven() -> [Element] {
-        return self.enumerated().filter{ $0.offset.isEven }.map{ $0.element }
+        self.enumerated().filter{ $0.offset.isEven }.map{ $0.element }
     }
     
     func takeOdd() -> [Element] {
-        return self.enumerated().filter{ $0.offset.isOdd  }.map{ $0.element }
+        self.enumerated().filter{ $0.offset.isOdd  }.map{ $0.element }
     }
     
     func merging(_ other: [Element], with f: (Element, Element) -> Element) -> [Element] {
@@ -78,7 +78,7 @@ public extension Array {
     }
 
     func toDictionary() -> [Index: Element] {
-        return Dictionary(pairs: self.enumerated().map{ (i, a) in (i, a) })
+        Dictionary(pairs: self.enumerated().map{ (i, a) in (i, a) })
     }
 }
 
@@ -96,7 +96,7 @@ extension Array where Element: Equatable {
 
 extension Array: Comparable where Element: Comparable {
     public static func < (lhs: [Element], rhs: [Element]) -> Bool {
-        return lhs.lexicographicallyPrecedes(rhs)
+        lhs.lexicographicallyPrecedes(rhs)
     }
 }
 
@@ -119,15 +119,15 @@ extension Array {
     }
     
     public func parallelFlatMap<T>(transform: @escaping ((Element) -> [T])) -> [T] {
-        return parallelMap(transform: transform).flatMap { $0 }
+        parallelMap(transform: transform).flatMap { $0 }
     }
     
     public func parallelCompactMap<T>(transform: @escaping ((Element) -> T?)) -> [T] {
-        return parallelMap(transform: transform).compactMap { $0 }
+        parallelMap(transform: transform).compactMap { $0 }
     }
     
     public func parallelFilter(predicate: @escaping ((Element) -> Bool)) -> [Element] {
-        return parallelCompactMap { e in predicate(e) ? e : nil }
+        parallelCompactMap { e in predicate(e) ? e : nil }
     }
 }
 

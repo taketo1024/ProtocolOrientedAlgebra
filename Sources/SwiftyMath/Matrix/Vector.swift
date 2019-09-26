@@ -23,20 +23,26 @@ public typealias Vector4<R: Ring> = ColVector<_4, R>
 public extension Matrix where m == _1 { // (D)ColVector
     subscript(index: Int) -> R {
         @_transparent
-        get { return self[index, 0] }
-        
+        get {
+            self[index, 0]
+        }
         @_transparent
-        set { self[index, 0] = newValue }
+        set {
+            self[index, 0] = newValue
+        }
     }
 }
 
 public extension Matrix where n == _1 { // (D)RowVector
     subscript(index: Int) -> R {
         @_transparent
-        get { return self[0, index] }
-        
+        get {
+            self[0, index]
+        }
         @_transparent
-        set { self[0, index] = newValue }
+        set {
+            self[0, index] = newValue
+        }
     }
 }
 
@@ -54,7 +60,7 @@ public extension Matrix where n == DynamicSize, m == _1 { // DColVector
     }
     
     static func zero(size: Int) -> DColVector<R> {
-        return .init(size: (size, 1), components: [], zerosExcluded: true)
+        .init(size: (size, 1), components: [], zerosExcluded: true)
     }
 }
 
@@ -72,6 +78,6 @@ public extension Matrix where n == _1, m == DynamicSize { // DRowVector
     }
     
     static func zero(size: Int) -> DRowVector<R> {
-        return .init(size: (1, size), components: [], zerosExcluded: true)
+        .init(size: (1, size), components: [], zerosExcluded: true)
     }
 }

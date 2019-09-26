@@ -11,29 +11,24 @@ public protocol EuclideanRing: Ring {
 
 public extension EuclideanRing {
     static func /% (_ a: Self, b: Self) -> (q: Self, r: Self) {
-        return a.eucDiv(by: b)
+        a.eucDiv(by: b)
     }
     
     static func / (_ a: Self, b: Self) -> Self {
-        return a.eucDiv(by: b).q
+        a.eucDiv(by: b).q
     }
     
     static func % (_ a: Self, b: Self) -> Self {
-        return a.eucDiv(by: b).r
+        a.eucDiv(by: b).r
     }
 }
 
 public func gcd<R: EuclideanRing>(_ a: R, _ b: R) -> R {
-    switch b {
-    case .zero:
-        return a
-    default:
-        return gcd(b, a % b)
-    }
+    (b == .zero) ? a : gcd(b, a % b)
 }
 
 public func lcm<R: EuclideanRing>(_ a: R, _ b: R) -> R {
-    return (a * b) / gcd(a, b)
+    (a * b) / gcd(a, b)
 }
 
 public func bezout<R: EuclideanRing>(_ a: R, _ b: R) -> (x: R, y: R, r: R) {
@@ -64,11 +59,11 @@ public protocol EuclideanIdeal: Ideal where Super: EuclideanRing {
 
 public extension EuclideanIdeal {
     static func normalizedInQuotient(_ a: Super) -> Super {
-        return a % mod
+        a % mod
     }
     
     static func contains(_ a: Super) -> Bool {
-        return a % mod == .zero
+        a % mod == .zero
     }
     
     static func inverseInQuotient(_ r: Super) -> Super? {
@@ -79,6 +74,6 @@ public extension EuclideanIdeal {
     }
     
     static var symbol: String {
-        return "(\(mod))"
+        "(\(mod))"
     }
 }

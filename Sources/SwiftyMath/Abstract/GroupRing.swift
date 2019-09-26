@@ -18,11 +18,11 @@ public struct GroupRing<G: Group & Hashable, R: Ring>: Ring {
     }
     
     public subscript(g: G) -> R {
-        return elements[g, default: .zero]
+        elements[g, default: .zero]
     }
     
     public static prefix func - (a: GroupRing<G, R>) -> GroupRing<G, R> {
-        return GroupRing(a.elements.mapValues{ -$0 })
+        GroupRing(a.elements.mapValues{ -$0 })
     }
     
     public init(from n: 𝐙) {
@@ -50,10 +50,10 @@ public struct GroupRing<G: Group & Hashable, R: Ring>: Ring {
     }
     
     public var description: String {
-        return elements.map{ (g, a) in "\(a)(\(g))"}.joined(separator: " + ")
+        elements.map{ (g, a) in "\(a)(\(g))"}.joined(separator: " + ")
     }
     
     public static var symbol: String {
-        return "\(R.symbol)[\(G.symbol)]"
+        "\(R.symbol)[\(G.symbol)]"
     }
 }

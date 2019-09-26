@@ -49,51 +49,51 @@ public struct _Polynomial<T: PolynomialType, x: PolynomialIndeterminate, R: Ring
     }
     
     public static var indeterminate: _Polynomial<T, x, R> {
-        return _Polynomial(coeffs: .zero, .identity)
+        _Polynomial(coeffs: .zero, .identity)
     }
     
     public var lowestPower: Int {
-        return coeffs.keys.min() ?? 0
+        coeffs.keys.min() ?? 0
     }
     
     public var highestPower: Int {
-        return coeffs.keys.max() ?? 0
+        coeffs.keys.max() ?? 0
     }
     
     public var degree: Int {
-        return x.degree * highestPower
+        x.degree * highestPower
     }
     
     public func coeff(_ i: Int) -> R {
-        return coeffs[i, default: .zero]
+        coeffs[i, default: .zero]
     }
     
     public var leadCoeff: R {
-        return coeff(highestPower)
+        coeff(highestPower)
     }
     
     public var leadTerm: _Polynomial<T, x, R> {
-        return _Polynomial(coeffs: [highestPower: leadCoeff])
+        _Polynomial(coeffs: [highestPower: leadCoeff])
     }
     
     public var isMonic: Bool {
-        return leadCoeff == .identity
+        leadCoeff == .identity
     }
     
     public var isConst: Bool {
-        return coeffs.isEmpty || (coeffs.count == 1 && coeffs.keys.contains(0))
+        coeffs.isEmpty || (coeffs.count == 1 && coeffs.keys.contains(0))
     }
     
     public var constTerm: R {
-        return coeff(0)
+        coeff(0)
     }
     
     public func mapCoeffs<S: Ring>(_ f: ((R) -> S)) -> _Polynomial<T, x, S> {
-        return _Polynomial<T, x, S>(coeffs: coeffs.mapValues(f))
+        _Polynomial<T, x, S>(coeffs: coeffs.mapValues(f))
     }
     
     public func changeIndeterminate<y: PolynomialIndeterminate>(to: y.Type) -> _Polynomial<T, y, R> {
-        return _Polynomial<T, y, R>(coeffs: coeffs)
+        _Polynomial<T, y, R>(coeffs: coeffs)
     }
     
     public var normalizingUnit: _Polynomial<T, x, R> {
@@ -114,7 +114,7 @@ public struct _Polynomial<T: PolynomialType, x: PolynomialIndeterminate, R: Ring
     }
     
     public var derivative: _Polynomial<T, x, R> {
-        return _Polynomial(coeffs: coeffs.mapPairs { (i, a) -> (Int, R) in
+        _Polynomial(coeffs: coeffs.mapPairs { (i, a) -> (Int, R) in
             (i - 1, R(from: i) * a)
         })
     }
@@ -148,7 +148,7 @@ public struct _Polynomial<T: PolynomialType, x: PolynomialIndeterminate, R: Ring
     }
     
     public static prefix func - (f: _Polynomial<T, x, R>) -> _Polynomial<T, x, R> {
-        return f.mapCoeffs { -$0 }
+        f.mapCoeffs { -$0 }
     }
     
     public static func * (f: _Polynomial<T, x, R>, g: _Polynomial<T, x, R>) -> _Polynomial<T, x, R> {
@@ -164,15 +164,15 @@ public struct _Polynomial<T: PolynomialType, x: PolynomialIndeterminate, R: Ring
     }
     
     public static func * (r: R, f: _Polynomial<T, x, R>) -> _Polynomial<T, x, R> {
-        return f.mapCoeffs { r * $0 }
+        f.mapCoeffs { r * $0 }
     }
     
     public static func * (f: _Polynomial<T, x, R>, r: R) -> _Polynomial<T, x, R> {
-        return f.mapCoeffs { $0 * r }
+        f.mapCoeffs { $0 * r }
     }
     
     public var description: String {
-        return Format.terms("+", coeffs.keys.sorted().map{ i in (coeff(i), x.symbol, i)} )
+        Format.terms("+", coeffs.keys.sorted().map{ i in (coeff(i), x.symbol, i)} )
     }
     
     public static var symbol: String {
@@ -190,7 +190,7 @@ public extension _Polynomial where R: Field {
 
 extension _Polynomial: EuclideanRing where R: Field {
     public var eucDegree: Int {
-        return T.isNormal ? highestPower : highestPower - lowestPower
+        T.isNormal ? highestPower : highestPower - lowestPower
     }
     
     public func eucDiv(by g: _Polynomial<T, x, R>) -> (q: _Polynomial<T, x, R>, r: _Polynomial<T, x, R>) {
@@ -226,12 +226,12 @@ extension _Polynomial: EuclideanRing where R: Field {
 
 extension _Polynomial where R: RealSubset {
     public var asReal: _Polynomial<T, x, 𝐑> {
-        return mapCoeffs{ $0.asReal }
+        mapCoeffs{ $0.asReal }
     }
 }
 
 extension _Polynomial where R: ComplexSubset {
     public var asComplex: _Polynomial<T, x, 𝐂> {
-        return mapCoeffs{ $0.asComplex }
+        mapCoeffs{ $0.asComplex }
     }
 }

@@ -14,7 +14,7 @@ public final class RowHermiteEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     var rank = 0
     
     override var form: Form {
-        return .RowHermite
+        .RowHermite
     }
     
     override func prepare() {
@@ -26,7 +26,7 @@ public final class RowHermiteEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     }
     
     override func shouldIterate() -> Bool {
-        return currentRow < target.pointee.size.rows
+        currentRow < target.pointee.size.rows
     }
     
     @_specialize(where R == 𝐙)
@@ -67,7 +67,7 @@ public final class RowHermiteEliminator<R: EuclideanRing>: MatrixEliminator<R> {
 
 public final class ColHermiteEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     override var form: Form {
-        return .ColHermite
+        .ColHermite
     }
 
     override func prepare() {

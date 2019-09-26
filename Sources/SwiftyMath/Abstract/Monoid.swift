@@ -17,22 +17,22 @@ public protocol Submonoid: Monoid, SubsetType where Super: Monoid {}
 
 public extension Submonoid {
     static var identity: Self {
-        return Self(Super.identity)
+        Self(Super.identity)
     }
     
     static func * (a: Self, b: Self) -> Self {
-        return Self(a.asSuper * b.asSuper)
+        Self(a.asSuper * b.asSuper)
     }
 }
 
 public protocol ProductMonoidType: ProductSetType, Monoid where Left: Monoid, Right: Monoid {}
 public extension ProductMonoidType {
     static var identity: Self {
-        return Self(.identity, .identity)
+        Self(.identity, .identity)
     }
     
     static func * (a: Self, b: Self) -> Self {
-        return Self(a.left * b.left, a.right * b.right)
+        Self(a.left * b.left, a.right * b.right)
     }
 }
 
@@ -58,15 +58,15 @@ public struct MonoidHom<X: Monoid, Y: Monoid>: MonoidHomType {
     }
     
     public func applied(to x: X) -> Y {
-        return f(x)
+        f(x)
     }
     
     public func composed<W>(with g: MonoidHom<W, X>) -> MonoidHom<W, Y> {
-        return MonoidHom<W, Y>{ x in self.applied( to: g.applied(to: x) ) }
+        MonoidHom<W, Y>{ x in self.applied( to: g.applied(to: x) ) }
     }
     
     public static func ∘<W>(g: MonoidHom<X, Y>, f: MonoidHom<W, X>) -> MonoidHom<W, Y> {
-        return g.composed(with: f)
+        g.composed(with: f)
     }
 }
 
@@ -79,12 +79,12 @@ public typealias MonoidEnd<X: Monoid> = MonoidHom<X, X>
 
 public extension Sequence where Element: Monoid {
     func multiplyAll() -> Element {
-        return multiply{ $0 }
+        multiply{ $0 }
     }
 }
 
 public extension Sequence {
     func multiply<G: Monoid>(mapping f: (Element) -> G) -> G {
-        return self.reduce(.identity){ $0 * f($1) }
+        self.reduce(.identity){ $0 * f($1) }
     }
 }

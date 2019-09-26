@@ -62,31 +62,31 @@ public struct Quaternion: Ring, ExpressibleByIntegerLiteral, ExpressibleByFloatL
     }
     
     public static var i: 𝐇 {
-        return 𝐇(0, 1, 0, 0)
+        𝐇(0, 1, 0, 0)
     }
     
     public static var j: 𝐇 {
-        return 𝐇(0, 0, 1, 0)
+        𝐇(0, 0, 1, 0)
     }
     
     public static var k: 𝐇 {
-        return 𝐇(0, 0, 0, 1)
+        𝐇(0, 0, 0, 1)
     }
     
     public var realPart: 𝐑 {
-        return x
+        x
     }
     
     public var imaginaryPart: 𝐇 {
-        return 𝐇(0, y, z, w)
+        𝐇(0, y, z, w)
     }
     
     public var abs: 𝐑 {
-        return √(x * x + y * y + z * z + w * w)
+        √(x * x + y * y + z * z + w * w)
     }
     
     public var conjugate: 𝐇 {
-        return 𝐇(x, -y, -z, -w)
+        𝐇(x, -y, -z, -w)
     }
 
     public var inverse: 𝐇? {
@@ -95,11 +95,11 @@ public struct Quaternion: Ring, ExpressibleByIntegerLiteral, ExpressibleByFloatL
     }
     
     public static func +(a: 𝐇, b: 𝐇) -> 𝐇 {
-        return 𝐇(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w)
+        𝐇(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w)
     }
     
     public static prefix func -(a: 𝐇) -> 𝐇 {
-        return 𝐇(-a.x, -a.y, -a.z, -a.w)
+        𝐇(-a.x, -a.y, -a.z, -a.w)
     }
     
     public static func *(a: 𝐇, b: 𝐇) -> 𝐇 {
@@ -130,6 +130,6 @@ public struct Quaternion: Ring, ExpressibleByIntegerLiteral, ExpressibleByFloatL
     }
     
     public static var symbol: String {
-        return "𝐇"
+        "𝐇"
     }
 }

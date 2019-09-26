@@ -17,37 +17,37 @@ extension RealNumber: Field {
     }
     
     public static var zero: 𝐑 {
-        return 0
+        0
     }
     
     public var sign: 𝐙 {
-        return (self >  0) ? 1 :
-               (self == 0) ? 0 :
-                             -1
+        (self >  0) ? 1 :
+        (self == 0) ? 0 :
+                     -1
     }
     
     public var abs: 𝐑 {
-        return 𝐑(Swift.abs(self))
+        𝐑(Swift.abs(self))
     }
     
     public var inverse: 𝐑? {
-        return (self == 0) ? nil : 1/self
+        (self == 0) ? nil : 1/self
     }
     
     public var sqrt: 𝐑 {
-        return squareRoot()
+        squareRoot()
     }
     
     public static prefix func √(x: 𝐑) -> 𝐑 {
-        return x.sqrt
+        x.sqrt
     }
     
     public func isApproximatelyEqualTo(_ x: 𝐑, error: 𝐑? = nil) -> Bool {
-        return (self - x).abs <= (error ?? max(self.ulp, x.ulp))
+        (self - x).abs <= (error ?? max(self.ulp, x.ulp))
     }
     
     public static var symbol: String {
-        return "𝐑"
+        "𝐑"
     }
 }
 
@@ -59,12 +59,12 @@ public protocol RealSubset {
 
 extension 𝐙: RealSubset {
     public var asReal: 𝐑 {
-        return 𝐑(self)
+        𝐑(self)
     }
 }
 
 extension 𝐐: RealSubset {
     public var asReal: 𝐑 {
-        return 𝐑(self)
+        𝐑(self)
     }
 }

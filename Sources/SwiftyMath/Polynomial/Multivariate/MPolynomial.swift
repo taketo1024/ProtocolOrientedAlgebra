@@ -33,72 +33,72 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
     }
     
     public static var zero: MPolynomial<xn, R> {
-        return MPolynomial(coeffs: [:])
+        MPolynomial(coeffs: [:])
     }
     
     public var inverse: MPolynomial<xn, R>? {
-        return (isConst) ? constTerm.inverse.map{ inv in MPolynomial(inv) } : nil
+        (isConst) ? constTerm.inverse.map{ inv in MPolynomial(inv) } : nil
     }
     
     internal var multiDegrees: [MultiDegree] {
-        return coeffs.keys.sorted()
+        coeffs.keys.sorted()
     }
     
     public var degree: Int {
-        return coeffs.keys.map { I in xn.totalDegree(exponents: I)}.max() ?? 0
+        coeffs.keys.map { I in xn.totalDegree(exponents: I)}.max() ?? 0
     }
     
     public func coeff(_ I: MultiDegree) -> R {
-        return coeffs[I] ?? .zero
+        coeffs[I] ?? .zero
     }
     
     public func coeff(_ indices: Int ...) -> R {
-        return coeff(MultiDegree(indices))
+        coeff(MultiDegree(indices))
     }
     
     public var isMonomial: Bool {
-        return coeffs.count <= 1
+        coeffs.count <= 1
     }
     
     public var isMonic: Bool {
-        return leadCoeff == .identity
+        leadCoeff == .identity
     }
     
     public var isConst: Bool {
-        return coeffs.isEmpty || (coeffs.count == 1 && coeffs.keys.contains(.empty))
+        coeffs.isEmpty || (coeffs.count == 1 && coeffs.keys.contains(.empty))
     }
     
     public var constTerm: R {
-        return self.coeff(.empty)
+        self.coeff(.empty)
     }
     
     public var leadCoeff: R {
-        return self.coeff(leadMultiDegree)
+        self.coeff(leadMultiDegree)
     }
     
     public var leadMultiDegree: MultiDegree {
-        return multiDegrees.last ?? .empty // lex-order
+        multiDegrees.last ?? .empty // lex-order
     }
     
     public var leadTerm: MPolynomial<xn, R> {
-        return MPolynomial(coeffs: [leadMultiDegree : leadCoeff])
+        MPolynomial(coeffs: [leadMultiDegree : leadCoeff])
     }
     
     public func map(_ f: ((R) -> R)) -> MPolynomial<xn, R> {
-        return MPolynomial(coeffs: coeffs.mapValues(f) )
+        MPolynomial(coeffs: coeffs.mapValues(f) )
     }
     
     // decompose into pairs of (multidegree, coeff)
     public func decomposed() -> [(MultiDegree, R)] {
-        return coeffs.map{ (I, a) in (I, a) }
+        coeffs.map{ (I, a) in (I, a) }
     }
 
     public static func indeterminate(_ i: Int) -> MPolynomial {
-        return .init(coeffs: [[0].repeated(i) + [1] : R.identity] )
+        .init(coeffs: [[0].repeated(i) + [1] : R.identity] )
     }
     
     public static func monomial(ofMultiDegree I: MultiDegree) -> MPolynomial<xn, R> {
-        return .init(coeffs: [I: .identity])
+        .init(coeffs: [I: .identity])
     }
     
     public static func monomials(ofDegree degree: Int) -> [MPolynomial<xn, R>] {
@@ -134,7 +134,7 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
     }
     
     public static prefix func - (f: MPolynomial<xn, R>) -> MPolynomial<xn, R> {
-        return f.map { -$0 }
+        f.map { -$0 }
     }
     
     public static func * (f: MPolynomial<xn, R>, g: MPolynomial<xn, R>) -> MPolynomial<xn, R> {
@@ -147,11 +147,11 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
     }
     
     public static func * (r: R, f: MPolynomial<xn, R>) -> MPolynomial<xn, R> {
-        return f.map { r * $0 }
+        f.map { r * $0 }
     }
     
     public static func * (f: MPolynomial<xn, R>, r: R) -> MPolynomial<xn, R> {
-        return f.map { $0 * r }
+        f.map { $0 * r }
     }
     
     public static func sum(_ elements: [MPolynomial]) -> MPolynomial {
@@ -171,7 +171,7 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
     }
     
     public func evaluate(at values: R...) -> R {
-        return evaluate(at: values)
+        evaluate(at: values)
     }
     
     public func evaluate(mapping: (Int) -> R) -> R {

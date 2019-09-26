@@ -123,7 +123,7 @@ public class MatrixEliminator<R: EuclideanRing> : CustomStringConvertible {
     }
     
     public var description: String {
-        return "\(type(of: self))"
+        "\(type(of: self))"
     }
     
     enum ElementaryOperation {

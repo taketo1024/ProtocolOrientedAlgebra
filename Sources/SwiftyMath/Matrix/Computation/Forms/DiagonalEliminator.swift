@@ -10,11 +10,11 @@ import Foundation
 
 public final class DiagonalEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     override var form: Form {
-        return .Diagonal
+        .Diagonal
     }
     
     override func shouldIterate() -> Bool {
-        return !(target.pointee.isDiagonal && target.pointee.diagonal.allSatisfy{ $0.isNormalized })
+        !(target.pointee.isDiagonal && target.pointee.diagonal.allSatisfy{ $0.isNormalized })
     }
     
     override func iteration() {

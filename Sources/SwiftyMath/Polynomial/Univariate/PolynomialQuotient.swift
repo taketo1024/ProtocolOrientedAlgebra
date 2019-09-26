@@ -22,7 +22,7 @@ public struct PolynomialIdeal<p: PolynomialTP>: EuclideanIdeal {
     public typealias Super = Polynomial<p.Indeterminate, CoeffRing>
     
     public static var mod: Polynomial<p.Indeterminate, CoeffRing> {
-        return p.value
+        p.value
     }
 }
 
@@ -47,7 +47,7 @@ public struct PolynomialQuotientRing<p: PolynomialTP>: QuotientRingType {
     }
     
     public var representative: Base {
-        return f
+        f
     }
 }
 

@@ -21,7 +21,7 @@ public typealias 𝐙₂ = IntegerQuotientRing<_2>
 public struct IntegerIdeal<n: StaticSizeType>: EuclideanIdeal {
     public typealias Super = 𝐙
     public static var mod: 𝐙 {
-        return n.intValue
+        n.intValue
     }
 }
 
@@ -42,23 +42,23 @@ public struct IntegerQuotientRing<n: StaticSizeType>: QuotientRingType, FiniteSe
     }
     
     public var representative: 𝐙 {
-        return value
+        value
     }
     
     public static var mod: 𝐙 {
-        return n.intValue
+        n.intValue
     }
     
     public static var allElements: [IntegerQuotientRing<n>] {
-        return (0 ..< mod).map{ IntegerQuotientRing($0) }
+        (0 ..< mod).map{ IntegerQuotientRing($0) }
     }
     
     public static var countElements: Int {
-        return mod
+        mod
     }
     
     public static var symbol: String {
-        return "𝐙\(Format.sub(mod))"
+        "𝐙\(Format.sub(mod))"
     }
 }
 

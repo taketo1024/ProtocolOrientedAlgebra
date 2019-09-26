@@ -10,15 +10,13 @@ public protocol AdditiveGroup: SetType {
 
 public extension AdditiveGroup {
     static func -(a: Self, b: Self) -> Self {
-        return (a + (-b))
+        a + (-b)
     }
     
     static func sum(_ elements: [Self]) -> Self {
-        if elements.count == 1 {
-            return elements.first!
-        } else {
-            return elements.reduce(.zero){ (res, e) in res + e }
-        }
+        (elements.count == 1)
+            ? elements.first!
+            : elements.reduce(.zero){ (res, e) in res + e }
     }
 }
 
@@ -28,19 +26,19 @@ public protocol AdditiveSubgroup: AdditiveGroup, SubsetType where Super: Additiv
 
 public extension AdditiveSubgroup {
     static var zero: Self {
-        return Self(Super.zero)
+        Self(Super.zero)
     }
     
     static func + (a: Self, b: Self) -> Self {
-        return Self(a.asSuper + b.asSuper)
+        Self(a.asSuper + b.asSuper)
     }
     
     prefix static func - (a: Self) -> Self {
-        return Self(-a.asSuper)
+        Self(-a.asSuper)
     }
     
     static func normalizedInQuotient(_ a: Super) -> Super {
-        return a
+        a
     }
 }
 
@@ -48,15 +46,15 @@ public protocol AdditiveProductGroupType: ProductSetType, AdditiveGroup where Le
 
 public extension AdditiveProductGroupType {
     static var zero: Self {
-        return Self(.zero, .zero)
+        Self(.zero, .zero)
     }
     
     static func + (a: Self, b: Self) -> Self {
-        return Self(a.left + b.left, a.right + b.right)
+        Self(a.left + b.left, a.right + b.right)
     }
     
     static prefix func - (a: Self) -> Self {
-        return Self(-a.left, -a.right)
+        Self(-a.left, -a.right)
     }
 }
 
@@ -75,23 +73,23 @@ public protocol AdditiveQuotientGroupType: QuotientSetType, AdditiveGroup where 
 
 public extension AdditiveQuotientGroupType {
     static var zero: Self {
-        return Self(Base.zero)
+        Self(Base.zero)
     }
     
     static func + (a: Self, b: Self) -> Self {
-        return Self(a.representative + b.representative)
+        Self(a.representative + b.representative)
     }
     
     static prefix func - (a: Self) -> Self {
-        return Self(-a.representative)
+        Self(-a.representative)
     }
     
     static func isEquivalent(_ a: Base, _ b: Base) -> Bool {
-        return Sub.contains( a - b )
+        Sub.contains( a - b )
     }
     
     static var symbol: String {
-        return "\(Base.symbol)/\(Sub.symbol)"
+        "\(Base.symbol)/\(Sub.symbol)"
     }
 }
 
@@ -110,18 +108,18 @@ public protocol AdditiveGroupHomType: MapType, AdditiveGroup where Domain: Addit
 
 public extension AdditiveGroupHomType {
     static var zero: Self {
-        return Self { x in .zero }
+        Self { x in .zero }
     }
     static func + (f: Self, g: Self) -> Self {
-        return Self { x in f.applied(to: x) + g.applied(to: x) }
+        Self { x in f.applied(to: x) + g.applied(to: x) }
     }
     
     prefix static func - (f: Self) -> Self {
-        return Self { x in -f.applied(to: x) }
+        Self { x in -f.applied(to: x) }
     }
     
     static func sum(_ elements: [Self]) -> Self {
-        return Self { x in
+        Self { x in
             elements.map{ f in f.applied(to: x) }.sumAll()
         }
     }
@@ -137,15 +135,15 @@ public struct AdditiveGroupHom<X: AdditiveGroup, Y: AdditiveGroup>: AdditiveGrou
     }
     
     public func applied(to x: X) -> Y {
-        return f(x)
+        f(x)
     }
     
     public func composed<W>(with g: AdditiveGroupHom<W, X>) -> AdditiveGroupHom<W, Y> {
-        return AdditiveGroupHom<W, Y>{ x in self.applied( to: g.applied(to: x) ) }
+        AdditiveGroupHom<W, Y>{ x in self.applied( to: g.applied(to: x) ) }
     }
     
     public static func ∘<W>(g: AdditiveGroupHom<X, Y>, f: AdditiveGroupHom<W, X>) -> AdditiveGroupHom<W, Y> {
-        return g.composed(with: f)
+        g.composed(with: f)
     }
 }
 
@@ -156,13 +154,13 @@ public typealias AdditiveGroupEnd<X: AdditiveGroup> = AdditiveGroupHom<X, X>
 
 public extension Sequence where Element: AdditiveGroup {
     func sumAll() -> Element {
-        return sum{ $0 }
+        sum{ $0 }
     }
 }
 
 public extension Sequence {
     func sum<G: AdditiveGroup>(mapping f: (Element) -> G) -> G {
-        return G.sum( self.map(f) )
+        G.sum( self.map(f) )
     }
 }
 
@@ -173,23 +171,23 @@ public struct AsGroup<G: AdditiveGroup>: Group {
     }
 
     public var inverse: AsGroup<G> {
-        return AsGroup(-g)
+        AsGroup(-g)
     }
 
     public static func * (a: AsGroup<G>, b: AsGroup<G>) -> AsGroup<G> {
-        return AsGroup(a.g + b.g)
+        AsGroup(a.g + b.g)
     }
 
     public static var identity: AsGroup<G> {
-        return AsGroup(G.zero)
+        AsGroup(G.zero)
     }
 
     public var description: String {
-        return g.description
+        g.description
     }
 
     public static var symbol: String {
-        return G.symbol
+        G.symbol
     }
 }
 

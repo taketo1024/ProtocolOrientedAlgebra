@@ -18,19 +18,19 @@ internal struct MatrixCoord: Hashable, Comparable, Codable, CustomStringConverti
     }
     
     public func shift(_ i: Int, _ j: Int) -> MatrixCoord {
-        return MatrixCoord(row + i, col + j)
+        MatrixCoord(row + i, col + j)
     }
     
     public var transposed: MatrixCoord {
-        return MatrixCoord(col, row)
+        MatrixCoord(col, row)
     }
     
     public static func < (lhs: MatrixCoord, rhs: MatrixCoord) -> Bool {
-        return (lhs.row < rhs.row) || (lhs.row == rhs.row && lhs.col < rhs.col)
+        (lhs.row < rhs.row) || (lhs.row == rhs.row && lhs.col < rhs.col)
     }
     
     public var description: String {
-        return "(\(row), \(col))"
+        "(\(row), \(col))"
     }
 }
 
@@ -85,34 +85,34 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
     
     public subscript(i: Int, j: Int) -> R {
         get {
-            return data[MatrixCoord(i, j)] ?? .zero
+            data[MatrixCoord(i, j)] ?? .zero
         } set {
             data[MatrixCoord(i, j)] = (newValue != .zero) ? newValue : nil
         }
     }
     
     public var isZero: Bool {
-        return data.allSatisfy{ (_, a) in a == .zero }
+        data.allSatisfy{ (_, a) in a == .zero }
     }
     
     public var isIdentity: Bool {
-        return data.allSatisfy{ (c, a) in (c.row == c.col && a == .identity) || (c.row != c.col && a == .zero) }
+        data.allSatisfy{ (c, a) in (c.row == c.col && a == .identity) || (c.row != c.col && a == .zero) }
     }
     
     public var isDiagonal: Bool {
-        return data.allSatisfy{ (c, a) in (c.row == c.col) || (a == .zero) }
+        data.allSatisfy{ (c, a) in (c.row == c.col) || (a == .zero) }
     }
     
     public var isSquare: Bool {
-        return size.rows == size.cols
+        size.rows == size.cols
     }
     
     public var diagonal: [R] {
-        return (0 ..< Swift.min(size.rows, size.cols)).map{ i in self[i, i] }
+        (0 ..< Swift.min(size.rows, size.cols)).map{ i in self[i, i] }
     }
     
     public var transposed: Matrix<m, n, R> {
-        return Matrix<m, n, R>(size: (size.cols, size.rows), data: data.mapKeys{ $0.transposed } )
+        Matrix<m, n, R>(size: (size.cols, size.rows), data: data.mapKeys{ $0.transposed } )
     }
     
     fileprivate var _trace: R {
@@ -161,27 +161,27 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
     }
     
     public func colVector(_ j: Int) -> ColVector<n, R> {
-        return ColVector(size: (size.rows, 1), data: subData(rowRange: 0 ..< size.rows, colRange: j ..< j + 1))
+        ColVector(size: (size.rows, 1), data: subData(rowRange: 0 ..< size.rows, colRange: j ..< j + 1))
     }
     
     public func rowVector(_ i: Int) -> RowVector<m, R> {
-        return RowVector(size: (1, size.cols), data: subData(rowRange: i ..< i + 1, colRange: 0 ..< size.cols))
+        RowVector(size: (1, size.cols), data: subData(rowRange: i ..< i + 1, colRange: 0 ..< size.cols))
     }
     
     public func submatrix(rowRange: CountableRange<Int>) -> Matrix<DynamicSize, m, R> {
-        return .init(size: (rowRange.upperBound - rowRange.lowerBound, size.cols), data: subData(rowRange: rowRange, colRange: 0 ..< size.cols))
+        .init(size: (rowRange.upperBound - rowRange.lowerBound, size.cols), data: subData(rowRange: rowRange, colRange: 0 ..< size.cols))
     }
     
     public func submatrix(colRange: CountableRange<Int>) -> Matrix<n, DynamicSize, R> {
-        return .init(size: (size.rows, colRange.upperBound - colRange.lowerBound), data: subData(rowRange: 0 ..< size.rows, colRange: colRange))
+        .init(size: (size.rows, colRange.upperBound - colRange.lowerBound), data: subData(rowRange: 0 ..< size.rows, colRange: colRange))
     }
     
     public func submatrix(rowRange: CountableRange<Int>,  colRange: CountableRange<Int>) -> DMatrix<R> {
-        return .init(size: (rowRange.upperBound - rowRange.lowerBound, colRange.upperBound - colRange.lowerBound), data: subData(rowRange: rowRange, colRange: colRange))
+        .init(size: (rowRange.upperBound - rowRange.lowerBound, colRange.upperBound - colRange.lowerBound), data: subData(rowRange: rowRange, colRange: colRange))
     }
     
     private func subData(rowRange: CountableRange<Int>,  colRange: CountableRange<Int>) -> MatrixData<R> {
-        return data.filter{ (c, _) in
+        data.filter{ (c, _) in
             rowRange.contains(c.row) && colRange.contains(c.col)
         }.mapKeys{ c in
             MatrixCoord(c.row - rowRange.lowerBound, c.col - colRange.lowerBound)
@@ -189,23 +189,23 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
     }
     
     public var components: AnySequence<MatrixComponent<R>> {
-        return AnySequence(data.lazy.map{ (c, a) -> MatrixComponent<R> in (c.row, c.col, a) })
+        AnySequence(data.lazy.map{ (c, a) -> MatrixComponent<R> in (c.row, c.col, a) })
     }
     
     public func mapComponents<R2>(zerosExcluded: Bool = false, _ f: (R) -> R2) -> Matrix<n, m, R2> {
-        return .init(size: size, data: data.mapValues(f), zerosExcluded: zerosExcluded)
+        .init(size: size, data: data.mapValues(f), zerosExcluded: zerosExcluded)
     }
     
     public func `as`<n, m>(_ type: Matrix<n, m, R>.Type) -> Matrix<n, m, R> {
-        return Matrix<n, m, R>(size: size, data: data)
+        Matrix<n, m, R>(size: size, data: data)
     }
     
     public var asDynamicMatrix: DMatrix<R> {
-        return self.as(DMatrix<R>.self)
+        self.as(DMatrix<R>.self)
     }
     
     public var asArray: [R] {
-        return (0 ..< size.rows * size.cols).map { k in
+        (0 ..< size.rows * size.cols).map { k in
             let (i, j) = (k / size.cols, k % size.cols)
             return self[i, j]
         }
@@ -217,15 +217,15 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
     }
     
     fileprivate static func _zero(size: (Int, Int)) -> Matrix<n, m, R> {
-        return Matrix(size: size, data: [:])
+        Matrix(size: size, data: [:])
     }
     
     fileprivate static func _unit(size: (Int, Int), coord: (Int, Int)) -> Matrix<n, m, R> {
-        return Matrix(size: size, data: [MatrixCoord(coord.0, coord.1): .identity])
+        Matrix(size: size, data: [MatrixCoord(coord.0, coord.1): .identity])
     }
     
     public static func ==(a: Matrix<n, m, R>, b: Matrix<n, m, R>) -> Bool {
-        return a.data.exclude{ $0.value == .zero } == b.data.exclude{ $0.value == .zero }
+        a.data.exclude{ $0.value == .zero } == b.data.exclude{ $0.value == .zero }
     }
     
     public static func +(a: Matrix<n, m, R>, b: Matrix<n, m, R>) -> Matrix<n, m, R> {
@@ -234,19 +234,19 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
     }
     
     public prefix static func -(a: Matrix<n, m, R>) -> Matrix<n, m, R> {
-        return a.mapComponents(zerosExcluded: true, (-))
+        a.mapComponents(zerosExcluded: true, (-))
     }
     
     public static func -(a: Matrix<n, m, R>, b: Matrix<n, m, R>) -> Matrix<n, m, R> {
-        return a + (-b)
+        a + (-b)
     }
     
     public static func *(r: R, a: Matrix<n, m, R>) -> Matrix<n, m, R> {
-        return a.mapComponents{ r * $0 }
+        a.mapComponents{ r * $0 }
     }
     
     public static func *(a: Matrix<n, m, R>, r: R) -> Matrix<n, m, R> {
-        return a.mapComponents{ $0 * r }
+        a.mapComponents{ $0 * r }
     }
     
     public static func * <p>(a: Matrix<n, m, R>, b: Matrix<m, p, R>) -> Matrix<n, p, R> {
@@ -294,8 +294,8 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         } else {
             let grid = self.asArray
             return "[\t" + (0 ..< size.rows).map({ i in
-                return (0 ..< size.cols).map({ j in
-                    return "\(grid[i * size.cols + j])"
+                (0 ..< size.cols).map({ j in
+                    "\(grid[i * size.cols + j])"
                 }).joined(separator: ",\t")
             }).joined(separator: "\n\t") + "]"
         }
@@ -363,23 +363,23 @@ extension Matrix: Monoid, Ring where n == m, n: StaticSizeType {
     }
     
     public static var identity: SquareMatrix<n, R> {
-        return _identity(size: n.intValue)
+        _identity(size: n.intValue)
     }
     
     public var isInvertible: Bool {
-        return determinant.isInvertible
+        determinant.isInvertible
     }
     
     public var inverse: SquareMatrix<n, R>? {
-        return _inverse
+        _inverse
     }
     
     public var trace: R {
-        return _trace
+        _trace
     }
     
     public var determinant: R {
-        return _determinant
+        _determinant
     }
     
     public func pow(_ n: 𝐙) -> SquareMatrix<n, R> {
@@ -390,33 +390,33 @@ extension Matrix: Monoid, Ring where n == m, n: StaticSizeType {
 
 extension Matrix where n == m, n == _1 {
     public var asScalar: R {
-        return self[0, 0]
+        self[0, 0]
     }
 }
 
 extension Matrix where n == DynamicSize, m == DynamicSize {
     public static func identity(size: Int) -> DMatrix<R> {
-        return _identity(size: size)
+        _identity(size: size)
     }
     
     public static func zero(size: (Int, Int)) -> DMatrix<R> {
-        return _zero(size: size)
+        _zero(size: size)
     }
     
     public static func unit(size: (Int, Int), coord: (Int, Int)) -> DMatrix<R> {
-        return _unit(size: size, coord: coord)
+        _unit(size: size, coord: coord)
     }
     
     public var inverse: DMatrix<R>? {
-        return _inverse
+        _inverse
     }
     
     public var trace: R {
-        return _trace
+        _trace
     }
     
     public var determinant: R {
-        return _determinant
+        _determinant
     }
     
     public func pow(_ p: 𝐙) -> DMatrix<R> {
@@ -478,27 +478,27 @@ extension Matrix where R: EuclideanRing {
 
 extension Matrix where R: RealSubset {
     public var asReal: Matrix<n, m, 𝐑> {
-        return mapComponents(zerosExcluded: true){ $0.asReal }
+        mapComponents(zerosExcluded: true){ $0.asReal }
     }
 }
 
 extension Matrix where R: ComplexSubset {
     public var asComplex: Matrix<n, m, 𝐂> {
-        return mapComponents(zerosExcluded: true){ $0.asComplex }
+        mapComponents(zerosExcluded: true){ $0.asComplex }
     }
 }
 
 extension Matrix where R == 𝐂 {
     public var realPart: Matrix<n, m, 𝐑> {
-        return mapComponents{ $0.realPart }
+        mapComponents{ $0.realPart }
     }
     
     public var imaginaryPart: Matrix<n, m, 𝐑> {
-        return mapComponents{ $0.imaginaryPart }
+        mapComponents{ $0.imaginaryPart }
     }
     
     public var adjoint: Matrix<m, n, R> {
-        return transposed.mapComponents(zerosExcluded: true) { $0.conjugate }
+        transposed.mapComponents(zerosExcluded: true) { $0.conjugate }
     }
 }
 

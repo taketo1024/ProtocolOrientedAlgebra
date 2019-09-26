@@ -17,7 +17,7 @@ public final class Logger {
         }
         
         public var description: String {
-            return id
+            id
         }
     }
     

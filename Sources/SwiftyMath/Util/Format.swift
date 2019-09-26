@@ -12,11 +12,11 @@ import Foundation
 
 public struct Format {
     public static func sup(_ i: Int) -> String {
-        return sup(String(i))
+        sup(String(i))
     }
     
     public static func sup(_ s: String) -> String {
-        return String( s.map { c in
+        String( s.map { c in
             switch c {
             case "0": return "⁰"
             case "1": return "¹"
@@ -39,11 +39,11 @@ public struct Format {
     }
     
     public static func sub(_ i: Int) -> String {
-        return sub(String(i))
+        sub(String(i))
     }
     
     public static func sub(_ s: String) -> String {
-        return String( s.map { c in
+        String( s.map { c in
             switch c {
             case "0": return "₀"
             case "1": return "₁"
@@ -67,7 +67,7 @@ public struct Format {
     }
     
     public static func symbol(_ x: String, _ i: Int) -> String {
-        return "\(x)\(sub(i))"
+        "\(x)\(sub(i))"
     }
     
     public static func term<R: Ring>(_ a: R, _ x: String, _ n: Int = 1, skipZero: Bool = false) -> String {

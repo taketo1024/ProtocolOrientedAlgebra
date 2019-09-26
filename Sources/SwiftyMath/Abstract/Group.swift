@@ -6,11 +6,9 @@ public protocol Group: Monoid {
 
 public extension Group {
     func pow(_ n: 𝐙) -> Self {
-        if n >= 0 {
-            return (0 ..< n).reduce(.identity){ (res, _) in self * res }
-        } else {
-            return (0 ..< -n).reduce(.identity){ (res, _) in inverse * res }
-        }
+        (n >= 0)
+            ? (0 ..< n).reduce(.identity){ (res, _) in self * res }
+            : (0 ..< -n).reduce(.identity){ (res, _) in inverse * res }
     }
 }
 
@@ -18,7 +16,7 @@ public protocol Subgroup: Submonoid where Super: Group {}
 
 public extension Subgroup {
     var inverse: Self {
-        return Self(self.asSuper.inverse)
+        Self(self.asSuper.inverse)
     }
 }
 
@@ -27,7 +25,7 @@ public protocol NormalSubgroup: Subgroup{}
 public protocol ProductGroupType: ProductMonoidType, Group where Left: Group, Right: Group {}
 public extension ProductGroupType {
     var inverse: Self {
-        return Self(left.inverse, right.inverse)
+        Self(left.inverse, right.inverse)
     }
 }
 
@@ -46,23 +44,23 @@ public protocol QuotientGroupType: QuotientSetType, Group where Base == Sub.Supe
 
 public extension QuotientGroupType {
     static func isEquivalent(_ x: Base, _ y: Base) -> Bool {
-        return Sub.contains(x * y.inverse)
+        Sub.contains(x * y.inverse)
     }
     
     static var identity: Self {
-        return Self(Base.identity)
+        Self(Base.identity)
     }
     
     var inverse: Self {
-        return Self(representative.inverse)
+        Self(representative.inverse)
     }
     
     static func * (a: Self, b: Self) -> Self {
-        return Self(a.representative * b.representative)
+        Self(a.representative * b.representative)
     }
     
     static var symbol: String {
-        return "\(Base.symbol)/\(Sub.symbol)"
+        "\(Base.symbol)/\(Sub.symbol)"
     }
 }
 
@@ -75,7 +73,7 @@ public struct QuotientGroup<G, H: NormalSubgroup>: QuotientGroupType where G == 
     }
     
     public var representative: G {
-        return g
+        g
     }
 }
 
@@ -92,15 +90,15 @@ public struct GroupHom<X: Group, Y: Group>: GroupHomType {
     }
     
     public func applied(to x: X) -> Y {
-        return f(x)
+        f(x)
     }
     
     public func composed<W>(with g: GroupHom<W, X>) -> GroupHom<W, Y> {
-        return GroupHom<W, Y>{ x in self.applied( to: g.applied(to: x) ) }
+        GroupHom<W, Y>{ x in self.applied( to: g.applied(to: x) ) }
     }
     
     public static func ∘<W>(g: GroupHom<X, Y>, f: GroupHom<W, X>) -> GroupHom<W, Y> {
-        return g.composed(with: f)
+        g.composed(with: f)
     }
 }
 
@@ -108,11 +106,11 @@ public protocol GroupEndType: GroupHomType, EndType {}
 
 extension GroupHom: EndType, GroupEndType where X == Y {
     public static func * (g: GroupHom<X, Y>, f: GroupHom<X, Y>) -> GroupHom<X, Y> {
-        return g.composed(with: f)
+        g.composed(with: f)
     }
     
     public static var identity: GroupHom<X, Y> {
-        return GroupHom{ $0 }
+        GroupHom{ $0 }
     }
 }
 

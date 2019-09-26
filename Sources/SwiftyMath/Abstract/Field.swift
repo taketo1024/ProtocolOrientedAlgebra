@@ -4,23 +4,23 @@ public protocol Field: EuclideanRing {}
 
 public extension Field {
     var normalizingUnit: Self {
-        return self.inverse ?? .identity
+        self.inverse ?? .identity
     }
     
     var eucDegree: Int {
-        return self == .zero ? 0 : 1
+        self == .zero ? 0 : 1
     }
     
     func eucDiv(by b: Self) -> (q: Self, r: Self) {
-        return (self / b, .zero)
+        (self / b, .zero)
     }
     
     static func / (a: Self, b: Self) -> Self {
-        return a * b.inverse!
+        a * b.inverse!
     }
     
     static var isField: Bool {
-        return true
+        true
     }
 }
 

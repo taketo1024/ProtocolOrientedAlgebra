@@ -188,11 +188,11 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
     }
     
     var isAllDone: Bool {
-        return working.isEmpty
+        working.isEmpty
     }
     
     var resultData: MatrixData<R> {
-        return Dictionary(pairs: (result + working).flatMap{ (i, list) -> [(MatrixCoord, R)] in
+        Dictionary(pairs: (result + working).flatMap{ (i, list) -> [(MatrixCoord, R)] in
             list.map{ c in
                 let (j, a) = c.value
                 return (MatrixCoord(i, j), a)
@@ -239,7 +239,7 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
 
     // for test
     static func ==(a: RowEliminationWorker, b: RowEliminationWorker) -> Bool {
-        return (a.working.keys == b.working.keys) && a.working.keys.allSatisfy{ i in
+        (a.working.keys == b.working.keys) && a.working.keys.allSatisfy{ i in
             var itr1 = a.working[i]!.makeIterator()
             var itr2 = b.working[i]!.makeIterator()
             
@@ -274,7 +274,7 @@ internal final class ColEliminationWorker<R: EuclideanRing>: Equatable {
     }
     
     var resultData: MatrixData<R> {
-        return rowWorker.resultData.mapKeys{ $0.transposed }
+        rowWorker.resultData.mapKeys{ $0.transposed }
     }
     
     static func identity(size n: Int) -> ColEliminationWorker<R> {
@@ -284,6 +284,6 @@ internal final class ColEliminationWorker<R: EuclideanRing>: Equatable {
     
     // for test
     static func ==(a: ColEliminationWorker, b: ColEliminationWorker) -> Bool {
-        return a.rowWorker == b.rowWorker
+        a.rowWorker == b.rowWorker
     }
 }

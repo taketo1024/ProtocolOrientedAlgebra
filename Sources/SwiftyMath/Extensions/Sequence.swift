@@ -10,33 +10,33 @@ import Foundation
 
 public extension Sequence {
     func toArray() -> [Element] {
-        return Array(self)
+        Array(self)
     }
     
     var anyElement: Element? {
-        return first { _ in true }
+        first { _ in true }
     }
     
     var count: Int {
-        return count { _ in true }
+        count { _ in true }
     }
     
     func count(where predicate: (Element) -> Bool) -> Int {
-        return self.reduce(into: 0) { (c, x) in
+        self.reduce(into: 0) { (c, x) in
             if predicate(x) { c += 1 }
         }
     }
     
     func exclude(_ isExcluded: (Self.Element) throws -> Bool) rethrows -> [Self.Element] {
-        return try self.filter{ try !isExcluded($0) }
+        try self.filter{ try !isExcluded($0) }
     }
     
     func sorted<C: Comparable>(by indexer: (Element) -> C) -> [Element] {
-        return self.sorted{ (e1, e2) in indexer(e1) < indexer(e2) }
+        self.sorted{ (e1, e2) in indexer(e1) < indexer(e2) }
     }
     
     func group<U: Hashable>(by keyGenerator: (Element) -> U) -> [U: [Element]] {
-        return Dictionary(grouping: self, by: keyGenerator)
+        Dictionary(grouping: self, by: keyGenerator)
     }
     
     static func *<S: Sequence>(s1: Self, s2: S) -> AnySequence<(Self.Element, S.Element)> {
@@ -50,7 +50,7 @@ public extension Sequence {
 
 public extension Sequence where Element: Hashable {
     var isUnique: Bool {
-        return self.count == unique().count
+        self.count == unique().count
     }
     
     func unique() -> [Element] {
@@ -64,11 +64,11 @@ public extension Sequence where Element: Hashable {
     }
     
     func isDisjoint<S: Sequence>(with other: S) -> Bool where S.Element == Element {
-        return Set(self).isDisjoint(with: other)
+        Set(self).isDisjoint(with: other)
     }
     
     func countMultiplicities() -> [Element : Int] {
-        return self.group{ $0 }.mapValues{ $0.count }
+        self.group{ $0 }.mapValues{ $0.count }
     }
 }
 

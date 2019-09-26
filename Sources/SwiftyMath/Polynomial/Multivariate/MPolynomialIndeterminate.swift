@@ -33,7 +33,7 @@ public struct _xyz: MPolynomialIndeterminate {
 public struct _xn: MPolynomialIndeterminate {
     public static let numberOfIndeterminates = Int.max
     public static func symbol(_ i: Int) -> String {
-        return "x\(Format.sub(i))"
+        "x\(Format.sub(i))"
     }
 }
 
@@ -46,11 +46,11 @@ public protocol MPolynomialIndeterminate {
 
 public extension MPolynomialIndeterminate {
     static var isFinite: Bool {
-        return numberOfIndeterminates < Int.max
+        numberOfIndeterminates < Int.max
     }
     
     static func degree(_ i: Int) -> Int {
-        return 1
+        1
     }
     
     static func totalDegree(exponents: [Int]) -> Int {

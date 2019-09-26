@@ -38,39 +38,39 @@ public struct RationalNumber: Field, Comparable, ExpressibleByIntegerLiteral, Ha
     }
     
     public var sign: 𝐙 {
-        return p.sign
+        p.sign
     }
     
     public var abs: 𝐐 {
-        return (p >= 0) == (q >= 0) ? self : -self
+        (p >= 0) == (q >= 0) ? self : -self
     }
     
     public var inverse: 𝐐? {
-        return (p != 0) ? 𝐐(q, p) : nil
+        (p != 0) ? 𝐐(q, p) : nil
     }
     
     public var numerator: 𝐙 {
-        return p
+        p
     }
     
     public var denominator: 𝐙 {
-        return q
+        q
     }
     
     public static func + (a: 𝐐, b: 𝐐) -> 𝐐 {
-        return 𝐐(a.p * b.q + a.q * b.p, a.q * b.q)
+        𝐐(a.p * b.q + a.q * b.p, a.q * b.q)
     }
     
     public static prefix func - (a: 𝐐) -> 𝐐 {
-        return 𝐐(-a.p, a.q)
+        𝐐(-a.p, a.q)
     }
     
     public static func * (a: 𝐐, b: 𝐐) -> 𝐐 {
-        return 𝐐(a.p * b.p, a.q * b.q)
+        𝐐(a.p * b.p, a.q * b.q)
     }
     
     public static func <(lhs: 𝐐, rhs: 𝐐) -> Bool {
-        return lhs.p * rhs.q < rhs.p * lhs.q
+        lhs.p * rhs.q < rhs.p * lhs.q
     }
     
     public var description: String {
@@ -81,7 +81,7 @@ public struct RationalNumber: Field, Comparable, ExpressibleByIntegerLiteral, Ha
     }
     
     public static var symbol: String {
-        return "𝐐"
+        "𝐐"
     }
 }
 
@@ -96,16 +96,16 @@ extension 𝐐: Randomable {
     }
     
     public static func random(in range: Range<𝐐>) -> 𝐐 {
-        return random(range.lowerBound, range.upperBound, closed: false)
+        random(range.lowerBound, range.upperBound, closed: false)
     }
     
     public static func random(in range: ClosedRange<𝐐>) -> 𝐐 {
-        return random(range.lowerBound, range.upperBound, closed: true)
+        random(range.lowerBound, range.upperBound, closed: true)
     }
 }
 
 extension 𝐙 {
     public static func ./(a: 𝐙, b: 𝐙) -> 𝐐 {
-        return 𝐐(a, b)
+        𝐐(a, b)
     }
 }

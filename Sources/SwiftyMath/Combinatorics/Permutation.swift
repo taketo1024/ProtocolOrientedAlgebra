@@ -42,15 +42,15 @@ public struct Permutation<n: SizeType>: Group, MapType { // SymmetricGroup<n>
     }
     
     public static func cyclic(_ elements: Int...) -> Permutation {
-        return cyclic(elements)
+        cyclic(elements)
     }
     
     public static func transposition(_ i: Int, _ j: Int) -> Permutation {
-        return .init([i : j, j : i])
+        .init([i : j, j : i])
     }
 
     public static var identity: Permutation<n> {
-        return Permutation([:])
+        Permutation([:])
     }
     
     public var inverse: Permutation<n> {
@@ -59,15 +59,15 @@ public struct Permutation<n: SizeType>: Group, MapType { // SymmetricGroup<n>
     }
     
     public subscript(i: Int) -> Int {
-        return elements[i] ?? i
+        elements[i] ?? i
     }
     
     public func applied(to i: Int) -> Int {
-        return self[i]
+        self[i]
     }
     
     public func applied(to I: [Int]) -> [Int] {
-        return I.map{ applied(to: $0) }
+        I.map{ applied(to: $0) }
     }
     
     // memo: the number of transpositions in it's decomposition.
@@ -109,22 +109,23 @@ public struct Permutation<n: SizeType>: Group, MapType { // SymmetricGroup<n>
     }
     
     public var description: String {
-        return elements.isEmpty ? "id"
+        elements.isEmpty
+            ? "id"
             : "p[\(elements.keys.sorted().map{ i in "\(i): \(self[i])"}.joined(separator: ", "))]"
     }
     
     public static var symbol: String {
-        return "S_\(n.intValue)"
+        "S_\(n.intValue)"
     }
 }
 
 extension Permutation: FiniteSetType where n: StaticSizeType {
     public static var allElements: [Permutation<n>] {
-        return DPermutation.rawPermutations(length: n.intValue).map{ Permutation<n>($0) }
+        DPermutation.rawPermutations(length: n.intValue).map{ Permutation<n>($0) }
     }
     
     public static var countElements: Int {
-        return n.intValue.factorial
+        n.intValue.factorial
     }
 }
 
@@ -156,7 +157,7 @@ extension Permutation where n == DynamicSize {
     }
 
     public static func permutations(length n: Int) -> [DPermutation] {
-        return DPermutation.rawPermutations(length: n).map{ DPermutation($0) }
+        DPermutation.rawPermutations(length: n).map{ DPermutation($0) }
     }
     
     public static func rawTranspositions(within n: Int) -> [(Int, Int)] {
@@ -169,7 +170,7 @@ extension Permutation where n == DynamicSize {
     }
     
     public static func transpositions(within n: Int) -> [DPermutation] {
-        return rawTranspositions(within: n).map{ (i, j) in
+        rawTranspositions(within: n).map{ (i, j) in
             DPermutation.transposition(i, j)
         }
     }
@@ -177,6 +178,6 @@ extension Permutation where n == DynamicSize {
 
 extension Array where Element: Hashable {
     public func permuted<n>(by p: Permutation<n>) -> [Element] {
-        return (0 ..< count).map{ i in self[p[i]] }
+        (0 ..< count).map{ i in self[p[i]] }
     }
 }

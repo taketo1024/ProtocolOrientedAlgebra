@@ -22,11 +22,11 @@ public protocol Submodule: Module, AdditiveSubgroup where Super: Module {}
 
 public extension Submodule where CoeffRing == Super.CoeffRing {
     static func * (r: CoeffRing, a: Self) -> Self {
-        return Self(r * a.asSuper)
+        Self(r * a.asSuper)
     }
     
     static func * (a: Self, r: CoeffRing) -> Self {
-        return Self(a.asSuper * r)
+        Self(a.asSuper * r)
     }
 }
 
@@ -34,11 +34,11 @@ public protocol ProductModuleType: AdditiveProductGroupType, Module where Left: 
 
 public extension ProductModuleType {
     static func * (r: CoeffRing, a: Self) -> Self {
-        return Self(r * a.left, r * a.right)
+        Self(r * a.left, r * a.right)
     }
     
     static func * (a: Self, r: CoeffRing) -> Self {
-        return Self(a.left * r, a.right * r)
+        Self(a.left * r, a.right * r)
     }
 }
 
@@ -57,11 +57,11 @@ public protocol QuotientModuleType: AdditiveQuotientGroupType, Module where Coef
 
 public extension QuotientModuleType {
     static func * (r: CoeffRing, a: Self) -> Self {
-        return Self(r * a.representative)
+        Self(r * a.representative)
     }
     
     static func * (a: Self, r: CoeffRing) -> Self {
-        return Self(a.representative * r)
+        Self(a.representative * r)
     }
 }
 
@@ -74,7 +74,7 @@ public struct QuotientModule<Base, Sub: Submodule>: QuotientModuleType where Bas
     }
     
     public var representative: Base {
-        return x
+        x
     }
 }
 
@@ -82,11 +82,11 @@ public protocol ModuleHomType: AdditiveGroupHomType, Module where Domain: Module
 
 public extension ModuleHomType {
     static func *(r: CoeffRing, f: Self) -> Self {
-        return Self { x in r * f.applied(to: x) }
+        Self { x in r * f.applied(to: x) }
     }
     
     static func *(f: Self, r: CoeffRing) -> Self {
-        return Self { x in f.applied(to: x) * r }
+        Self { x in f.applied(to: x) * r }
     }
 }
 
@@ -101,15 +101,15 @@ public struct ModuleHom<X: Module, Y: Module>: ModuleHomType where X.CoeffRing =
     }
     
     public func applied(to x: X) -> Y {
-        return f(x)
+        f(x)
     }
     
     public func composed<W>(with g: ModuleHom<W, X>) -> ModuleHom<W, Y> {
-        return ModuleHom<W, Y>{ x in self.applied( to: g.applied(to: x) ) }
+        ModuleHom<W, Y>{ x in self.applied( to: g.applied(to: x) ) }
     }
     
     public static func ∘<W>(g: ModuleHom<X, Y>, f: ModuleHom<W, X>) -> ModuleHom<W, Y> {
-        return g.composed(with: f)
+        g.composed(with: f)
     }
 }
 
@@ -122,10 +122,10 @@ public typealias ModuleEnd<X: Module> = ModuleHom<X, X>
 public typealias Dual<M: Module> = ModuleHom<M, AsModule<M.CoeffRing>>
 
 public func pair<M: Module>(x: M, f: Dual<M>) -> M.CoeffRing {
-    return f.applied(to: x).value
+    f.applied(to: x).value
 }
 
 public func pair<M: Module>(f: Dual<M>, x: M) -> M.CoeffRing {
-    return f.applied(to: x).value
+    f.applied(to: x).value
 }
 

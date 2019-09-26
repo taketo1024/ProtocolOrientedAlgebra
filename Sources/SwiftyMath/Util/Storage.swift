@@ -19,7 +19,7 @@ public final class Storage {
     public let logger: Logger
     
     public static var defaultStorage: Storage {
-        return _defaultStorage
+        _defaultStorage
     }
     
     public init(dir: String, logger: Logger? = nil) {
@@ -43,7 +43,7 @@ public final class Storage {
     }
     
     public func exists(name: String) -> Bool {
-        return fm.fileExists(atPath: fileURL(name).path)
+        fm.fileExists(atPath: fileURL(name).path)
     }
     
     public func save(name: String, data: Data) throws {
@@ -122,7 +122,7 @@ public final class Storage {
     }
     
     private func fileURL(_ name: String) -> URL {
-        return URL(fileURLWithPath: dir + name)
+        URL(fileURLWithPath: dir + name)
     }
 }
 

@@ -53,25 +53,25 @@ public struct PowerSeries<x: PolynomialIndeterminate, R: Ring>: Ring, Module {
     }
     
     public var constantTerm: R {
-        return self.coeff(0)
+        self.coeff(0)
     }
     
     public func map(_ f: @escaping (R) -> R ) -> PowerSeries<x, R> {
-        return PowerSeries<x, R>.init() { i in
+        PowerSeries<x, R>.init() { i in
             f( self.coeffs(i) )
         }
     }
     
     public func polynomial(upTo degree: Int) -> Polynomial<x, R> {
-        return Polynomial(coeffs: (0 ... degree).map{ i in coeff(i) } )
+        Polynomial(coeffs: (0 ... degree).map{ i in coeff(i) } )
     }
     
     public func evaluate(at a: R, upTo degree: Int) -> R {
-        return polynomial(upTo: degree).evaluate(at: a)
+        polynomial(upTo: degree).evaluate(at: a)
     }
     
     public func evaluate<n>(at a: SquareMatrix<n, R>, upTo degree: Int) -> SquareMatrix<n, R> {
-        return polynomial(upTo: degree).evaluate(at: a)
+        polynomial(upTo: degree).evaluate(at: a)
     }
     
     public static func == (f: PowerSeries<x, R>, g: PowerSeries<x, R>) -> Bool {
@@ -79,17 +79,17 @@ public struct PowerSeries<x: PolynomialIndeterminate, R: Ring>: Ring, Module {
     }
     
     public static func + (f: PowerSeries<x, R>, g: PowerSeries<x, R>) -> PowerSeries<x, R> {
-        return PowerSeries<x, R>() { i in
+        PowerSeries<x, R>() { i in
             f.coeff(i) + g.coeff(i)
         }
     }
     
     public static prefix func - (f: PowerSeries<x, R>) -> PowerSeries<x, R> {
-        return f.map { -$0 }
+        f.map { -$0 }
     }
     
     public static func * (f: PowerSeries<x, R>, g: PowerSeries<x, R>) -> PowerSeries<x, R> {
-        return PowerSeries<x, R> { i in
+        PowerSeries<x, R> { i in
             (0 ... i).sum { j in
                 f.coeff(j) * g.coeff(i - j)
             }
@@ -97,30 +97,30 @@ public struct PowerSeries<x: PolynomialIndeterminate, R: Ring>: Ring, Module {
     }
     
     public static func * (r: R, f: PowerSeries<x, R>) -> PowerSeries<x, R> {
-        return f.map { r * $0 }
+        f.map { r * $0 }
     }
     
     public static func * (f: PowerSeries<x, R>, r: R) -> PowerSeries<x, R> {
-        return f.map { $0 * r }
+        f.map { $0 * r }
     }
     
     public var description: String {
-        return Format.terms("+", (0 ..< 5).map{ n in (coeff(n), "x", n) }) + " ..."
+        Format.terms("+", (0 ..< 5).map{ n in (coeff(n), "x", n) }) + " ..."
     }
     
     public static var symbol: String {
-        return "\(R.symbol)[[x]]"
+        "\(R.symbol)[[x]]"
     }
 }
 
 public extension PowerSeries {
     static var exponential: PowerSeries<x, R> {
-        return PowerSeries { n in
+        PowerSeries { n in
             R(from: n.factorial).inverse!
         }
     }
     
     static func geometricSeries(_ r: R) -> PowerSeries<x, R> {
-        return PowerSeries { n in r.pow(n) }
+        PowerSeries { n in r.pow(n) }
     }
 }

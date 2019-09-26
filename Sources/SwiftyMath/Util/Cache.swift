@@ -16,11 +16,11 @@ public final class Cache<T>: CustomStringConvertible {
     }
     
     public static var empty: Cache<T> {
-        return Cache()
+        Cache()
     }
     
     public var hasValue: Bool {
-        return value != nil
+        value != nil
     }
     
     public func useCacheOrSet(_ initializer: () -> T) -> T {
@@ -38,11 +38,11 @@ public final class Cache<T>: CustomStringConvertible {
     }
     
     public func copy() -> Cache<T> {
-        return Cache(value)
+        Cache(value)
     }
     
     public var description: String {
-        return "Cache(\(value.map{ "\($0)" } ?? "-"))"
+        "Cache(\(value.map{ "\($0)" } ?? "-"))"
     }
 }
 
@@ -54,11 +54,11 @@ public final class CacheDictionary<K, T>: CustomStringConvertible where K: Hasha
     }
     
     public static var empty: CacheDictionary<K, T> {
-        return CacheDictionary()
+        CacheDictionary()
     }
     
     public subscript (key: K) -> T? {
-        get { return dictionary[key] }
+        get { dictionary[key] }
         set { dictionary[key] = newValue }
     }
     
@@ -81,6 +81,6 @@ public final class CacheDictionary<K, T>: CustomStringConvertible where K: Hasha
     }
     
     public var description: String {
-        return "Cache(\(dictionary))"
+        "Cache(\(dictionary))"
     }
 }

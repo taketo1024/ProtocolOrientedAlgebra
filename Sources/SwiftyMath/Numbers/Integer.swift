@@ -8,37 +8,37 @@ extension 𝐙: EuclideanRing, Randomable {
     }
 
     public var inverse: 𝐙? {
-        return (self.abs == 1) ? self : nil
+        (self.abs == 1) ? self : nil
     }
 
     public var normalizingUnit: 𝐙 {
-        return (self >= 0) ? 1 : -1
+        (self >= 0) ? 1 : -1
     }
 
     public var eucDegree: Int {
-        return Swift.abs(self)
+        Swift.abs(self)
     }
     
     public static var zero: 𝐙 {
-        return 0
+        0
     }
 
     public var sign: 𝐙 {
-        return (self >  0) ? 1 :
-               (self == 0) ? 0 :
-                            -1
+        (self >  0) ? 1 :
+        (self == 0) ? 0 :
+                     -1
     }
 
     public var abs: 𝐙 {
-        return (self >= 0) ? self : -self
+        (self >= 0) ? self : -self
     }
 
     public var isEven: Bool {
-        return (self % 2 == 0)
+        (self % 2 == 0)
     }
 
     public var isOdd: Bool {
-        return (self % 2 == 1)
+        (self % 2 == 1)
     }
 
     public func pow(_ n: 𝐙) -> 𝐙 {
@@ -87,7 +87,7 @@ extension 𝐙: EuclideanRing, Randomable {
     }
 
     public static var symbol: String {
-        return "𝐙"
+        "𝐙"
     }
 }
 

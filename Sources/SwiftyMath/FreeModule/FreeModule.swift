@@ -34,19 +34,19 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
     
     @_transparent
     public static func wrap(_ a: A) -> FreeModule<A, R> {
-        return FreeModule([(a, .identity)])
+        FreeModule([(a, .identity)])
     }
     
     public func unwrap() -> A? {
-        return isGenerator ? elements.first!.0 : nil
+        isGenerator ? elements.first!.0 : nil
     }
     
     public var isGenerator: Bool {
-        return (elements.count == 1) && (elements.first!.1 == .identity)
+        (elements.count == 1) && (elements.first!.1 == .identity)
     }
     
     public static var zero: FreeModule<A, R> {
-        return FreeModule([])
+        FreeModule([])
     }
     
     public static func combine<n>(generators: [A], vector: ColVector<n, R>) -> FreeModule<A, R> {
@@ -63,43 +63,43 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
     }
     
     public var generators: [A] {
-        return elements.map{ $0.0 }
+        elements.map{ $0.0 }
     }
     
     public func decomposed() -> [(A, R)] {
-        return elements
+        elements
     }
     
     public func mapGenerators<A2>(_ f: (A) -> A2) -> FreeModule<A2, R> {
-        return FreeModule<A2, R>(elements.map{ (a, r) in (f(a), r) })
+        FreeModule<A2, R>(elements.map{ (a, r) in (f(a), r) })
     }
     
     public func mapComponents<R2>(_ f: (R) -> R2) -> FreeModule<A, R2> {
-        return FreeModule<A, R2>(elements.map{ (a, r) in (a, f(r)) })
+        FreeModule<A, R2>(elements.map{ (a, r) in (a, f(r)) })
     }
     
     public func map<A2, R2>(_ f: (A, R) -> (A2, R2)) -> FreeModule<A2, R2> {
-        return FreeModule<A2, R2>(elements.map{ (a, r) in f(a, r) })
+        FreeModule<A2, R2>(elements.map{ (a, r) in f(a, r) })
     }
     
     public var reordered: FreeModule {
-        return FreeModule(elements.sorted{ (a, _) in a })
+        FreeModule(elements.sorted{ (a, _) in a })
     }
     
     public static func + (a: FreeModule<A, R>, b: FreeModule<A, R>) -> FreeModule<A, R> {
-        return FreeModule.sum([a, b])
+        FreeModule.sum([a, b])
     }
     
     public static prefix func - (a: FreeModule<A, R>) -> FreeModule<A, R> {
-        return FreeModule<A, R>(a.elements.map{ (a, r) in (a, -r) })
+        FreeModule<A, R>(a.elements.map{ (a, r) in (a, -r) })
     }
     
     public static func * (r: R, a: FreeModule<A, R>) -> FreeModule<A, R> {
-        return FreeModule<A, R>(a.elements.map{ (a, s) in (a, r * s) })
+        FreeModule<A, R>(a.elements.map{ (a, s) in (a, r * s) })
     }
     
     public static func * (a: FreeModule<A, R>, r: R) -> FreeModule<A, R> {
-        return FreeModule<A, R>(a.elements.map{ (a, s) in (a, s * r) })
+        FreeModule<A, R>(a.elements.map{ (a, s) in (a, s * r) })
     }
     
     public static func sum(_ elements: [FreeModule<A, R>]) -> FreeModule<A, R> {
@@ -128,34 +128,34 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
     }
     
     public static func ==(lhs: FreeModule, rhs: FreeModule) -> Bool {
-        return lhs.elements.count == rhs.elements.count
+        lhs.elements.count == rhs.elements.count
             && Dictionary(pairs: lhs.elements) == Dictionary(pairs: rhs.elements)
     }
     
     public var description: String {
-        return Format.terms("+", elements.map { (a, r) in (r, a.description, 1) })
+        Format.terms("+", elements.map { (a, r) in (r, a.description, 1) })
     }
     
     public static var symbol: String {
-        return "FreeMod(\(R.symbol))"
+        "FreeMod(\(R.symbol))"
     }
 }
 
 extension FreeModule where R: RealSubset {
     public var asReal: FreeModule<A, 𝐑> {
-        return mapComponents{ $0.asReal }
+        mapComponents{ $0.asReal }
     }
 }
 
 extension FreeModule where R: ComplexSubset {
     public var asComplex: FreeModule<A, 𝐂> {
-        return mapComponents{ $0.asComplex }
+        mapComponents{ $0.asComplex }
     }
 }
 
 extension ModuleHom where X: FreeModuleType, Y: FreeModuleType {
     public static func linearlyExtend(_ f: @escaping (X.Generator) -> Codomain) -> ModuleHom<X, Y> {
-        return ModuleHom { (m: Domain) in
+        ModuleHom { (m: Domain) in
             m.isGenerator ? f(m.unwrap()!) : m.decomposed().sum { (a, r) in r * f(a) }
         }
     }

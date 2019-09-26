@@ -25,7 +25,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     // returns P of: P * A * Q = B
     
     public var left: Matrix<n, n, R> {
-        return matrixCache.useCacheOrSet(key: "left") {
+        matrixCache.useCacheOrSet(key: "left") {
             let n = result.size.rows
             let P = RowEliminationWorker<R>.identity(size: n)
             for s in rowOps {
@@ -38,7 +38,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     // returns P^{-1} of: P * A * Q = B
     
     public var leftInverse: Matrix<n, n, R> {
-        return matrixCache.useCacheOrSet(key: "leftinv") {
+        matrixCache.useCacheOrSet(key: "leftinv") {
             let n = result.size.rows
             let P = RowEliminationWorker<R>.identity(size: n)
             for s in rowOps.reversed() {
@@ -51,7 +51,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     // returns Q of: P * A * Q = B
     
     public var right: Matrix<m, m, R> {
-        return matrixCache.useCacheOrSet(key: "right") {
+        matrixCache.useCacheOrSet(key: "right") {
             let m = result.size.cols
             let Q = ColEliminationWorker<R>.identity(size: m)
             for s in colOps {
@@ -64,7 +64,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     // returns Q^{-1} of: P * A * Q = B
     
     public var rightInverse: Matrix<m, m, R> {
-        return matrixCache.useCacheOrSet(key: "rightinv") {
+        matrixCache.useCacheOrSet(key: "rightinv") {
             let m = result.size.cols
             let Q = ColEliminationWorker<R>.identity(size: m)
             for s in colOps.reversed() {

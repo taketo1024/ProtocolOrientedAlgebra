@@ -13,43 +13,41 @@ public protocol Ring: AdditiveGroup, Monoid {
 
 public extension Ring {
     var isInvertible: Bool {
-        return (inverse != nil)
+        inverse != nil
     }
     
     var normalizingUnit: Self {
-        return .identity
+        .identity
     }
     
     var normalized: Self {
-        return normalizingUnit * self
+        normalizingUnit * self
     }
     
     var isNormalized: Bool {
-        return normalizingUnit == .identity
+        normalizingUnit == .identity
     }
     
     var degree: Int {
-        return 0
+        0
     }
     
     func pow(_ n: Int) -> Self {
-        if n >= 0 {
-            return (0 ..< n).reduce(.identity){ (res, _) in self * res }
-        } else {
-            return (0 ..< -n).reduce(.identity){ (res, _) in inverse! * res }
-        }
+        (n >= 0)
+            ? (0 ..< n).reduce(.identity){ (res, _) in self * res }
+            : (0 ..< -n).reduce(.identity){ (res, _) in inverse! * res }
     }
     
     static var zero: Self {
-        return Self(from: 0)
+        Self(from: 0)
     }
     
     static var identity: Self {
-        return Self(from: 1)
+        Self(from: 1)
     }
     
     static var isField: Bool {
-        return false
+        false
     }
 }
 
@@ -61,15 +59,15 @@ public extension Subring {
     }
 
     var inverse: Self? {
-        return asSuper.inverse.flatMap{ Self.init($0) }
+        asSuper.inverse.flatMap{ Self.init($0) }
     }
     
     static var zero: Self {
-        return Self.init(from: 0)
+        Self.init(from: 0)
     }
     
     static var identity: Self {
-        return Self.init(from: 1)
+        Self.init(from: 1)
     }
 }
 
@@ -90,15 +88,15 @@ public extension Ideal {
     }
     
     static func * (a: Self, b: Self) -> Self {
-        return Self(a.asSuper * b.asSuper)
+        Self(a.asSuper * b.asSuper)
     }
     
     static func * (r: Super, a: Self) -> Self {
-        return Self(r * a.asSuper)
+        Self(r * a.asSuper)
     }
     
     static func * (a: Self, r: Super) -> Self {
-        return Self(a.asSuper * r)
+        Self(a.asSuper * r)
     }
 }
 
@@ -112,19 +110,19 @@ public extension ProductRingType {
     }
     
     var inverse: Self? {
-        return left.inverse.flatMap{ r1 in right.inverse.flatMap{ r2 in Self(r1, r2) }  }
+        left.inverse.flatMap{ r1 in right.inverse.flatMap{ r2 in Self(r1, r2) }  }
     }
     
     static var zero: Self {
-        return Self(.zero, .zero)
+        Self(.zero, .zero)
     }
     
     static var identity: Self {
-        return Self(.identity, .identity)
+        Self(.identity, .identity)
     }
     
     static func * (a: Self, b: Self) -> Self {
-        return Self(a.left * b.left, a.right * b.right)
+        Self(a.left * b.left, a.right * b.right)
     }
 }
 
@@ -145,27 +143,23 @@ public extension QuotientRingType {
     }
     
     var inverse: Self? {
-        if let inv = Sub.inverseInQuotient(representative) {
-            return Self(inv)
-        } else {
-            return nil
-        }
+        Sub.inverseInQuotient(representative).map { inv in Self(inv) }
     }
     
     static var zero: Self {
-        return Self(Base.zero)
+        Self(Base.zero)
     }
     
     static func + (a: Self, b: Self) -> Self {
-        return Self(a.representative + b.representative)
+        Self(a.representative + b.representative)
     }
     
     static prefix func - (a: Self) -> Self {
-        return Self(-a.representative)
+        Self(-a.representative)
     }
     
     static func * (a: Self, b: Self) -> Self {
-        return Self(a.representative * b.representative)
+        Self(a.representative * b.representative)
     }
 }
 
@@ -178,7 +172,7 @@ public struct QuotientRing<R, I: Ideal>: QuotientRingType where R == I.Super {
     }
     
     public var representative: R {
-        return x
+        x
     }
 }
 
@@ -204,15 +198,15 @@ public struct RingHom<X: Ring, Y: Ring>: RingHomType {
     }
     
     public func applied(to x: X) -> Y {
-        return f(x)
+        f(x)
     }
     
     public func composed<W>(with g: RingHom<W, X>) -> RingHom<W, Y> {
-        return RingHom<W, Y>{ x in self.applied( to: g.applied(to: x) ) }
+        RingHom<W, Y>{ x in self.applied( to: g.applied(to: x) ) }
     }
     
     public static func ∘<W>(g: RingHom<X, Y>, f: RingHom<W, X>) -> RingHom<W, Y> {
-        return g.composed(with: f)
+        g.composed(with: f)
     }
 }
 
@@ -231,30 +225,30 @@ public struct AsModule<R: Ring>: Module {
     }
     
     public static func wrap(_ r: R) -> AsModule<R> {
-        return AsModule(r)
+        AsModule(r)
     }
     
     public static var zero: AsModule<R> {
-        return AsModule(.zero)
+        AsModule(.zero)
     }
     
     public static func +(a: AsModule<R>, b: AsModule<R>) -> AsModule<R> {
-        return AsModule(a.value + b.value)
+        AsModule(a.value + b.value)
     }
     
     public static prefix func -(x: AsModule<R>) -> AsModule<R> {
-        return AsModule(-x.value)
+        AsModule(-x.value)
     }
     
     public static func *(m: AsModule<R>, r: R) -> AsModule<R> {
-        return AsModule(m.value * r)
+        AsModule(m.value * r)
     }
     
     public static func *(r: R, m: AsModule<R>) -> AsModule<R> {
-        return AsModule(r * m.value)
+        AsModule(r * m.value)
     }
     
     public var description: String {
-        return value.description
+        value.description
     }
 }

@@ -14,7 +14,7 @@ public final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     var currentCol = 0
     
     override var form: Form {
-        return .RowEchelon
+        .RowEchelon
     }
     
     override func prepare() {
@@ -22,7 +22,7 @@ public final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     }
     
     override func shouldIterate() -> Bool {
-        return !worker.isAllDone
+        !worker.isAllDone
     }
     
     @_specialize(where R == 𝐙)
@@ -113,7 +113,7 @@ public final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
 
 public final class ColEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     override var form: Form {
-        return .ColEchelon
+        .ColEchelon
     }
 
     override func prepare() {

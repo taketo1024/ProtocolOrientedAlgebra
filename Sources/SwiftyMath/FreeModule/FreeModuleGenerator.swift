@@ -12,7 +12,7 @@ public protocol FreeModuleGenerator: Hashable, Comparable, CustomStringConvertib
 }
 
 public extension FreeModuleGenerator {
-    var degree: Int { return 1 }
+    var degree: Int { 1 }
 }
 
 public struct TensorGenerator<A, B>: FreeModuleGenerator where A: FreeModuleGenerator, B: FreeModuleGenerator {
@@ -25,18 +25,18 @@ public struct TensorGenerator<A, B>: FreeModuleGenerator where A: FreeModuleGene
     }
     
     public var factors: (A, B) {
-        return (left, right)
+        (left, right)
     }
     
     public var degree: Int {
-        return left.degree + right.degree
+        left.degree + right.degree
     }
     
     public static func < (a: TensorGenerator<A, B>, b: TensorGenerator<A, B>) -> Bool {
-        return [a.left.degree, a.right.degree] < [b.left.degree, b.right.degree]
+        [a.left.degree, a.right.degree] < [b.left.degree, b.right.degree]
     }
     
     public var description: String {
-        return "\(left.description)⊗\(right.description)"
+        "\(left.description)⊗\(right.description)"
     }
 }

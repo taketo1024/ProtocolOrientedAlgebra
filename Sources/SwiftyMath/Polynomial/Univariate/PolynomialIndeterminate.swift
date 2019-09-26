@@ -31,6 +31,6 @@ public protocol PolynomialIndeterminate {
 
 public extension PolynomialIndeterminate {
     static var degree: Int {
-        return 1
+        1
     }
 }

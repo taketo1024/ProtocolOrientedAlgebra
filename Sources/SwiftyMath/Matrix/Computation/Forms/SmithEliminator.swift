@@ -13,7 +13,7 @@ public final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     var diagonal: [R] = []
     
     override var form: Form {
-        return .Smith
+        .Smith
     }
     
     override func prepare() {
@@ -22,7 +22,7 @@ public final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     }
     
     override func shouldIterate() -> Bool {
-        return currentIndex < diagonal.count
+        currentIndex < diagonal.count
     }
     
     @_specialize(where R == 𝐙)
@@ -80,7 +80,7 @@ public final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     }
     
     private func findPivot() -> (Int, R)? {
-        return diagonal
+        diagonal
             .enumerated()
             .filter{ (i, _) in i >= currentIndex }
             .min { (c1, c2) in c1.1.eucDegree < c2.1.eucDegree }

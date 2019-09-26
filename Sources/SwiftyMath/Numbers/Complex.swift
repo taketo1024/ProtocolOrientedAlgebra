@@ -55,19 +55,19 @@ public struct ComplexNumber: Field, ExpressibleByIntegerLiteral, ExpressibleByFl
     }
     
     public static var imaginaryUnit: 𝐂 {
-        return 𝐂(0, 1)
+        𝐂(0, 1)
     }
     
     public var realPart: 𝐑 {
-        return x
+        x
     }
     
     public var imaginaryPart: 𝐑 {
-        return y
+        y
     }
     
     public var abs: 𝐑 {
-        return √(x * x + y * y)
+        √(x * x + y * y)
     }
     
     public var arg: 𝐑 {
@@ -81,7 +81,7 @@ public struct ComplexNumber: Field, ExpressibleByIntegerLiteral, ExpressibleByFl
     }
     
     public var conjugate: 𝐂 {
-        return 𝐂(x, -y)
+        𝐂(x, -y)
     }
 
     public var inverse: 𝐂? {
@@ -90,35 +90,35 @@ public struct ComplexNumber: Field, ExpressibleByIntegerLiteral, ExpressibleByFl
     }
     
     public static func +(a: 𝐂, b: 𝐂) -> 𝐂 {
-        return 𝐂(a.x + b.x, a.y + b.y)
+        𝐂(a.x + b.x, a.y + b.y)
     }
     
     public static prefix func -(a: 𝐂) -> 𝐂 {
-        return 𝐂(-a.x, -a.y)
+        𝐂(-a.x, -a.y)
     }
     
     public static func *(a: 𝐂, b: 𝐂) -> 𝐂 {
-        return 𝐂(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x)
+        𝐂(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x)
     }
     
     public static func random(in real: Range<𝐑>, _ imaginary: Range<𝐑>) -> 𝐂 {
-        return .init(.random(in: real), .random(in: imaginary))
+        .init(.random(in: real), .random(in: imaginary))
     }
     
     public static func random(in real: ClosedRange<𝐑>, _ imaginary: ClosedRange<𝐑>) -> 𝐂 {
-        return .init(.random(in: real), .random(in: imaginary))
+        .init(.random(in: real), .random(in: imaginary))
     }
     
     public static func random(radius r: 𝐑) -> 𝐂 {
-        return .init(r: .random(in: 0 ... r), θ: .random(in: 0 ... 2 * π))
+        .init(r: .random(in: 0 ... r), θ: .random(in: 0 ... 2 * π))
     }
     
     public func rounded(_ rule: FloatingPointRoundingRule = .toNearestOrAwayFromZero) -> 𝐂 {
-        return 𝐂(x.rounded(rule), y.rounded(rule))
+        𝐂(x.rounded(rule), y.rounded(rule))
     }
     
     public func isApproximatelyEqualTo(_ z: 𝐂, error e: 𝐑? = nil) -> Bool {
-        return self.realPart.isApproximatelyEqualTo(z.realPart, error: e) &&
+        self.realPart.isApproximatelyEqualTo(z.realPart, error: e) &&
                self.imaginaryPart.isApproximatelyEqualTo(z.imaginaryPart, error: e)
     }
     
@@ -134,7 +134,7 @@ public struct ComplexNumber: Field, ExpressibleByIntegerLiteral, ExpressibleByFl
     }
 
     public static var symbol: String {
-        return "𝐂"
+        "𝐂"
     }
 }
 
@@ -144,18 +144,18 @@ public protocol ComplexSubset {
 
 extension 𝐙: ComplexSubset {
     public var asComplex: 𝐂 {
-        return 𝐂(self)
+        𝐂(self)
     }
 }
 
 extension 𝐐: ComplexSubset {
     public var asComplex: 𝐂 {
-        return 𝐂(self)
+        𝐂(self)
     }
 }
 
 extension 𝐑: ComplexSubset {
     public var asComplex: 𝐂 {
-        return 𝐂(self)
+        𝐂(self)
     }
 }

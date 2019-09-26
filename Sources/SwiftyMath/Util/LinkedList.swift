@@ -17,7 +17,7 @@ public final class LinkedList<T>: Sequence, CustomStringConvertible {
     }
     
     public static func generate<S: Sequence>(from seq: S) -> LinkedList<T>? where S.Element == T {
-        return seq.reduce(into: (nil, nil)) {
+        seq.reduce(into: (nil, nil)) {
             (res: inout (head: LinkedList<T>?, prev: LinkedList<T>?), value: T) in
             
             let curr = LinkedList(value)
@@ -52,7 +52,7 @@ public final class LinkedList<T>: Sequence, CustomStringConvertible {
     }
     
     public func makeIterator() -> Iterator {
-        return Iterator(self)
+        Iterator(self)
     }
     
     public struct Iterator: IteratorProtocol {
@@ -70,7 +70,7 @@ public final class LinkedList<T>: Sequence, CustomStringConvertible {
     }
     
     public var description: String {
-        return "[\(value) \(next == nil ? "(end)" : "->")]"
+        "[\(value) \(next == nil ? "(end)" : "->")]"
     }
 }
 
