@@ -7,8 +7,6 @@
 //
 //  see: https://en.wikipedia.org/wiki/𝐇
 
-import Foundation
-
 // memo: a skew field, i.e. product is non-commutative.
 
 public typealias 𝐇 = Quaternion

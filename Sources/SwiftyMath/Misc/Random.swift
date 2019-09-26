@@ -6,8 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public protocol Randomable: Comparable {
     static func random(in range: Range<Self>) -> Self
     static func random(in range: ClosedRange<Self>) -> Self

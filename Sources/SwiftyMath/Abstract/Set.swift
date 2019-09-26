@@ -6,8 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public protocol SetType: Equatable, CustomStringConvertible {
     static var symbol: String { get }
 }

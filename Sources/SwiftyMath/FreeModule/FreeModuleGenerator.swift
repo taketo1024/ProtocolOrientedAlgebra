@@ -5,8 +5,6 @@
 //  Created by Taketo Sano on 2019/07/09.
 //
 
-import Foundation
-
 public protocol FreeModuleGenerator: Hashable, Comparable, CustomStringConvertible {
     var degree: Int { get }
 }

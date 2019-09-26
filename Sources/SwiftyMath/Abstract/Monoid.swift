@@ -1,5 +1,3 @@
-import Foundation
-
 public protocol Monoid: SetType {
     static func * (a: Self, b: Self) -> Self
     static var identity: Self { get }

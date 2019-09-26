@@ -5,8 +5,6 @@
 //  Created by Taketo Sano on 2018/04/09.
 //
 
-import Foundation
-
 // memo: Supports only Field-coeffs.
 public protocol PolynomialTP {
     associatedtype Indeterminate: PolynomialIndeterminate

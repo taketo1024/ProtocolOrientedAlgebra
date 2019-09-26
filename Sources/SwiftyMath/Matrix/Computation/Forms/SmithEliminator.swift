@@ -6,8 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     var currentIndex = 0
     var diagonal: [R] = []

@@ -6,8 +6,6 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public typealias  xyPolynomial<R: Ring> = MPolynomial<_xy , R>
 public typealias xyzPolynomial<R: Ring> = MPolynomial<_xyz, R>
 public typealias  xnPolynomial<R: Ring> = MPolynomial<_xn,  R>

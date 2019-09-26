@@ -6,8 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
     var size: (rows: Int, cols: Int)
     

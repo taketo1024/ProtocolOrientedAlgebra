@@ -5,8 +5,6 @@
 //  Created by Taketo Sano on 2019/06/12.
 //
 
-import Foundation
-
 extension _Polynomial where T == NormalPolynomialType, R == 𝐂 {
     // Newton's method: https://en.wikipedia.org/wiki/Newton%27s_method
     //

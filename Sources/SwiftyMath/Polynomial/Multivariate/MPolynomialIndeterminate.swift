@@ -5,8 +5,6 @@
 //  Created by Taketo Sano on 2018/05/11.
 //
 
-import Foundation
-
 public struct _xy: MPolynomialIndeterminate {
     public static let numberOfIndeterminates = 2
     public static func symbol(_ i: Int) -> String {

@@ -5,8 +5,6 @@
 //  Created by Taketo Sano on 2018/04/10.
 //
 
-import Foundation
-
 public struct GroupRing<G: Group & Hashable, R: Ring>: Ring {
     private let elements: [G : R]
     public init(_ elements: [G : R]) {

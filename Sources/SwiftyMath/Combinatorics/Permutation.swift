@@ -6,8 +6,6 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public typealias DPermutation = Permutation<DynamicSize>
 
 public struct Permutation<n: SizeType>: Group, MapType { // SymmetricGroup<n>

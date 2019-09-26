@@ -1,5 +1,3 @@
-import Foundation
-
 public protocol SizeType {
     static var intValue: Int { get }
     static var isDynamic: Bool { get }

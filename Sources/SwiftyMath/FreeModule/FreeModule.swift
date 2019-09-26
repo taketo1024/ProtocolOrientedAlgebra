@@ -1,5 +1,3 @@
-import Foundation
-
 public protocol FreeModuleType: Module {
     associatedtype Generator: FreeModuleGenerator
     init<S: Sequence>(_ elements: S) where S.Element == (Generator, CoeffRing)

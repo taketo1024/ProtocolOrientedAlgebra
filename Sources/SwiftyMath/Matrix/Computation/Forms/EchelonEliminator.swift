@@ -6,8 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     var worker: RowEliminationWorker<R>!
     var currentRow = 0

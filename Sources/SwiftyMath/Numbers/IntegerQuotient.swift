@@ -6,8 +6,6 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public protocol PrimeSizeType: SizeType {}
 extension _2: PrimeSizeType {}
 extension _3: PrimeSizeType {}

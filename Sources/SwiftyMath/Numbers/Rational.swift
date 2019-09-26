@@ -1,5 +1,3 @@
-import Foundation
-
 public typealias 𝐐 = RationalNumber
 
 public struct RationalNumber: Field, Comparable, ExpressibleByIntegerLiteral, Hashable, Codable {

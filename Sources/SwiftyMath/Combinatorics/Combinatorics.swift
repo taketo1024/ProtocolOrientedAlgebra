@@ -6,8 +6,6 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public extension 𝐙 {
     func choose(_ k: Int) -> [[Int]] {
         let n = self

@@ -5,8 +5,6 @@
 //  Created by Taketo Sano on 2018/05/11.
 //
 
-import Foundation
-
 public struct _x: PolynomialIndeterminate {
     public static let symbol = "x"
 }

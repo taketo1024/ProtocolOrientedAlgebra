@@ -1,5 +1,3 @@
-import Foundation
-
 public typealias SquareMatrix<n: StaticSizeType, R: Ring> = Matrix<n, n, R>
 public typealias Matrix1<R: Ring> = SquareMatrix<_1, R>
 public typealias Matrix2<R: Ring> = SquareMatrix<_2, R>

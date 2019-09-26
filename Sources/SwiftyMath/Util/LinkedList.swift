@@ -5,8 +5,6 @@
 //  Created by Taketo Sano on 2019/06/25.
 //
 
-import Foundation
-
 public final class LinkedList<T>: Sequence, CustomStringConvertible {
     public var value: T
     public var next: LinkedList<T>?

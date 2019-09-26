@@ -6,8 +6,6 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 // see: https://en.wikipedia.org/wiki/Unicode_subscripts_and_superscripts
 
 public struct Format {

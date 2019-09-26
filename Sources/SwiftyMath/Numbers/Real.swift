@@ -1,5 +1,3 @@
-import Foundation
-
 public typealias RealNumber = Double
 public typealias 𝐑 = RealNumber
 

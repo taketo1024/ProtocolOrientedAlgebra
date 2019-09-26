@@ -1,5 +1,3 @@
-import Foundation
-
 public protocol AdditiveGroup: SetType {
     static var zero: Self { get }
     static func + (a: Self, b: Self) -> Self

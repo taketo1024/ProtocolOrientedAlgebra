@@ -5,8 +5,6 @@
 //  Created by Taketo Sano on 2018/05/08.
 //
 
-import Foundation
-
 public extension String {
     
     func substring(_ r: CountableRange<Int>) -> String {

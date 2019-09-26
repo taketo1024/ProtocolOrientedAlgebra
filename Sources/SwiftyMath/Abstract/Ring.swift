@@ -1,5 +1,3 @@
-import Foundation
-
 public protocol Ring: AdditiveGroup, Monoid {
     init(from: 𝐙)
     var inverse: Self? { get }

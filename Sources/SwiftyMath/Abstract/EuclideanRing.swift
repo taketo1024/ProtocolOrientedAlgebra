@@ -1,5 +1,3 @@
-import Foundation
-
 public protocol EuclideanRing: Ring {
     var  eucDegree: Int { get }
     func eucDiv(by b: Self) -> (q: Self, r: Self) // override point

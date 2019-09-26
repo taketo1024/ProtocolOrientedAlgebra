@@ -6,8 +6,6 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
-import Foundation
-
 public struct PowerSeries<x: PolynomialIndeterminate, R: Ring>: Ring, Module {
     public typealias CoeffRing = R
     public let coeffs: (Int) -> R

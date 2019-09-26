@@ -1,5 +1,3 @@
-import Foundation
-
 public protocol PolynomialType {
     static var isNormal: Bool { get }
 }

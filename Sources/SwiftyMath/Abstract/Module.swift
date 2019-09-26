@@ -1,5 +1,3 @@
-import Foundation
-
 public protocol Module: AdditiveGroup {
     associatedtype CoeffRing: Ring
     static func * (r: CoeffRing, m: Self) -> Self
