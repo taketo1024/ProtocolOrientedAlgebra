@@ -30,7 +30,7 @@ public struct PowerSeries<x: PolynomialIndeterminate, R: Ring>: Ring, Module {
         self.coeffs = coeffs
     }
     
-    public var inverse: PowerSeries<x, R>? {
+    public var inverse: PowerSeries? {
         guard let b0 = constantTerm.inverse else {
             return nil
         }
@@ -42,7 +42,7 @@ public struct PowerSeries<x: PolynomialIndeterminate, R: Ring>: Ring, Module {
             list.append(b_i)
             return b_i
         }
-        return PowerSeries<x, R> { i in invCoeff(i) }
+        return PowerSeries { i in invCoeff(i) }
     }
     
     public func coeff(_ i: Int) -> R {
@@ -54,8 +54,8 @@ public struct PowerSeries<x: PolynomialIndeterminate, R: Ring>: Ring, Module {
         self.coeff(0)
     }
     
-    public func map(_ f: @escaping (R) -> R ) -> PowerSeries<x, R> {
-        PowerSeries<x, R>.init() { i in
+    public func map(_ f: @escaping (R) -> R ) -> PowerSeries {
+        PowerSeries { i in
             f( self.coeffs(i) )
         }
     }
@@ -72,33 +72,33 @@ public struct PowerSeries<x: PolynomialIndeterminate, R: Ring>: Ring, Module {
         polynomial(upTo: degree).evaluate(at: a)
     }
     
-    public static func == (f: PowerSeries<x, R>, g: PowerSeries<x, R>) -> Bool {
+    public static func == (f: PowerSeries, g: PowerSeries) -> Bool {
         fatalError("== not available for PowerSeries.")
     }
     
-    public static func + (f: PowerSeries<x, R>, g: PowerSeries<x, R>) -> PowerSeries<x, R> {
-        PowerSeries<x, R>() { i in
+    public static func + (f: PowerSeries, g: PowerSeries) -> PowerSeries {
+        PowerSeries { i in
             f.coeff(i) + g.coeff(i)
         }
     }
     
-    public static prefix func - (f: PowerSeries<x, R>) -> PowerSeries<x, R> {
+    public static prefix func - (f: PowerSeries) -> PowerSeries {
         f.map { -$0 }
     }
     
-    public static func * (f: PowerSeries<x, R>, g: PowerSeries<x, R>) -> PowerSeries<x, R> {
-        PowerSeries<x, R> { i in
+    public static func * (f: PowerSeries, g: PowerSeries) -> PowerSeries {
+        PowerSeries { i in
             (0 ... i).sum { j in
                 f.coeff(j) * g.coeff(i - j)
             }
         }
     }
     
-    public static func * (r: R, f: PowerSeries<x, R>) -> PowerSeries<x, R> {
+    public static func * (r: R, f: PowerSeries) -> PowerSeries {
         f.map { r * $0 }
     }
     
-    public static func * (f: PowerSeries<x, R>, r: R) -> PowerSeries<x, R> {
+    public static func * (f: PowerSeries, r: R) -> PowerSeries {
         f.map { $0 * r }
     }
     
@@ -112,13 +112,13 @@ public struct PowerSeries<x: PolynomialIndeterminate, R: Ring>: Ring, Module {
 }
 
 public extension PowerSeries {
-    static var exponential: PowerSeries<x, R> {
+    static var exponential: PowerSeries {
         PowerSeries { n in
             R(from: n.factorial).inverse!
         }
     }
     
-    static func geometricSeries(_ r: R) -> PowerSeries<x, R> {
+    static func geometricSeries(_ r: R) -> PowerSeries {
         PowerSeries { n in r.pow(n) }
     }
 }

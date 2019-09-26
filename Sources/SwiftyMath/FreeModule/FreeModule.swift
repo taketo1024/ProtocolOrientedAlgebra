@@ -31,7 +31,7 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
     }
     
     @_transparent
-    public static func wrap(_ a: A) -> FreeModule<A, R> {
+    public static func wrap(_ a: A) -> FreeModule {
         FreeModule([(a, .identity)])
     }
     
@@ -43,11 +43,11 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
         (elements.count == 1) && elements.first!.1.isIdentity
     }
     
-    public static var zero: FreeModule<A, R> {
+    public static var zero: FreeModule {
         FreeModule([])
     }
     
-    public static func combine<n>(generators: [A], vector: ColVector<n, R>) -> FreeModule<A, R> {
+    public static func combine<n>(generators: [A], vector: ColVector<n, R>) -> FreeModule {
         assert(generators.count == vector.size.rows)
         return (generators.map{ .wrap($0) } * vector)[0]
     }
@@ -84,23 +84,23 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
         FreeModule(elements.sorted{ (a, _) in a })
     }
     
-    public static func + (a: FreeModule<A, R>, b: FreeModule<A, R>) -> FreeModule<A, R> {
+    public static func + (a: FreeModule, b: FreeModule) -> FreeModule {
         FreeModule.sum([a, b])
     }
     
-    public static prefix func - (a: FreeModule<A, R>) -> FreeModule<A, R> {
-        FreeModule<A, R>(a.elements.map{ (a, r) in (a, -r) })
+    public static prefix func - (a: FreeModule) -> FreeModule {
+        FreeModule(a.elements.map{ (a, r) in (a, -r) })
     }
     
-    public static func * (r: R, a: FreeModule<A, R>) -> FreeModule<A, R> {
-        FreeModule<A, R>(a.elements.map{ (a, s) in (a, r * s) })
+    public static func * (r: R, a: FreeModule) -> FreeModule {
+        FreeModule(a.elements.map{ (a, s) in (a, r * s) })
     }
     
-    public static func * (a: FreeModule<A, R>, r: R) -> FreeModule<A, R> {
-        FreeModule<A, R>(a.elements.map{ (a, s) in (a, s * r) })
+    public static func * (a: FreeModule, r: R) -> FreeModule {
+        FreeModule(a.elements.map{ (a, s) in (a, s * r) })
     }
     
-    public static func sum(_ elements: [FreeModule<A, R>]) -> FreeModule<A, R> {
+    public static func sum(_ elements: [FreeModule]) -> FreeModule {
         if elements.count == 1 {
             return elements.first!
         } else {

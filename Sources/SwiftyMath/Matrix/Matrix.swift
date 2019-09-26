@@ -146,7 +146,7 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         return ε * A._determinant
     }
     
-    fileprivate var _inverse: Matrix<n, m, R>? {
+    fileprivate var _inverse: Matrix? {
         assert(isSquare)
         if size.rows >= 5 {
             print("warn: Directly computing matrix-inverse can be extremely slow. Use eliminate().inverse instead.")
@@ -195,8 +195,8 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         .init(size: size, data: data.mapValues(f), zerosExcluded: zerosExcluded)
     }
     
-    public func `as`<n, m>(_ type: Matrix<n, m, R>.Type) -> Matrix<n, m, R> {
-        Matrix<n, m, R>(size: size, data: data)
+    public func `as`<n1, m1>(_ type: Matrix<n1, m1, R>.Type) -> Matrix<n1, m1, R> {
+        Matrix<n1, m1, R>(size: size, data: data)
     }
     
     public var asDynamicMatrix: DMatrix<R> {
@@ -210,41 +210,41 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         }
     }
     
-    fileprivate static func _identity(size: Int) -> Matrix<n, m, R> {
+    fileprivate static func _identity(size: Int) -> Matrix {
         let data = (0 ..< size).map{ i in (MatrixCoord(i, i), R.identity) }
         return Matrix(size: (size, size), data: Dictionary(pairs: data))
     }
     
-    fileprivate static func _zero(size: (Int, Int)) -> Matrix<n, m, R> {
+    fileprivate static func _zero(size: (Int, Int)) -> Matrix {
         Matrix(size: size, data: [:])
     }
     
-    fileprivate static func _unit(size: (Int, Int), coord: (Int, Int)) -> Matrix<n, m, R> {
+    fileprivate static func _unit(size: (Int, Int), coord: (Int, Int)) -> Matrix {
         Matrix(size: size, data: [MatrixCoord(coord.0, coord.1): .identity])
     }
     
-    public static func ==(a: Matrix<n, m, R>, b: Matrix<n, m, R>) -> Bool {
+    public static func ==(a: Matrix, b: Matrix) -> Bool {
         a.data == b.data
     }
     
-    public static func +(a: Matrix<n, m, R>, b: Matrix<n, m, R>) -> Matrix<n, m, R> {
+    public static func +(a: Matrix, b: Matrix) -> Matrix {
         assert(a.size == b.size)
         return Matrix(size: a.size, data: a.data.merging(b.data, uniquingKeysWith: +))
     }
     
-    public prefix static func -(a: Matrix<n, m, R>) -> Matrix<n, m, R> {
+    public prefix static func -(a: Matrix) -> Matrix {
         a.mapComponents(zerosExcluded: true, (-))
     }
     
-    public static func -(a: Matrix<n, m, R>, b: Matrix<n, m, R>) -> Matrix<n, m, R> {
+    public static func -(a: Matrix, b: Matrix) -> Matrix {
         a + (-b)
     }
     
-    public static func *(r: R, a: Matrix<n, m, R>) -> Matrix<n, m, R> {
+    public static func *(r: R, a: Matrix) -> Matrix {
         a.mapComponents{ r * $0 }
     }
     
-    public static func *(a: Matrix<n, m, R>, r: R) -> Matrix<n, m, R> {
+    public static func *(a: Matrix, r: R) -> Matrix {
         a.mapComponents{ $0 * r }
     }
     
@@ -343,12 +343,12 @@ extension Matrix: AdditiveGroup, Module where n: StaticSizeType, m: StaticSizeTy
         self.init(size: size, diagonal: d)
     }
     
-    public static var zero: Matrix<n, m, R> {
+    public static var zero: Matrix {
         let size = (n.intValue, m.intValue)
         return ._zero(size: size)
     }
     
-    public static func unit(_ i: Int, _ j: Int) -> Matrix<n, m, R> {
+    public static func unit(_ i: Int, _ j: Int) -> Matrix {
         let size = (n.intValue, m.intValue)
         return ._unit(size: size, coord: (i, j))
     }

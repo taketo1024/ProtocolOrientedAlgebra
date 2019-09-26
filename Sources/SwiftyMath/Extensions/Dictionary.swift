@@ -27,25 +27,25 @@ public extension Dictionary {
         Dictionary<K, V>(pairs: self.map{ (k, v) in transform(k, v) })
     }
     
-    func exclude(_ isExcluded: (Element) throws -> Bool) rethrows -> [Key : Value] {
+    func exclude(_ isExcluded: (Element) throws -> Bool) rethrows -> Dictionary {
         try self.filter{ try !isExcluded($0) }
     }
     
-    func replaced(at k: Key, with v: Value) -> [Key : Value] {
+    func replaced(at k: Key, with v: Value) -> Dictionary {
         var a = self
         a[k] = v
         return a
     }
     
-    mutating func merge(_ other: [Key : Value], overwrite: Bool = false) {
+    mutating func merge(_ other: Dictionary, overwrite: Bool = false) {
         self.merge(other, uniquingKeysWith: { (v1, v2) in !overwrite ? v1 : v2 })
     }
     
-    func merging(_ other: [Key : Value], overwrite: Bool = false) -> [Key : Value] {
+    func merging(_ other: Dictionary, overwrite: Bool = false) -> Dictionary {
         self.merging(other, uniquingKeysWith: { (v1, v2) in !overwrite ? v1 : v2 })
     }
     
-    static func + (a: [Key : Value], b: [Key : Value]) -> [Key : Value] {
+    static func + (a: Dictionary, b: Dictionary) -> Dictionary {
         a.merging(b)
     }
 }

@@ -174,15 +174,15 @@ public struct AsGroup<G: AdditiveGroup>: Group {
         self.g = g
     }
 
-    public var inverse: AsGroup<G> {
+    public var inverse: AsGroup {
         AsGroup(-g)
     }
 
-    public static func * (a: AsGroup<G>, b: AsGroup<G>) -> AsGroup<G> {
+    public static func * (a: AsGroup, b: AsGroup) -> AsGroup {
         AsGroup(a.g + b.g)
     }
 
-    public static var identity: AsGroup<G> {
+    public static var identity: AsGroup {
         AsGroup(G.zero)
     }
 

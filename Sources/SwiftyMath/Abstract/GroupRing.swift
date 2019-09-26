@@ -19,7 +19,7 @@ public struct GroupRing<G: Group & Hashable, R: Ring>: Ring {
         elements[g, default: .zero]
     }
     
-    public static prefix func - (a: GroupRing<G, R>) -> GroupRing<G, R> {
+    public static prefix func - (a: GroupRing) -> GroupRing {
         GroupRing(a.elements.mapValues{ -$0 })
     }
     
@@ -27,18 +27,18 @@ public struct GroupRing<G: Group & Hashable, R: Ring>: Ring {
         self.init([.identity : R(from: n)])
     }
     
-    public var inverse: GroupRing<G, R>? {
+    public var inverse: GroupRing? {
         fatalError()
     }
     
-    public static func + (a: GroupRing<G, R>, b: GroupRing<G, R>) -> GroupRing<G, R> {
+    public static func + (a: GroupRing, b: GroupRing) -> GroupRing {
         let keys = Set(a.elements.keys).union(b.elements.keys)
         return GroupRing(Dictionary(keys: keys) { g in
             a[g] + b[g]
         })
     }
     
-    public static func * (a: GroupRing<G, R>, b: GroupRing<G, R>) -> GroupRing<G, R> {
+    public static func * (a: GroupRing, b: GroupRing) -> GroupRing {
         var elements = [G : R]()
         for (g1, g2) in (a.elements.keys * b.elements.keys) {
             let g = g1 * g2

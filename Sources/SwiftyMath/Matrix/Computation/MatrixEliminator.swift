@@ -55,7 +55,7 @@ public class MatrixEliminator<R: EuclideanRing> : CustomStringConvertible {
         finalize()
     }
     
-    final func subrun(_ e: MatrixEliminator<R>, transpose: Bool = false) {
+    final func subrun(_ e: MatrixEliminator, transpose: Bool = false) {
         e.target = target
         
         if transpose {

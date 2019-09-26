@@ -30,11 +30,11 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
         self.coeffs = coeffs.exclude{ $0.value.isZero }.mapKeys{ $0.dropLast{ $0 == 0 } }
     }
     
-    public static var zero: MPolynomial<xn, R> {
+    public static var zero: MPolynomial {
         MPolynomial(coeffs: [:])
     }
     
-    public var inverse: MPolynomial<xn, R>? {
+    public var inverse: MPolynomial? {
         (isConst) ? constTerm.inverse.map{ inv in MPolynomial(inv) } : nil
     }
     
@@ -78,11 +78,11 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
         multiDegrees.last ?? .empty // lex-order
     }
     
-    public var leadTerm: MPolynomial<xn, R> {
+    public var leadTerm: MPolynomial {
         MPolynomial(coeffs: [leadMultiDegree : leadCoeff])
     }
     
-    public func map(_ f: ((R) -> R)) -> MPolynomial<xn, R> {
+    public func map(_ f: ((R) -> R)) -> MPolynomial {
         MPolynomial(coeffs: coeffs.mapValues(f) )
     }
     
@@ -96,16 +96,16 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
         return .init(coeffs: [I : R.identity] )
     }
     
-    public static func monomial(ofMultiDegree I: MultiDegree) -> MPolynomial<xn, R> {
+    public static func monomial(ofMultiDegree I: MultiDegree) -> MPolynomial {
         .init(coeffs: [I: .identity])
     }
     
-    public static func monomials(ofDegree degree: Int) -> [MPolynomial<xn, R>] {
+    public static func monomials(ofDegree degree: Int) -> [MPolynomial] {
         assert(xn.isFinite)
         return monomials(ofDegree: degree, usingIndeterminates: (0 ..< xn.numberOfIndeterminates).toArray())
     }
     
-    public static func monomials(ofDegree degree: Int, usingIndeterminates indices: [Int]) -> [MPolynomial<xn, R>] {
+    public static func monomials(ofDegree degree: Int, usingIndeterminates indices: [Int]) -> [MPolynomial] {
         assert(indices.allSatisfy{ i in xn.degree(i) != 0 })
         
         func multiDegs(_ degree: Int, _ index: Int) -> [[Int]] {
@@ -124,7 +124,7 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
         return multiDegs(degree, last).map{ I in .monomial(ofMultiDegree: I) }
     }
     
-    public static func + (f: MPolynomial<xn, R>, g: MPolynomial<xn, R>) -> MPolynomial<xn, R> {
+    public static func + (f: MPolynomial, g: MPolynomial) -> MPolynomial {
         var coeffs = f.coeffs
         for (I, a) in g.coeffs {
             coeffs[I] = coeffs[I, default: .zero] + a
@@ -132,11 +132,11 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
         return MPolynomial(coeffs: coeffs)
     }
     
-    public static prefix func - (f: MPolynomial<xn, R>) -> MPolynomial<xn, R> {
+    public static prefix func - (f: MPolynomial) -> MPolynomial {
         f.map { -$0 }
     }
     
-    public static func * (f: MPolynomial<xn, R>, g: MPolynomial<xn, R>) -> MPolynomial<xn, R> {
+    public static func * (f: MPolynomial, g: MPolynomial) -> MPolynomial {
         var coeffs = [MultiDegree : R]()
         for (I, J) in (f.multiDegrees * g.multiDegrees) {
             let K = I.merging(J, filledWith: 0, mergedBy: +)
@@ -145,11 +145,11 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
         return MPolynomial(coeffs: coeffs)
     }
     
-    public static func * (r: R, f: MPolynomial<xn, R>) -> MPolynomial<xn, R> {
+    public static func * (r: R, f: MPolynomial) -> MPolynomial {
         f.map { r * $0 }
     }
     
-    public static func * (f: MPolynomial<xn, R>, r: R) -> MPolynomial<xn, R> {
+    public static func * (f: MPolynomial, r: R) -> MPolynomial {
         f.map { $0 * r }
     }
     
@@ -182,7 +182,7 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
     }
     
     // see: https://en.wikipedia.org/wiki/Symmetric_polynomial#Elementary_symmetric_polynomials
-    public static func elementarySymmetric(_ i: Int) -> MPolynomial<xn, R> {
+    public static func elementarySymmetric(_ i: Int) -> MPolynomial {
         assert(xn.isFinite)
         
         let n = xn.numberOfIndeterminates

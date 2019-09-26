@@ -226,27 +226,27 @@ public struct AsModule<R: Ring>: Module {
         self.value = x
     }
     
-    public static func wrap(_ r: R) -> AsModule<R> {
+    public static func wrap(_ r: R) -> AsModule {
         AsModule(r)
     }
     
-    public static var zero: AsModule<R> {
+    public static var zero: AsModule {
         AsModule(.zero)
     }
     
-    public static func +(a: AsModule<R>, b: AsModule<R>) -> AsModule<R> {
+    public static func +(a: AsModule, b: AsModule) -> AsModule {
         AsModule(a.value + b.value)
     }
     
-    public static prefix func -(x: AsModule<R>) -> AsModule<R> {
+    public static prefix func -(x: AsModule) -> AsModule {
         AsModule(-x.value)
     }
     
-    public static func *(m: AsModule<R>, r: R) -> AsModule<R> {
+    public static func *(m: AsModule, r: R) -> AsModule {
         AsModule(m.value * r)
     }
     
-    public static func *(r: R, m: AsModule<R>) -> AsModule<R> {
+    public static func *(r: R, m: AsModule) -> AsModule {
         AsModule(r * m.value)
     }
     

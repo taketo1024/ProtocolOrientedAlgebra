@@ -9,7 +9,7 @@
 import Foundation
 
 public extension Array {
-    static var empty: [Element] {
+    static var empty: Array {
         []
     }
     
@@ -19,11 +19,11 @@ public extension Array {
         return a
     }
     
-    func appended(_ e: Element) -> [Element] {
+    func appended(_ e: Element) -> Array {
         self.with { a in a.append(e) }
     }
     
-    func replaced(at i: Int, with e: Element) -> [Element] {
+    func replaced(at i: Int, with e: Element) -> Array {
         self.with { a in a[i] = e }
     }
     
@@ -43,17 +43,17 @@ public extension Array {
         }
     }
     
-    func merging(_ other: [Element], filledWith e: Element, mergedBy f: (Element, Element) -> Element) -> Array {
+    func merging(_ other: Array, filledWith e: Element, mergedBy f: (Element, Element) -> Element) -> Array {
         let l = Swift.max(self.count, other.count)
         let (a, b) = (self.filled(with: e, upToLength: l), other.filled(with: e, upToLength: l))
         return zip(a, b).map(f)
     }
     
-    func takeEven() -> [Element] {
+    func takeEven() -> Array {
         self.enumerated().filter{ $0.offset.isEven }.map{ $0.element }
     }
     
-    func takeOdd() -> [Element] {
+    func takeOdd() -> Array {
         self.enumerated().filter{ $0.offset.isOdd  }.map{ $0.element }
     }
     
@@ -79,7 +79,7 @@ extension Array where Element: Equatable {
 }
 
 extension Array: Comparable where Element: Comparable {
-    public static func < (lhs: [Element], rhs: [Element]) -> Bool {
+    public static func < (lhs: Array, rhs: Array) -> Bool {
         lhs.lexicographicallyPrecedes(rhs)
     }
 }
@@ -110,7 +110,7 @@ extension Array {
         parallelMap(transform: transform).compactMap { $0 }
     }
     
-    public func parallelFilter(predicate: @escaping ((Element) -> Bool)) -> [Element] {
+    public func parallelFilter(predicate: @escaping ((Element) -> Bool)) -> Array {
         parallelCompactMap { e in predicate(e) ? e : nil }
     }
 }

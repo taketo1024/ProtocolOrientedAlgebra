@@ -47,11 +47,11 @@ public struct Permutation<n: SizeType>: Group, MapType { // SymmetricGroup<n>
         .init([i : j, j : i])
     }
 
-    public static var identity: Permutation<n> {
+    public static var identity: Permutation {
         Permutation([:])
     }
     
-    public var inverse: Permutation<n> {
+    public var inverse: Permutation {
         let inv = elements.map{ (i, j) in (j, i)}
         return Permutation(Dictionary(pairs: inv))
     }
@@ -75,9 +75,9 @@ public struct Permutation<n: SizeType>: Group, MapType { // SymmetricGroup<n>
         return decomp.multiply { p in (-1).pow( p.elements.count - 1) }
     }
     
-    public var cyclicDecomposition: [Permutation<n>] {
+    public var cyclicDecomposition: [Permutation] {
         var dict = elements
-        var result: [Permutation<n>] = []
+        var result: [Permutation] = []
         
         while !dict.isEmpty {
             let i = dict.keys.anyElement!
@@ -98,7 +98,7 @@ public struct Permutation<n: SizeType>: Group, MapType { // SymmetricGroup<n>
         return result
     }
     
-    public static func *(a: Permutation<n>, b: Permutation<n>) -> Permutation<n> {
+    public static func *(a: Permutation, b: Permutation) -> Permutation {
         var d = a.elements
         for i in b.elements.keys {
             d[i] = a[b[i]]
@@ -118,8 +118,8 @@ public struct Permutation<n: SizeType>: Group, MapType { // SymmetricGroup<n>
 }
 
 extension Permutation: FiniteSetType where n: StaticSizeType {
-    public static var allElements: [Permutation<n>] {
-        DPermutation.rawPermutations(length: n.intValue).map{ Permutation<n>($0) }
+    public static var allElements: [Permutation] {
+        DPermutation.rawPermutations(length: n.intValue).map{ Permutation($0) }
     }
     
     public static var countElements: Int {
@@ -175,7 +175,7 @@ extension Permutation where n == DynamicSize {
 }
 
 extension Array where Element: Hashable {
-    public func permuted<n>(by p: Permutation<n>) -> [Element] {
+    public func permuted<n>(by p: Permutation<n>) -> Array {
         (0 ..< count).map{ i in self[p[i]] }
     }
 }
