@@ -51,7 +51,7 @@ public final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
             let (q, r) = a /% a0
             apply(.AddRow(at: i0, to: i, mul: -q))
             
-            if r != .zero {
+            if !r.isZero {
                 if mode == .fast && r.isInvertible {
                     return
                 } else {

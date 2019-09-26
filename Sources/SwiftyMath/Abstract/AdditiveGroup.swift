@@ -1,5 +1,7 @@
 public protocol AdditiveGroup: SetType {
     static var zero: Self { get }
+    var isZero: Bool { get }
+    
     static func + (a: Self, b: Self) -> Self
     prefix static func - (x: Self) -> Self
     static func -(a: Self, b: Self) -> Self
@@ -7,6 +9,10 @@ public protocol AdditiveGroup: SetType {
 }
 
 public extension AdditiveGroup {
+    var isZero: Bool {
+        self == .zero
+    }
+    
     static func -(a: Self, b: Self) -> Self {
         a + (-b)
     }

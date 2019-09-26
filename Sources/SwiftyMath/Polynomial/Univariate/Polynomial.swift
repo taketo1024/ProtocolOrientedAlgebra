@@ -33,8 +33,8 @@ public struct _Polynomial<T: PolynomialType, x: PolynomialIndeterminate, R: Ring
     }
     
     public init(coeffs: [Int : R]) {
-        assert( !(T.isNormal && coeffs.contains{ (i, a) in i < 0 && a != .zero } ) )
-        self.coeffs = coeffs.filter{ (_, a) in a != .zero }
+        assert( !(T.isNormal && coeffs.contains{ (i, a) in i < 0 && !a.isZero } ) )
+        self.coeffs = coeffs.exclude{ (_, a) in a.isZero }
     }
     
     public init(coeffs: [R], shift: Int = 0) {
@@ -75,7 +75,7 @@ public struct _Polynomial<T: PolynomialType, x: PolynomialIndeterminate, R: Ring
     }
     
     public var isMonic: Bool {
-        leadCoeff == .identity
+        leadCoeff.isIdentity
     }
     
     public var isConst: Bool {
@@ -192,9 +192,7 @@ extension _Polynomial: EuclideanRing where R: Field {
     }
     
     public func eucDiv(by g: _Polynomial<T, x, R>) -> (q: _Polynomial<T, x, R>, r: _Polynomial<T, x, R>) {
-        guard g != .zero else {
-            fatalError("divide by 0")
-        }
+        assert(!g.isZero)
         
         typealias P = _Polynomial<T, x, R>
         let x = P.indeterminate

@@ -43,10 +43,10 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         assert(n.isDynamic || n.intValue == size.0)
         assert(m.isDynamic || m.intValue == size.1)
         assert(data.keys.allSatisfy{ c in (0 ..< size.0).contains(c.row) && (0 ..< size.1).contains(c.col)})
-        assert(!zerosExcluded || data.values.allSatisfy{ $0 != .zero} )
+        assert(!zerosExcluded || data.values.allSatisfy{ !$0.isZero} )
         
         self.size = size
-        self.data = zerosExcluded ? data : data.exclude{ (_, a) in a == .zero }
+        self.data = zerosExcluded ? data : data.exclude{ (_, a) in a.isZero }
     }
     
     public init(size: (Int, Int), components: [MatrixComponent<R>], zerosExcluded: Bool = false) {
@@ -58,7 +58,7 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
     public init<S: Sequence>(size: (Int, Int), grid: S) where S.Element == R {
         let cols = size.1
         let data = grid.enumerated()
-            .exclude{ (_, a) in a == .zero }
+            .exclude{ (_, a) in a.isZero }
             .map{ (k, a) -> (MatrixCoord, R) in
                 let (i, j) = (k / cols, k % cols)
                 return (MatrixCoord(i, j), a)
@@ -85,20 +85,21 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         get {
             data[MatrixCoord(i, j)] ?? .zero
         } set {
-            data[MatrixCoord(i, j)] = (newValue != .zero) ? newValue : nil
+            data[MatrixCoord(i, j)] = newValue.isZero ? nil : newValue
         }
     }
     
     public var isZero: Bool {
-        data.allSatisfy{ (_, a) in a == .zero }
+        data.isEmpty
     }
     
     public var isIdentity: Bool {
-        data.allSatisfy{ (c, a) in (c.row == c.col && a == .identity) || (c.row != c.col && a == .zero) }
+        size.rows == size.cols
+            && data.allSatisfy{ (c, a) in (c.row == c.col && a.isIdentity) }
     }
     
     public var isDiagonal: Bool {
-        data.allSatisfy{ (c, a) in (c.row == c.col) || (a == .zero) }
+        data.allSatisfy{ (c, a) in c.row == c.col }
     }
     
     public var isSquare: Bool {
@@ -223,7 +224,7 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
     }
     
     public static func ==(a: Matrix<n, m, R>, b: Matrix<n, m, R>) -> Bool {
-        a.data.exclude{ $0.value == .zero } == b.data.exclude{ $0.value == .zero }
+        a.data == b.data
     }
     
     public static func +(a: Matrix<n, m, R>, b: Matrix<n, m, R>) -> Matrix<n, m, R> {
@@ -356,7 +357,7 @@ extension Matrix: AdditiveGroup, Module where n: StaticSizeType, m: StaticSizeTy
 extension Matrix: Monoid, Ring where n == m, n: StaticSizeType {
     public init(from a : 𝐙) {
         let size = (n.intValue, n.intValue)
-        let data = (a != .zero) ? (0 ..< n.intValue).map{ i in (MatrixCoord(i, i), R(from: a)) } : []
+        let data = !a.isZero ? (0 ..< n.intValue).map{ i in (MatrixCoord(i, i), R(from: a)) } : []
         self.init(size: size, data: Dictionary(pairs: data), zerosExcluded: true)
     }
     

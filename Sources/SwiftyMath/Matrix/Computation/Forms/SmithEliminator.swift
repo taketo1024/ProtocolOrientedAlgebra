@@ -16,7 +16,7 @@ public final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     
     override func prepare() {
         subrun(DiagonalEliminator(mode: mode, debug: debug))
-        diagonal = target.pointee.diagonal.filter{ a in a != .zero }
+        diagonal = target.pointee.diagonal.exclude{ $0.isZero }
     }
     
     override func shouldIterate() -> Bool {
@@ -37,12 +37,12 @@ public final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
             a0 = a0.normalized
         }
         
-        if a0 != .identity {
+        if !a0.isIdentity {
             var again = false
 
             for i in (currentIndex ..< diagonal.count) where i != i0 {
                 let a = diagonal[i]
-                if a % a0 != .zero {
+                if !a.isDivible(by: a0) {
                     diagonalGCD((i0, a0), (i, a))
                     again = true
 

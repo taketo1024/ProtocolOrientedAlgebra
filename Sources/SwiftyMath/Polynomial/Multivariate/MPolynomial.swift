@@ -27,7 +27,7 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
     
     public init(coeffs: [MultiDegree : R]) {
         assert(!xn.isFinite || coeffs.keys.allSatisfy{ I in I.count <= xn.numberOfIndeterminates } )
-        self.coeffs = coeffs.filter{ $0.value != .zero }.mapKeys{ $0.dropLast{ $0 == 0 } }
+        self.coeffs = coeffs.exclude{ $0.value.isZero }.mapKeys{ $0.dropLast{ $0 == 0 } }
     }
     
     public static var zero: MPolynomial<xn, R> {
@@ -59,7 +59,7 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
     }
     
     public var isMonic: Bool {
-        leadCoeff == .identity
+        leadCoeff.isIdentity
     }
     
     public var isConst: Bool {

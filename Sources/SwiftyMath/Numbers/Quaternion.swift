@@ -117,11 +117,11 @@ public struct Quaternion: Ring, ExpressibleByIntegerLiteral, ExpressibleByFloatL
     }
     
     public var description: String {
-        if self == .zero {
+        if isZero {
             return "0"
         } else {
             return [(x, ""), (y, "i"), (z, "j"), (w, "k")]
-                .filter{ $0.0 != .zero }
+                .exclude{ $0.0.isZero }
                 .map{ "\($0.0)\($0.1)" }
                 .joined(separator: " + ")
         }

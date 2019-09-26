@@ -77,7 +77,7 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
 
     @_specialize(where R == 𝐙)
     func multiplyRow(at i: Int, by r: R) {
-        assert(r != .zero)
+        assert(!r.isZero)
         guard let row = working[i] else {
             return
         }
@@ -166,7 +166,7 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
             }
         }
         
-        let result = toHead.drop{ c in c.value == .zero } // possibly nil
+        let result = toHead.drop{ c in c.value.isZero } // possibly nil
         
         if trackRowInfos {
             removeHeadPosition(i2)

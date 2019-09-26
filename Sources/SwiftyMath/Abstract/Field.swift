@@ -6,7 +6,7 @@ public extension Field {
     }
     
     var eucDegree: Int {
-        self == .zero ? 0 : 1
+        isZero ? 0 : 1
     }
     
     func eucDiv(by b: Self) -> (q: Self, r: Self) {

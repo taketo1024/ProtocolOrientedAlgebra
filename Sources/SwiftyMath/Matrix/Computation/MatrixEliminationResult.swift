@@ -80,7 +80,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     public var rank: Int {
         // TODO support Echelon types
         assert(result.isDiagonal)
-        return result.diagonal.count{ $0 != .zero }
+        return result.diagonal.count{ !$0.isZero }
     }
     
     // Returns the matrix consisting of the basis vectors of Im(A).
@@ -248,18 +248,18 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
         let Pb = P * b
         
         if B.diagonal.enumerated().contains(where: { (i, d) in
-            (d == .zero && Pb[i] != .zero) || (d != .zero && Pb[i] % d != .zero)
+            (d.isZero && !Pb[i].isZero) || (!d.isZero && !Pb[i].isDivible(by: d))
         }) {
             return nil // no solution
         }
         
-        if Pb.components.contains(where: { (i, _, a) in i >= r && a != .zero } ) {
+        if Pb.components.contains(where: { (i, _, a) in i >= r && !a.isZero } ) {
             return nil // no solution
         }
         
         let Q = right
         let y = ColVector<m, R>(size: (B.size.cols, 1), grid: B.diagonal.enumerated().map{ (i, d) in
-            (d == .zero) ? .zero : Pb[i] / d
+            d.isZero ? .zero : Pb[i] / d
         })
         return Q * y
     }

@@ -1,10 +1,16 @@
 public protocol Monoid: SetType {
-    static func * (a: Self, b: Self) -> Self
     static var identity: Self { get }
+    var isIdentity: Bool { get }
+    
+    static func * (a: Self, b: Self) -> Self
     func pow(_ n: 𝐙) -> Self
 }
 
 public extension Monoid {
+    var isIdentity: Bool {
+        return self == .identity
+    }
+    
     func pow(_ n: 𝐙) -> Self {
         assert(n >= 0)
         return (0 ..< n).reduce(.identity){ (res, _) in self * res }

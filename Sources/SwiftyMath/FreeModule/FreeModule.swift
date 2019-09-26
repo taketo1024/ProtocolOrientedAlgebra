@@ -16,7 +16,7 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
     
     public init<S: Sequence>(_ elements: S) where S.Element == (A, R) {
         assert(elements.map{ $0.0 }.isUnique)
-        self.elements = Array(elements.exclude{ (_, r) in r == .zero })
+        self.elements = Array(elements.exclude{ (_, r) in r.isZero })
     }
     
     public init(_ elements: (A, R)...) {
@@ -40,7 +40,7 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
     }
     
     public var isGenerator: Bool {
-        (elements.count == 1) && (elements.first!.1 == .identity)
+        (elements.count == 1) && elements.first!.1.isIdentity
     }
     
     public static var zero: FreeModule<A, R> {

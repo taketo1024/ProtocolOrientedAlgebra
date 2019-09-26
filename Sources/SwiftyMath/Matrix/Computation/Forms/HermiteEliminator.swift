@@ -35,12 +35,12 @@ public final class RowHermiteEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         
         for i in 0 ..< currentRow {
             let a = target.pointee[i, j0]
-            if a == .zero {
+            if a.isZero {
                 continue
             }
             
             let q = a / a0
-            if q != .zero {
+            if !q.isZero {
                 apply(.AddRow(at: currentRow, to: i, mul: -q))
             }
         }

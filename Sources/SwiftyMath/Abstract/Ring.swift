@@ -23,7 +23,7 @@ public extension Ring {
     }
     
     var isNormalized: Bool {
-        normalizingUnit == .identity
+        normalizingUnit.isIdentity
     }
     
     var degree: Int {
