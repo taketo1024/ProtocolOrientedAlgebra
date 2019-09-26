@@ -68,7 +68,7 @@ public struct QuotientModule<Base, Sub: Submodule>: QuotientModuleType where Bas
     
     private let x: Base
     public init(_ x: Base) {
-        self.x = Sub.normalizedInQuotient(x)
+        self.x = Sub.quotientRepresentative(of: x)
     }
     
     public var representative: Base {

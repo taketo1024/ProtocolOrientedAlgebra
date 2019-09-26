@@ -29,17 +29,8 @@ class ModuleTests: XCTestCase {
             return a.value % 4 == 0
         }
         
-        static func normalizedInQuotient(_ a: A) -> A {
+        static func quotientRepresentative(_ a: A) -> A {
             return A(a.value % 4)
-        }
-        
-        static func inverseInQuotient(_ a: A) -> A? {
-            switch a.value % 4 {
-            case 0, 2: return nil
-            case 1: return A(1)
-            case 3: return A(3)
-            default: fatalError()
-            }
         }
     }
     

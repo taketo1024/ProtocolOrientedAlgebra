@@ -67,19 +67,23 @@ public protocol EuclideanIdeal: Ideal where Super: EuclideanRing {
 }
 
 public extension EuclideanIdeal {
-    static func normalizedInQuotient(_ a: Super) -> Super {
-        a % mod
-    }
-    
     static func contains(_ a: Super) -> Bool {
         a.isDivible(by: mod)
     }
     
-    static func inverseInQuotient(_ r: Super) -> Super? {
-        // find: a * r + b * m = u (u: unit)
-        // then: r^-1 = u^-1 * a (mod m)
-        let (a, _, u) = bezout(r, mod)
-        return u.inverse.map{ inv in inv * a }
+    static func quotientRepresentative(of a: Super) -> Super {
+        a % mod
+    }
+    
+    static func quotientInverse(of a: Super) -> Super? {
+        // find: a * x + b * y = u  (u: unit)
+        // then: a^-1 = u^-1 * x (mod b)
+        let (x, _, u) = bezout(a, mod)
+        if let uInv = u.inverse {
+            return uInv * x
+        } else {
+            return nil
+        }
     }
     
     static var symbol: String {

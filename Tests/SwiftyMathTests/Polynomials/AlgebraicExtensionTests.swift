@@ -9,21 +9,21 @@
 import XCTest
 @testable import SwiftyMath
 
-class PolynomialQuotientTests: XCTestCase {
+class AlgebraicExtensionTests: XCTestCase {
     
     struct p1: IrrPolynomialTP {
         static let value = xPolynomial<𝐐>(coeffs: -2, 0, 1)
     }
     
-    typealias A = PolynomialQuotientRing<p1>
-    
-    let α = A(.indeterminate)
+    typealias A = AlgebraicExtension<𝐐, p1>
     
     struct p2: IrrPolynomialTP {
         static let value = xPolynomial<A>(coeffs: -3, 0, 1)
     }
     
-    typealias B = PolynomialQuotientRing<p2>
+    typealias B = AlgebraicExtension<A, p2>
+    
+    let α = A(.indeterminate)
     let β = B(.indeterminate)
 
     func testIsField() {
@@ -80,20 +80,20 @@ class PolynomialQuotientTests: XCTestCase {
     
     func testInv() {
         XCTAssertEqual(α.inverse!, A(1./2) * α)
-        
+
         let a = 1 + 3 * α
         XCTAssertEqual(a.inverse!, A(-1./17) + A(3./17) * α)
 
         let o = A.zero
         XCTAssertNil(o.inverse)
     }
-    
+
     func testPow() {
         let a = 1 + 2 * α
         XCTAssertEqual(a.pow(0), 1)
         XCTAssertEqual(a.pow(1), 1 + 2 * α)
         XCTAssertEqual(a.pow(2), 9 + 4 * α)
-        
+
         XCTAssertEqual(a.pow(-1), A(-1./7) + A(2./7) * α)
         XCTAssertEqual(a.pow(-2), A(9./49) + A(-4./49) * α)
 

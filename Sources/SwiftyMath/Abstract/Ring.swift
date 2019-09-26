@@ -72,7 +72,7 @@ public extension Subring {
 public protocol Ideal: AdditiveSubgroup where Super: Ring {
     static func * (r: Super, a: Self) -> Self
     static func * (m: Self, r: Super) -> Self
-    static func inverseInQuotient(_ r: Super) -> Super?
+    static func quotientInverse(of r: Super) -> Super?
 }
 
 // MEMO: Usually Ideals are only used as a TypeParameter for a QuotientRing.
@@ -141,7 +141,11 @@ public extension QuotientRingType {
     }
     
     var inverse: Self? {
-        Sub.inverseInQuotient(representative).map { inv in Self(inv) }
+        if let inv = Sub.quotientInverse(of: representative) {
+            return Self(inv)
+        } else {
+            return nil
+        }
     }
     
     static var zero: Self {
@@ -166,7 +170,7 @@ public struct QuotientRing<R, I: Ideal>: QuotientRingType where R == I.Super {
     
     private let x: R
     public init(_ x: R) {
-        self.x = I.normalizedInQuotient(x)
+        self.x = I.quotientRepresentative(of: x)
     }
     
     public var representative: R {
@@ -174,7 +178,7 @@ public struct QuotientRing<R, I: Ideal>: QuotientRingType where R == I.Super {
     }
 }
 
-//extension QuotientRing: EuclideanRing, Field where Sub: MaximalIdeal {}
+extension QuotientRing: EuclideanRing, Field where Sub: MaximalIdeal {}
 
 extension QuotientRing: ExpressibleByIntegerLiteral where Base: ExpressibleByIntegerLiteral {
     public typealias IntegerLiteralType = Base.IntegerLiteralType

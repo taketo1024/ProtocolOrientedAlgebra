@@ -19,11 +19,11 @@ class RingTests: XCTestCase {
             return a % 4 == 0
         }
         
-        static func normalizedInQuotient(_ a: A) -> A {
+        static func quotientRepresentative(of a: A) -> A {
             return a % 4
         }
         
-        static func inverseInQuotient(_ a: A) -> A? {
+        static func quotientInverse(of a: A) -> A? {
             switch a % 4 {
             case 0, 2: return nil
             case 1: return 1

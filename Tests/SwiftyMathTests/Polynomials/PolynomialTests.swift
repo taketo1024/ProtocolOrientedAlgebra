@@ -12,6 +12,11 @@ class PolynomialTests: XCTestCase {
     typealias A = xPolynomial<𝐙>
     typealias B = xPolynomial<𝐐>
 
+    func testInitFromIntLiteral() {
+        let a: A = 3
+        XCTAssertEqual(a, A(coeffs: [0: 3]))
+    }
+    
     func testInitFromInt() {
         let a = A(from: 3)
         XCTAssertEqual(a, A(coeffs: [0: 3]))
@@ -41,6 +46,11 @@ class PolynomialTests: XCTestCase {
         XCTAssertEqual(x.lowestPower, 1)
     }
     
+    func testSumWithIntLiteral() {
+        let a = A(coeffs: 1, 2, 3)
+        XCTAssertEqual(a + 5, A(coeffs: 6, 2, 3))
+    }
+    
     func testSum() {
         let a = A(coeffs: 1, 2, 3)
         let b = A(coeffs: 0, 1, 0, 2)
@@ -56,6 +66,11 @@ class PolynomialTests: XCTestCase {
     func testNeg() {
         let a = A(coeffs: 1, 2, 3)
         XCTAssertEqual(-a, A(coeffs: -1, -2, -3))
+    }
+    
+    func testScalarMul() {
+        let a = A(coeffs: 1, 2, 3)
+        XCTAssertEqual(3 * a, A(coeffs: 3, 6, 9))
     }
     
     func testMul() {
