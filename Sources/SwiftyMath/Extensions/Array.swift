@@ -13,54 +13,40 @@ public extension Array {
         []
     }
     
-    func appended(_ e: Element) -> [Element] {
+    func with(_ s: (inout Array) -> Void) -> Array {
         var a = self
-        a.append(e)
+        s(&a)
         return a
+    }
+    
+    func appended(_ e: Element) -> [Element] {
+        self.with { a in a.append(e) }
     }
     
     func replaced(at i: Int, with e: Element) -> [Element] {
-        var a = self
-        a[i] = e
-        return a
+        self.with { a in a[i] = e }
     }
     
-    func moved(elementAt i: Int, to j: Int) -> [Element] {
-        var a = self
-        let e = a.remove(at: i)
-        a.insert(e, at: j)
-        return a
+    func filled(with e: Element, upToLength n: Int) -> Array {
+        let l = self.count
+        return (l < n) ? self + Array(repeating: e, count: n - l) : self
     }
     
-    func removed(at i: Int) -> [Element] {
-        var a = self
-        a.remove(at: i)
-        return a
-    }
-    
-    func swappedAt(_ i: Int, _ j: Int) -> [Element] {
-        var a = self
-        a.swapAt(i, j)
-        return a
-    }
-    
-    mutating func dropLast(while predicate: (Element) -> Bool) {
-        while let e = popLast() {
-            if !predicate(e) {
-                append(e)
-                return
+    func dropLast(while predicate: (Element) -> Bool) -> Array {
+        self.with { result in
+            while let e = result.popLast() {
+                if !predicate(e) {
+                    result.append(e)
+                    return
+                }
             }
         }
     }
     
-    func droppedLast(while predicate: (Element) -> Bool) -> [Element] {
-        var copy = self
-        copy.dropLast(while: predicate)
-        return copy
-    }
-    
-    func repeated(_ count: Int) -> [Element] {
-        (Array<[Element]>(repeating: self, count: count)).flatMap{ $0 }
+    func merging(_ other: [Element], filledWith e: Element, mergedBy f: (Element, Element) -> Element) -> Array {
+        let l = Swift.max(self.count, other.count)
+        let (a, b) = (self.filled(with: e, upToLength: l), other.filled(with: e, upToLength: l))
+        return zip(a, b).map(f)
     }
     
     func takeEven() -> [Element] {
@@ -71,14 +57,12 @@ public extension Array {
         self.enumerated().filter{ $0.offset.isOdd  }.map{ $0.element }
     }
     
-    func merging(_ other: [Element], with f: (Element, Element) -> Element) -> [Element] {
-        let (n, m) = (self.count, other.count)
-        let l = Swift.min(n, m)
-        return zip(self, other).map(f) + self[l ..< n] + other[l ..< m]
-    }
-
     func toDictionary() -> [Index: Element] {
         Dictionary(pairs: self.enumerated().map{ (i, a) in (i, a) })
+    }
+    
+    static func *(a: Array, n: Int) -> Array {
+        Array<Array<Element>>(repeating: a, count: n).flatMap { $0 }
     }
 }
 

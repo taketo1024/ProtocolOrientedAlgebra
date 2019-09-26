@@ -27,7 +27,7 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
     
     public init(coeffs: [MultiDegree : R]) {
         assert(!xn.isFinite || coeffs.keys.allSatisfy{ I in I.count <= xn.numberOfIndeterminates } )
-        self.coeffs = coeffs.filter{ $0.value != .zero }.mapKeys{ $0.droppedLast{ $0 == 0 } }
+        self.coeffs = coeffs.filter{ $0.value != .zero }.mapKeys{ $0.dropLast{ $0 == 0 } }
     }
     
     public static var zero: MPolynomial<xn, R> {
@@ -92,7 +92,8 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
     }
 
     public static func indeterminate(_ i: Int) -> MPolynomial {
-        .init(coeffs: [[0].repeated(i) + [1] : R.identity] )
+        let I = [0] * i + [1]
+        return .init(coeffs: [I : R.identity] )
     }
     
     public static func monomial(ofMultiDegree I: MultiDegree) -> MPolynomial<xn, R> {
@@ -138,7 +139,7 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
     public static func * (f: MPolynomial<xn, R>, g: MPolynomial<xn, R>) -> MPolynomial<xn, R> {
         var coeffs = [MultiDegree : R]()
         for (I, J) in (f.multiDegrees * g.multiDegrees) {
-            let K = I.merging(J, with: +)
+            let K = I.merging(J, filledWith: 0, mergedBy: +)
             coeffs[K] = coeffs[K, default: .zero] + f.coeff(I) * g.coeff(J)
         }
         return MPolynomial(coeffs: coeffs)
