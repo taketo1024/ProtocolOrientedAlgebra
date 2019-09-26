@@ -48,12 +48,13 @@ public extension Sequence {
 
 public extension Sequence where Element: Hashable {
     var isUnique: Bool {
-        self.count == unique().count
+        var bucket = Set<Element>()
+        return self.allSatisfy{ bucket.insert($0).inserted }
     }
     
     func unique() -> [Element] {
-        var alreadyAdded = Set<Element>()
-        return self.filter { alreadyAdded.insert($0).inserted }
+        var bucket = Set<Element>()
+        return self.filter { bucket.insert($0).inserted }
     }
     
     func subtract(_ b: Self) -> [Element] {
