@@ -9,6 +9,11 @@
 import XCTest
 @testable import SwiftyMath
 
+extension AlgebraicExtension: ExpressibleByIntegerLiteral, DelegatingIntegerLiteralInitialization where Base.BaseRing: ExpressibleByIntegerLiteral {
+    public typealias IntegerLiteralDelegate = Base.BaseRing
+    public typealias IntegerLiteralType = IntegerLiteralDelegate.IntegerLiteralType
+}
+
 class AlgebraicExtensionTests: XCTestCase {
     
     struct p1: IrrPolynomialTP {

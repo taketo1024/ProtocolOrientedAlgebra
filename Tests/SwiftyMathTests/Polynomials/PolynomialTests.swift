@@ -8,6 +8,11 @@
 import XCTest
 @testable import SwiftyMath
 
+extension _Polynomial: ExpressibleByIntegerLiteral, DelegatingIntegerLiteralInitialization where R: ExpressibleByIntegerLiteral {
+    public typealias IntegerLiteralType = R.IntegerLiteralType
+    public typealias IntegerLiteralDelegate = R
+}
+
 class PolynomialTests: XCTestCase {
     typealias A = xPolynomial<𝐙>
     typealias B = xPolynomial<𝐐>

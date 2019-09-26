@@ -180,13 +180,6 @@ public struct QuotientRing<R, I: Ideal>: QuotientRingType where R == I.Super {
 
 extension QuotientRing: EuclideanRing, Field where Sub: MaximalIdeal {}
 
-extension QuotientRing: ExpressibleByIntegerLiteral where Base: ExpressibleByIntegerLiteral {
-    public typealias IntegerLiteralType = Base.IntegerLiteralType
-    public init(integerLiteral value: Base.IntegerLiteralType) {
-        self.init(Base(integerLiteral: value))
-    }
-}
-
 public protocol RingHomType: AdditiveGroupHomType where Domain: Ring, Codomain: Ring {}
 
 public struct RingHom<X: Ring, Y: Ring>: RingHomType {

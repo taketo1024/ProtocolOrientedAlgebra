@@ -9,6 +9,11 @@
 import XCTest
 @testable import SwiftyMath
 
+extension RationalNumber: ExpressibleByIntegerLiteral, DelegatingIntegerLiteralInitialization {
+    public typealias IntegerLiteralDelegate = 𝐙
+    public typealias IntegerLiteralType = IntegerLiteralDelegate.IntegerLiteralType
+}
+
 class RationalTests: XCTestCase {
     
     typealias A = 𝐐

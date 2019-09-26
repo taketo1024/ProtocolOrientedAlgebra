@@ -24,7 +24,7 @@ extension _Polynomial where T == NormalPolynomialType, R == 𝐂 {
         
         for _ in 0 ..< 10 {
             var z: 𝐂 = .random(radius: 1.0)
-            while f.evaluate(at: z) == 0 {
+            while f.evaluate(at: z).isZero {
                 z = z + .random(radius: 0.1)
             }
             
@@ -32,17 +32,17 @@ extension _Polynomial where T == NormalPolynomialType, R == 𝐂 {
                 let w = F.evaluate(at: z)
 //                print("z = \(z) -> f(z) = \(w)")
                 
-                if w == 0 {
+                if w.isZero {
                     break
                 }
                 z = z - w / f.evaluate(at: z)
             }
             
-            if F.evaluate(at: z.rounded()) == 0 {
+            if F.evaluate(at: z.rounded()).isZero {
                 return z.rounded()
             }
             
-            if F.evaluate(at: z) == 0 {
+            if F.evaluate(at: z).isZero {
                 return z
             }
         }
@@ -56,7 +56,7 @@ extension _Polynomial where T == NormalPolynomialType, R == 𝐂 {
             if let z = F.findRoot() {
                 // MEMO Ruffini's rule might be better
                 // https://en.m.wikipedia.org/wiki/Ruffini%27s_rule
-                F = F / .init(coeffs: [-z, 1])
+                F = F / .init(coeffs: [-z, .identity])
                 return z
             } else {
                 return nil

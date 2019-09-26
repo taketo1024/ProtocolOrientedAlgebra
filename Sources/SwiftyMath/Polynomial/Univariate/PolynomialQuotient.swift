@@ -60,12 +60,4 @@ public struct PolynomialQuotientRing<p: PolynomialTP>: QuotientRingType {
 
 extension PolynomialQuotientRing: EuclideanRing, Field where p: IrrPolynomialTP { }
 
-extension PolynomialQuotientRing: ExpressibleByIntegerLiteral where Base.BaseRing: ExpressibleByIntegerLiteral {
-    public typealias IntegerLiteralType = Base.BaseRing.IntegerLiteralType
-    public init(integerLiteral value: IntegerLiteralType) {
-        let a = Base.BaseRing(integerLiteral: value)
-        self.init(Base(a))
-    }
-}
-
 public typealias AlgebraicExtension<F, p: IrrPolynomialTP> = PolynomialQuotientRing<p> where p.BaseRing == F

@@ -194,11 +194,3 @@ public struct AsGroup<G: AdditiveGroup>: Group {
         G.symbol
     }
 }
-
-extension AsGroup: ExpressibleByIntegerLiteral where G: ExpressibleByIntegerLiteral {
-    public typealias IntegerLiteralType = G.IntegerLiteralType
-    public init(integerLiteral value: IntegerLiteralType) {
-        self.init(G(integerLiteral: value))
-    }
-}
-
