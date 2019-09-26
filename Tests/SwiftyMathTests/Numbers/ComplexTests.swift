@@ -13,19 +13,9 @@ class ComplexTests: XCTestCase {
     
     typealias A = 𝐂
     
-    func testIntLiteral() {
-        let a: A = 5
+    func testFromInt() {
+        let a = A(from: 5)
         assertApproxEqual(a, A(5, 0))
-    }
-    
-    func testFloatLiteral() {
-        let a: A = 0.5
-        assertApproxEqual(a, A(0.5, 0))
-    }
-    
-    func testFromRational() {
-        let a = A(from: 𝐐(3, 4))
-        assertApproxEqual(a, A(0.75, 0))
     }
     
     func testFromReal() {

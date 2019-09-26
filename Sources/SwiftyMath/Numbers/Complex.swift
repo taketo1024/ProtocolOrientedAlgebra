@@ -8,62 +8,106 @@
 
 import Foundation
 
+public typealias ComplexNumber = Complex<RealNumber>
 public typealias 𝐂 = ComplexNumber
 
-public struct ComplexNumber: Field, ExpressibleByIntegerLiteral, ExpressibleByFloatLiteral, Hashable {
-    public typealias IntegerLiteralType = Int
-    public typealias FloatLiteralType = Double
+public struct Complex<Base: Ring>: Ring, Module {
+    public typealias BaseRing = Base
     
-    private let x: 𝐑
-    private let y: 𝐑
-    
-    public init(integerLiteral n: Int) {
-        self.init(n)
-    }
-    
-    public init(floatLiteral x: Double) {
-        self.init(𝐑(x))
-    }
+    private let x: Base
+    private let y: Base
     
     public init(from x: 𝐙) {
-        self.init(x)
+        self.init(Base(from: x))
     }
     
-    public init(from r: 𝐐) {
-        self.init(r)
+    public init(_ x: Base) {
+        self.init(x, .zero)
     }
     
-    public init(_ x: 𝐙) {
-        self.init(𝐑(x), 0)
-    }
-    
-    public init(_ x: 𝐐) {
-        self.init(𝐑(x), 0)
-    }
-    
-    public init(_ x: 𝐑) {
-        self.init(x, 0)
-    }
-    
-    public init(_ x: 𝐑, _ y: 𝐑) {
+    public init(_ x: Base, _ y: Base) {
         self.x = x
         self.y = y
     }
     
-    public init(r: 𝐑, θ: 𝐑) {
-        self.init(r * cos(θ), r * sin(θ))
+    public static var imaginaryUnit: Complex {
+        Complex(.zero, .identity)
     }
     
-    public static var imaginaryUnit: 𝐂 {
-        𝐂(0, 1)
-    }
-    
-    public var realPart: 𝐑 {
+    public var realPart: Base {
         x
     }
     
-    public var imaginaryPart: 𝐑 {
+    public var imaginaryPart: Base {
         y
+    }
+    
+    public var conjugate: Complex {
+        Complex(x, -y)
+    }
+
+    public var inverse: Complex? {
+        let r2 = x * x + y * y
+        if let r2Inv = r2.inverse {
+            return r2Inv * conjugate
+        } else {
+            return nil
+        }
+    }
+    
+    public static func +(a: Complex, b: Complex) -> Complex {
+        Complex(a.x + b.x, a.y + b.y)
+    }
+    
+    public static prefix func -(a: Complex) -> Complex {
+        Complex(-a.x, -a.y)
+    }
+    
+    public static func *(a: Base, b: Complex) -> Complex {
+        Complex(a * b.x, a * b.y)
+    }
+    
+    public static func *(a: Complex, b: Base) -> Complex {
+        Complex(a.x * b, a.y * b)
+    }
+    
+    public static func *(a: Complex, b: Complex) -> Complex {
+        Complex(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x)
+    }
+    
+    public var description: String {
+        switch (x, y) {
+        case (_, .zero):
+            return "\(x)"
+        case (.zero,  .identity):
+            return "i"
+        case (.zero, -.identity):
+            return "-i"
+        case (.zero, _):
+            return "\(y)i"
+        default:
+            return "\(x) + \(y)i"
+        }
+    }
+
+    public static var symbol: String {
+        (Base.self == 𝐑.self) ? "𝐂" : "\(Base.symbol)[i]"
+    }
+}
+
+extension Complex: EuclideanRing, Field where Base: Field {}
+
+extension Complex where Base == 𝐑 {
+    public init(integerLiteral n: Base.IntegerLiteralType) {
+        self.init(Base(integerLiteral: n))
+    }
+    
+    public init(floatLiteral x: Base.FloatLiteralType) {
+        self.init(Base(floatLiteral: x))
+    }
+
+    public init(r: Base, θ: Base) {
+        self.init(r * cos(θ), r * sin(θ))
     }
     
     public var abs: 𝐑 {
@@ -80,36 +124,7 @@ public struct ComplexNumber: Field, ExpressibleByIntegerLiteral, ExpressibleByFl
         return (y >= 0) ? t : 2 * π - t
     }
     
-    public var conjugate: 𝐂 {
-        𝐂(x, -y)
-    }
-
-    public var inverse: 𝐂? {
-        let r2 = x * x + y * y
-        return r2 == 0 ? nil : 𝐂(x / r2, -y / r2)
-    }
-    
-    public static func +(a: 𝐂, b: 𝐂) -> 𝐂 {
-        𝐂(a.x + b.x, a.y + b.y)
-    }
-    
-    public static prefix func -(a: 𝐂) -> 𝐂 {
-        𝐂(-a.x, -a.y)
-    }
-    
-    public static func *(a: 𝐂, b: 𝐂) -> 𝐂 {
-        𝐂(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x)
-    }
-    
-    public static func random(in real: Range<𝐑>, _ imaginary: Range<𝐑>) -> 𝐂 {
-        .init(.random(in: real), .random(in: imaginary))
-    }
-    
-    public static func random(in real: ClosedRange<𝐑>, _ imaginary: ClosedRange<𝐑>) -> 𝐂 {
-        .init(.random(in: real), .random(in: imaginary))
-    }
-    
-    public static func random(radius r: 𝐑) -> 𝐂 {
+    public static func random(radius r: 𝐑) -> Complex {
         .init(r: .random(in: 0 ... r), θ: .random(in: 0 ... 2 * π))
     }
     
@@ -121,22 +136,19 @@ public struct ComplexNumber: Field, ExpressibleByIntegerLiteral, ExpressibleByFl
         self.realPart.isApproximatelyEqualTo(z.realPart, error: e) &&
                self.imaginaryPart.isApproximatelyEqualTo(z.imaginaryPart, error: e)
     }
-    
-    public var description: String {
-        switch (x, y) {
-        case (_, 0): return "\(x)"
-        case (0, 1): return "i"
-        case (0, -1): return "-i"
-        case (0, _): return "\(y)i"
-        case (_, _) where y < 0: return "\(x) - \(-y)i"
-        default: return "\(x) + \(y)i"
-        }
-    }
+}
 
-    public static var symbol: String {
-        "𝐂"
+extension Complex where Base: Randomable & Comparable {
+    public static func random(in real: Range<Base>, _ imaginary: Range<Base>) -> Complex {
+        .init(.random(in: real), .random(in: imaginary))
+    }
+    
+    public static func random(in real: ClosedRange<Base>, _ imaginary: ClosedRange<Base>) -> Complex {
+        .init(.random(in: real), .random(in: imaginary))
     }
 }
+
+extension Complex: Hashable where Base: Hashable {}
 
 public protocol ComplexSubset {
     var asComplex: 𝐂 { get }
@@ -144,13 +156,13 @@ public protocol ComplexSubset {
 
 extension 𝐙: ComplexSubset {
     public var asComplex: 𝐂 {
-        𝐂(self)
+        self.asReal.asComplex
     }
 }
 
 extension 𝐐: ComplexSubset {
     public var asComplex: 𝐂 {
-        𝐂(self)
+        self.asReal.asComplex
     }
 }
 

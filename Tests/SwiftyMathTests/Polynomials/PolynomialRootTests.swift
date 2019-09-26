@@ -13,7 +13,7 @@ class PolynomialRootTests: XCTestCase {
     typealias P = xPolynomial<𝐂>
     
     func testExample() {
-        let f = P(coeffs: 1, 0, 1)
+        let f = P(coeffs: [1, 0, 1].map{ $0.asComplex })
         let i = 𝐂.imaginaryUnit
         let zs = f.findAllRoots()
         XCTAssertEqual(zs.count, 2)

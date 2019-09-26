@@ -51,11 +51,6 @@ class PolynomialTests: XCTestCase {
         XCTAssertEqual(x.lowestPower, 1)
     }
     
-    func testSumWithIntLiteral() {
-        let a = A(coeffs: 1, 2, 3)
-        XCTAssertEqual(a + 5, A(coeffs: 6, 2, 3))
-    }
-    
     func testSum() {
         let a = A(coeffs: 1, 2, 3)
         let b = A(coeffs: 0, 1, 0, 2)

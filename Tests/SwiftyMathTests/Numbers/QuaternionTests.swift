@@ -13,24 +13,14 @@ class QuaternionTests: XCTestCase {
     
     typealias A = 𝐇
     
-    func testIntLiteral() {
-        let a: A = 5
+    func testFromInt() {
+        let a = A(from: 5)
         assertApproxEqual(a, A(5, 0, 0, 0))
-    }
-    
-    func testFloatLiteral() {
-        let a: A = 0.5
-        assertApproxEqual(a, A(0.5, 0, 0, 0))
     }
     
     func testFromReal() {
         let a = A(𝐑(3.14))
         assertApproxEqual(a, A(3.14, 0, 0, 0))
-    }
-    
-    func testFromComplex() {
-        let a = A(𝐂(2, 3))
-        assertApproxEqual(a, A(2, 3, 0, 0))
     }
     
     func testSum() {
@@ -59,6 +49,11 @@ class QuaternionTests: XCTestCase {
     
     // (-1 + 3i + 4j + 3k) × (2 + 3i -1j + 4k)
 
+    func testMulByIntLiteral() {
+        let a = A(-1, 3, 4, 3)
+        assertApproxEqual(A(3) * a, A(-3, 9, 12, 9))
+    }
+    
     func testMul() {
         let a = A(-1, 3, 4, 3)
         let b = A(2, 3, -1, 4)
