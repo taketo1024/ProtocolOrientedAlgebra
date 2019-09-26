@@ -35,7 +35,7 @@ internal struct MatrixCoord: Hashable, Comparable, Codable, CustomStringConverti
 internal typealias MatrixData<R: Ring> = [MatrixCoord : R]
 
 public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
-    public typealias CoeffRing = R
+    public typealias BaseRing = R
     public var size: (rows: Int, cols: Int)
     internal var data: MatrixData<R>
     

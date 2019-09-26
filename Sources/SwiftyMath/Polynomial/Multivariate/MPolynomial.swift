@@ -11,7 +11,7 @@ public typealias xyzPolynomial<R: Ring> = MPolynomial<_xyz, R>
 public typealias  xnPolynomial<R: Ring> = MPolynomial<_xn,  R>
 
 public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
-    public typealias CoeffRing = R
+    public typealias BaseRing = R
     public typealias MultiDegree = [Int]
     
     // e.g. [[2, 1, 3] : 5] -> 5 * x^2 * y * z^3

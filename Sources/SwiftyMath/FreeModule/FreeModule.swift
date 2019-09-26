@@ -1,14 +1,14 @@
 public protocol FreeModuleType: Module {
     associatedtype Generator: FreeModuleGenerator
-    init<S: Sequence>(_ elements: S) where S.Element == (Generator, CoeffRing)
+    init<S: Sequence>(_ elements: S) where S.Element == (Generator, BaseRing)
     static func wrap(_ a: Generator) -> Self
     func unwrap() -> Generator?
     var isGenerator: Bool { get }
-    func decomposed() -> [(Generator, CoeffRing)]
+    func decomposed() -> [(Generator, BaseRing)]
 }
 
 public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
-    public typealias CoeffRing = R
+    public typealias BaseRing = R
     public typealias Generator = A
     
     private let elements: [(A, R)]

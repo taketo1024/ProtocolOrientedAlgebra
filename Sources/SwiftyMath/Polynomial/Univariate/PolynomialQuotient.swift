@@ -8,18 +8,18 @@
 // memo: Supports only Field-coeffs.
 public protocol PolynomialTP {
     associatedtype Indeterminate: PolynomialIndeterminate
-    associatedtype CoeffRing: Field
-    typealias PolynomialType = Polynomial<Indeterminate, CoeffRing>
+    associatedtype BaseRing: Field
+    typealias PolynomialType = Polynomial<Indeterminate, BaseRing>
     static var value: PolynomialType { get }
 }
 
 public protocol IrrPolynomialTP: PolynomialTP {}
 
 public struct PolynomialIdeal<p: PolynomialTP>: EuclideanIdeal {
-    public typealias CoeffRing = p.CoeffRing
-    public typealias Super = Polynomial<p.Indeterminate, CoeffRing>
+    public typealias BaseRing = p.BaseRing
+    public typealias Super = Polynomial<p.Indeterminate, BaseRing>
     
-    public static var mod: Polynomial<p.Indeterminate, CoeffRing> {
+    public static var mod: Polynomial<p.Indeterminate, BaseRing> {
         p.value
     }
 }
@@ -36,7 +36,7 @@ public struct PolynomialQuotientRing<p: PolynomialTP>: QuotientRingType {
         self.init(Base(from: n))
     }
     
-    public init(_ x: Base.CoeffRing) {
+    public init(_ x: Base.BaseRing) {
         self.init(Base(x))
     }
     
@@ -51,10 +51,10 @@ public struct PolynomialQuotientRing<p: PolynomialTP>: QuotientRingType {
 
 extension PolynomialQuotientRing: EuclideanRing, Field where p: IrrPolynomialTP { }
 
-extension PolynomialQuotientRing: ExpressibleByIntegerLiteral where Base.CoeffRing: ExpressibleByIntegerLiteral {
-    public typealias IntegerLiteralType = Base.CoeffRing.IntegerLiteralType
+extension PolynomialQuotientRing: ExpressibleByIntegerLiteral where Base.BaseRing: ExpressibleByIntegerLiteral {
+    public typealias IntegerLiteralType = Base.BaseRing.IntegerLiteralType
     public init(integerLiteral value: IntegerLiteralType) {
-        let a = Base.CoeffRing(integerLiteral: value)
+        let a = Base.BaseRing(integerLiteral: value)
         self.init(Base(a))
     }
 }

@@ -19,7 +19,7 @@ public typealias tPolynomial<R: Ring> = Polynomial<_t, R>
 public typealias LaurentPolynomial<x: PolynomialIndeterminate, R: Ring> = _Polynomial<LaurentPolynomialType, x, R>
 
 public struct _Polynomial<T: PolynomialType, x: PolynomialIndeterminate, R: Ring>: Ring, Module {
-    public typealias CoeffRing = R
+    public typealias BaseRing = R
     
     internal let coeffs: [Int : R]
     

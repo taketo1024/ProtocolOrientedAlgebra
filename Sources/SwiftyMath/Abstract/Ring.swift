@@ -215,7 +215,7 @@ public typealias RingEnd<X: Ring> = RingHom<X, X>
 
 // a Ring considered as a Module over itself.
 public struct AsModule<R: Ring>: Module {
-    public typealias CoeffRing = R
+    public typealias BaseRing = R
     
     public let value: R
     public init(_ x: R) {

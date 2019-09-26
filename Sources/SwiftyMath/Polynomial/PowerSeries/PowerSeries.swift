@@ -7,7 +7,7 @@
 //
 
 public struct PowerSeries<x: PolynomialIndeterminate, R: Ring>: Ring, Module {
-    public typealias CoeffRing = R
+    public typealias BaseRing = R
     public let coeffs: (Int) -> R
     
     public init(from n: 𝐙) {

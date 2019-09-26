@@ -13,7 +13,7 @@ class ModuleTests: XCTestCase {
     private typealias A = AsModule<𝐙>
     
     private struct B: Submodule {
-        typealias CoeffRing = 𝐙
+        typealias BaseRing = 𝐙
         typealias Super = A
         
         let a: A
