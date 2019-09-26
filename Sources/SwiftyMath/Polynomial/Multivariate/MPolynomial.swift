@@ -190,7 +190,7 @@ public struct MPolynomial<xn: MPolynomialIndeterminate, R: Ring>: Ring, Module {
             return .zero
         }
         
-        let mInds = n.choose(i).map { combi -> MultiDegree in
+        let mInds = (0 ..< n).choose(i).map { combi -> MultiDegree in
             // e.g.  [0, 1, 3] -> (1, 1, 0, 1)
             let l = combi.last.flatMap{ $0 + 1 } ?? 0
             return MultiDegree( (0 ..< l).map { combi.contains($0) ? 1 : 0 } )

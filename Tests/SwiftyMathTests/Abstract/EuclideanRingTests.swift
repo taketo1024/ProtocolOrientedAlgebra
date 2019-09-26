@@ -42,4 +42,19 @@ class EuclideanRingTests: XCTestCase {
         XCTAssertEqual(r, 1)
     }
     
+    func testIsDivisible() {
+        XCTAssertTrue(6.isDivible(by: 3))
+        XCTAssertFalse(3.isDivible(by: 6))
+        XCTAssertTrue(0.isDivible(by: 0))
+        XCTAssertTrue(0.isDivible(by: 2))
+        XCTAssertFalse(2.isDivible(by: 0))
+    }
+    
+    func testDivides() {
+        XCTAssertFalse(6.divides(3))
+        XCTAssertTrue(3.divides(6))
+        XCTAssertTrue(0.divides(0))
+        XCTAssertFalse(0.divides(2))
+        XCTAssertTrue(2.divides(0))
+    }
 }

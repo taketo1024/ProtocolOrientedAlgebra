@@ -58,33 +58,6 @@ extension 𝐙: EuclideanRing, Randomable {
         return (q: q, r: a - q * b)
     }
     
-    public var factorial: 𝐙 {
-        if self < 0 {
-            fatalError("factorial of negative number.")
-        }
-        return (self == 0) ? 1 : self * (self - 1).factorial
-    }
-    
-    public var divisors: [𝐙] {
-        if self == 0 {
-            return []
-        }
-        
-        var result: [𝐙] = []
-        
-        let a = self.abs
-        let m = Int(sqrt(Double(a)))
-        
-        for d in 1...m {
-            if a % d == 0 {
-                result.append(d)
-                result.append(a/d)
-            }
-        }
-        
-        return result.sorted()
-    }
-
     public static var symbol: String {
         "𝐙"
     }
@@ -93,6 +66,34 @@ extension 𝐙: EuclideanRing, Randomable {
 fileprivate var _primes: [𝐙] = []
 
 extension 𝐙 {
+    public var factorial: 𝐙 {
+        let n = self
+        if n < 0 {
+            fatalError("factorial of negative number.")
+        }
+        return (n == 0) ? 1 : n * (n - 1).factorial
+    }
+    
+    public var divisors: [𝐙] {
+        if self.isZero {
+            return []
+        }
+        
+        var result: Set<𝐙> = []
+        
+        let a = self.abs
+        let m = Int(sqrt(Double(a)))
+        
+        for d in 1...m {
+            if d.divides(a) {
+                result.insert(d)
+                result.insert(a/d)
+            }
+        }
+        
+        return result.sorted()
+    }
+
     public static func primes(upto n: 𝐙) -> [𝐙] {
         if let last = _primes.last, n <= last {
             return _primes.filter{ $0 <= n }
@@ -123,5 +124,26 @@ extension 𝐙 {
         }
         
         return result
+    }
+    
+    public var partitions: [[Int]] {
+        assert(self >= 0)
+        if self == 0 {
+            return [[]]
+        } else {
+            return self.partitions(lowerBound: 1)
+        }
+    }
+    
+    internal func partitions(lowerBound: Int) -> [[Int]] {
+        let n = self
+        if lowerBound > n {
+            return []
+        } else {
+            return (lowerBound ... n).flatMap { i -> [[Int]] in
+                let ps = (n - i).partitions(lowerBound: Swift.max(i, lowerBound))
+                return ps.map { I in [i] + I }
+            } + [[n]]
+        }
     }
 }
