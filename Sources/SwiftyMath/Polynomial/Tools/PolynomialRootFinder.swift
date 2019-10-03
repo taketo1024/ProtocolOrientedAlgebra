@@ -5,44 +5,44 @@
 //  Created by Taketo Sano on 2019/06/12.
 //
 
-extension _Polynomial where T == NormalPolynomialType, R == 𝐂 {
+extension Polynomial where R == 𝐂 {
     // Newton's method: https://en.wikipedia.org/wiki/Newton%27s_method
     //
     // MEMO: Jenkins–Traub algorithm might be better
     // https://en.m.wikipedia.org/wiki/Jenkins–Traub_algorithm
     public func findRoot() -> 𝐂? {
-        let F = self
-        if F.degree == 0 {
+        let f = self
+        if f.degree == 0 {
             return nil
         }
         
-        if F.degree == 1 {
-            return -F.constTerm / F.leadCoeff
+        if f.degree == 1 {
+            return -f.constTerm / f.leadCoeff
         }
         
-        let f = F.derivative
+        let df = f.derivative
         
         for _ in 0 ..< 10 {
             var z: 𝐂 = .random(radius: 1.0)
-            while f.evaluate(at: z).isZero {
+            while df.evaluate(by: z).isZero {
                 z = z + .random(radius: 0.1)
             }
             
             for _ in 0 ..< 10000 {
-                let w = F.evaluate(at: z)
+                let w = f.evaluate(by: z)
 //                print("z = \(z) -> f(z) = \(w)")
                 
                 if w.isZero {
                     break
                 }
-                z = z - w / f.evaluate(at: z)
+                z = z - w / df.evaluate(by: z)
             }
             
-            if F.evaluate(at: z.rounded()).isZero {
+            if f.evaluate(by: z.rounded()).isZero {
                 return z.rounded()
             }
             
-            if F.evaluate(at: z).isZero {
+            if f.evaluate(by: z).isZero {
                 return z
             }
         }

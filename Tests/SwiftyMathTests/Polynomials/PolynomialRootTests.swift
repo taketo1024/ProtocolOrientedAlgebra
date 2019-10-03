@@ -10,7 +10,7 @@ import XCTest
 
 class PolynomialRootTests: XCTestCase {
 
-    typealias P = xPolynomial<𝐂>
+    typealias P = Polynomial<_x, 𝐂>
     
     func testExample() {
         let f = P(coeffs: [1, 0, 1].map{ $0.asComplex })

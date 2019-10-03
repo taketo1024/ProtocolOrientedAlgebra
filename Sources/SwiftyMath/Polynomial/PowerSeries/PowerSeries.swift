@@ -65,11 +65,7 @@ public struct PowerSeries<x: PolynomialIndeterminate, R: Ring>: Ring, Module {
     }
     
     public func evaluate(at a: R, upTo degree: Int) -> R {
-        polynomial(upTo: degree).evaluate(at: a)
-    }
-    
-    public func evaluate<n>(at a: SquareMatrix<n, R>, upTo degree: Int) -> SquareMatrix<n, R> {
-        polynomial(upTo: degree).evaluate(at: a)
+        polynomial(upTo: degree).evaluate(by: a)
     }
     
     public static func == (f: PowerSeries, g: PowerSeries) -> Bool {

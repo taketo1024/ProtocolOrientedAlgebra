@@ -8,20 +8,10 @@
 import XCTest
 @testable import SwiftyMath
 
-extension _Polynomial: ExpressibleByIntegerLiteral, DelegatingIntegerLiteralInitialization where R: ExpressibleByIntegerLiteral {
-    public typealias IntegerLiteralType = R.IntegerLiteralType
-    public typealias IntegerLiteralDelegate = R
-}
-
 class PolynomialTests: XCTestCase {
-    typealias A = xPolynomial<𝐙>
-    typealias B = xPolynomial<𝐐>
+    typealias A = Polynomial<_x, 𝐙>
+    typealias B = Polynomial<_x, 𝐐>
 
-    func testInitFromIntLiteral() {
-        let a: A = 3
-        XCTAssertEqual(a, A(coeffs: [0: 3]))
-    }
-    
     func testInitFromInt() {
         let a = A(from: 3)
         XCTAssertEqual(a, A(coeffs: [0: 3]))
@@ -37,9 +27,10 @@ class PolynomialTests: XCTestCase {
         XCTAssertEqual(a.leadCoeff, 5)
         XCTAssertEqual(a.leadTerm, A(coeffs: [3: 5]))
         XCTAssertEqual(a.constTerm, 3)
-        XCTAssertEqual(a.highestPower, 3)
-        XCTAssertEqual(a.lowestPower, 0)
+        XCTAssertEqual(a.maxExponent, .some(3))
+        XCTAssertEqual(a.minExponent, .some(0))
         XCTAssertEqual(a.degree, 3)
+        XCTAssertFalse(a.isSingleTerm)
     }
     
     func testIndeterminate() {
@@ -47,8 +38,9 @@ class PolynomialTests: XCTestCase {
         XCTAssertEqual(x, A(coeffs: [1: 1]))
         XCTAssertEqual(x.description, "x")
         XCTAssertEqual(x.degree, 1)
-        XCTAssertEqual(x.highestPower, 1)
-        XCTAssertEqual(x.lowestPower, 1)
+        XCTAssertEqual(x.maxExponent, .some(1))
+        XCTAssertEqual(x.minExponent, .some(1))
+        XCTAssertTrue (x.isSingleTerm)
     }
     
     func testSum() {
@@ -112,7 +104,7 @@ class PolynomialTests: XCTestCase {
     
     func testEvaluate() {
         let a = A(coeffs: 1, 2, 3)
-        XCTAssertEqual(a.evaluate(at: -1), 2)
+        XCTAssertEqual(a.evaluate(by: -1), 2)
     }
     
     func testIsMonic() {
@@ -147,12 +139,12 @@ class PolynomialTests: XCTestCase {
     }
     
     func testCustomIndeterminate() {
-        typealias A = Polynomial<_t, 𝐙>
-        let t = A.indeterminate
-        XCTAssertEqual(t, A(coeffs: [1: 1]))
+        typealias T = Polynomial<_t, 𝐙>
+        let t = T.indeterminate
+        XCTAssertEqual(t, T(coeffs: [1: 1]))
         XCTAssertEqual(t.description, "t")
         XCTAssertEqual(t.degree, 2)
-        XCTAssertEqual(t.highestPower, 1)
-        XCTAssertEqual(t.lowestPower, 1)
+        XCTAssertEqual(t.maxExponent, .some(1))
+        XCTAssertEqual(t.minExponent, .some(1))
     }
 }

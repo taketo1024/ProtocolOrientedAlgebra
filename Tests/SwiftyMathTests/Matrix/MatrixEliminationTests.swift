@@ -162,7 +162,7 @@ class MatrixEliminationTests: XCTestCase {
     }
     
     func testQPolynomial() {
-        typealias R = xPolynomial<𝐐>
+        typealias R = Polynomial<_x, 𝐐>
         
         let x = R.indeterminate
         let I = Matrix3<R>.identity
