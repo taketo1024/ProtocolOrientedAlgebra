@@ -110,50 +110,52 @@ public struct QuotientSet<X, E: EquivalenceRelation>: QuotientSetType where X ==
 public protocol MapType: SetType {
     associatedtype Domain: SetType
     associatedtype Codomain: SetType
+    
     init (_ f: @escaping (Domain) -> Codomain)
+    var function: (Domain) -> Codomain { get }
     func applied(to x: Domain) -> Codomain
+    static func ∘<G: MapType>(g: G, f: Self) -> Map<Self.Domain, G.Codomain> where Self.Codomain == G.Domain
 }
 
 public extension MapType {
-    var description: String {
-        "\(Domain.symbol) -> \(Codomain.symbol)"
+    init(_ f: Map<Domain, Codomain>) {
+        self.init(f.function)
     }
     
-    static var symbol: String {
-        "Map(\(Domain.symbol), \(Codomain.symbol))"
+    var asMap: Map<Domain, Codomain> {
+        Map(function)
     }
     
+    func applied(to x: Domain) -> Codomain {
+        function(x)
+    }
+    
+    static func ∘<G: MapType>(g: G, f: Self) -> Map<Self.Domain, G.Codomain> where Self.Codomain == G.Domain {
+        Map<Self.Domain, G.Codomain>{ x in g.applied( to: f.applied(to: x) ) }
+    }
+
     static func == (lhs: Self, rhs: Self) -> Bool {
         fatalError("MapType is not equatable.")
     }
 
+    var description: String {
+        "map(\(Domain.symbol) -> \(Codomain.symbol))"
+    }
+    
+    static var symbol: String {
+        "Map(\(Domain.symbol) -> \(Codomain.symbol))"
+    }
 }
 
 public struct Map<X: SetType, Y: SetType>: MapType {
-    public typealias Domain = X
-    public typealias Codomain = Y
-    
-    private let f: (X) -> Y
+    public let function: (X) -> Y
     public init(_ f: @escaping (X) -> Y) {
-        self.f = f
-    }
-    
-    public func applied(to x: X) -> Y {
-        f(x)
-    }
-    
-    public func composed<W>(with g: Map<W, X>) -> Map<W, Y> {
-        Map<W, Y>{ x in self.applied( to: g.applied(to: x) ) }
-    }
-    
-    public static func ∘<W>(g: Map<X, Y>, f: Map<W, X>) -> Map<W, Y> {
-        g.composed(with: f)
+        self.function = f
     }
 }
 
 public protocol EndType: MapType where Domain == Codomain {
     static var identity: Self { get }
-    func composed(with f: Self) -> Self
     static func ∘(g: Self, f: Self) -> Self
 }
 
@@ -162,12 +164,8 @@ public extension EndType {
         Self { $0 }
     }
     
-    func composed(with g: Self) -> Self {
-        Self { x in self.applied( to: g.applied(to: x) ) }
-    }
-
     static func ∘(g: Self, f: Self) -> Self {
-        g.composed(with: f)
+        Self { x in g.applied(to: f.applied(to: x)) }
     }
 }
 

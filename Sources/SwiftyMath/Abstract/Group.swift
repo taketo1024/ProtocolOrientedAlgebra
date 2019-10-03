@@ -56,38 +56,13 @@ public struct QuotientGroup<G, H: NormalSubgroup>: QuotientGroupType where G == 
 public protocol GroupHomType: MonoidHomType where Domain: Group, Codomain: Group {}
 
 public struct GroupHom<X: Group, Y: Group>: GroupHomType {
-    public typealias Domain = X
-    public typealias Codomain = Y
-    
-    private let f: (X) -> Y
-    
+    public let function: (X) -> Y
     public init(_ f: @escaping (X) -> Y) {
-        self.f = f
-    }
-    
-    public func applied(to x: X) -> Y {
-        f(x)
-    }
-    
-    public func composed<W>(with g: GroupHom<W, X>) -> GroupHom<W, Y> {
-        GroupHom<W, Y>{ x in self.applied( to: g.applied(to: x) ) }
-    }
-    
-    public static func ∘<W>(g: GroupHom<X, Y>, f: GroupHom<W, X>) -> GroupHom<W, Y> {
-        g.composed(with: f)
+        self.function = f
     }
 }
 
 public protocol GroupEndType: GroupHomType, EndType {}
 
-extension GroupHom: EndType, GroupEndType where X == Y {
-    public static func * (g: GroupHom<X, Y>, f: GroupHom<X, Y>) -> GroupHom<X, Y> {
-        g.composed(with: f)
-    }
-    
-    public static var identity: GroupHom<X, Y> {
-        GroupHom{ $0 }
-    }
-}
-
+extension GroupHom: EndType, GroupEndType where X == Y {}
 public typealias GroupEnd<X: Group> = GroupHom<X, X>

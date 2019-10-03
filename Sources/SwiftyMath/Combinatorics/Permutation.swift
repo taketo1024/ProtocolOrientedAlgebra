@@ -60,6 +60,10 @@ public struct Permutation<n: SizeType>: Group, MapType, Hashable { // SymmetricG
         elements[i] ?? i
     }
     
+    public var function: (Int) -> Int {
+        { i in self[i] } 
+    }
+    
     public func applied(to i: Int) -> Int {
         self[i]
     }

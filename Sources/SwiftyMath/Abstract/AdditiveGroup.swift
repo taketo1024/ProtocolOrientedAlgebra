@@ -130,24 +130,9 @@ public extension AdditiveGroupHomType {
 }
 
 public struct AdditiveGroupHom<X: AdditiveGroup, Y: AdditiveGroup>: AdditiveGroupHomType {
-    public typealias Domain = X
-    public typealias Codomain = Y
-    
-    private let f: (X) -> Y
+    public let function: (X) -> Y
     public init(_ f: @escaping (X) -> Y) {
-        self.f = f
-    }
-    
-    public func applied(to x: X) -> Y {
-        f(x)
-    }
-    
-    public func composed<W>(with g: AdditiveGroupHom<W, X>) -> AdditiveGroupHom<W, Y> {
-        AdditiveGroupHom<W, Y>{ x in self.applied( to: g.applied(to: x) ) }
-    }
-    
-    public static func ∘<W>(g: AdditiveGroupHom<X, Y>, f: AdditiveGroupHom<W, X>) -> AdditiveGroupHom<W, Y> {
-        g.composed(with: f)
+        self.function = f
     }
 }
 

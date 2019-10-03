@@ -159,25 +159,9 @@ extension QuotientRing: EuclideanRing, Field where Sub: MaximalIdeal {}
 public protocol RingHomType: AdditiveGroupHomType where Domain: Ring, Codomain: Ring {}
 
 public struct RingHom<X: Ring, Y: Ring>: RingHomType {
-    public typealias Domain = X
-    public typealias Codomain = Y
-    
-    private let f: (X) -> Y
-    
+    public let function: (X) -> Y
     public init(_ f: @escaping (X) -> Y) {
-        self.f = f
-    }
-    
-    public func applied(to x: X) -> Y {
-        f(x)
-    }
-    
-    public func composed<W>(with g: RingHom<W, X>) -> RingHom<W, Y> {
-        RingHom<W, Y>{ x in self.applied( to: g.applied(to: x) ) }
-    }
-    
-    public static func ∘<W>(g: RingHom<X, Y>, f: RingHom<W, X>) -> RingHom<W, Y> {
-        g.composed(with: f)
+        self.function = f
     }
 }
 

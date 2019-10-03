@@ -78,25 +78,9 @@ public struct ProductMonoid<X: Monoid, Y: Monoid>: ProductMonoidType {
 public protocol MonoidHomType: MapType where Domain: Monoid, Codomain: Monoid {}
 
 public struct MonoidHom<X: Monoid, Y: Monoid>: MonoidHomType {
-    public typealias Domain = X
-    public typealias Codomain = Y
-    
-    private let f: (X) -> Y
-    
+    public let function: (X) -> Y
     public init(_ f: @escaping (X) -> Y) {
-        self.f = f
-    }
-    
-    public func applied(to x: X) -> Y {
-        f(x)
-    }
-    
-    public func composed<W>(with g: MonoidHom<W, X>) -> MonoidHom<W, Y> {
-        MonoidHom<W, Y>{ x in self.applied( to: g.applied(to: x) ) }
-    }
-    
-    public static func ∘<W>(g: MonoidHom<X, Y>, f: MonoidHom<W, X>) -> MonoidHom<W, Y> {
-        g.composed(with: f)
+        self.function = f
     }
 }
 

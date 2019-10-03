@@ -90,24 +90,10 @@ public extension ModuleHomType {
 
 public struct ModuleHom<X: Module, Y: Module>: ModuleHomType where X.BaseRing == Y.BaseRing {
     public typealias BaseRing = X.BaseRing
-    public typealias Domain = X
-    public typealias Codomain = Y
     
-    private let f: (X) -> Y
+    public let function: (X) -> Y
     public init(_ f: @escaping (X) -> Y) {
-        self.f = f
-    }
-    
-    public func applied(to x: X) -> Y {
-        f(x)
-    }
-    
-    public func composed<W>(with g: ModuleHom<W, X>) -> ModuleHom<W, Y> {
-        ModuleHom<W, Y>{ x in self.applied( to: g.applied(to: x) ) }
-    }
-    
-    public static func ∘<W>(g: ModuleHom<X, Y>, f: ModuleHom<W, X>) -> ModuleHom<W, Y> {
-        g.composed(with: f)
+        self.function = f
     }
 }
 
