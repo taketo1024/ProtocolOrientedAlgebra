@@ -63,12 +63,12 @@ extension FreeModuleType {
         .init(elements: [:])
     }
     
+    internal var degree_FreeModuleType: Int {
+        isZero ? 0 : elements.map{ (a, r) in a.degree + r.degree }.max()!
+    }
+    
     public var degree: Int {
-        if let (a, r) = elements.first {
-            return a.degree + r.degree
-        } else {
-            return 0
-        }
+        degree_FreeModuleType
     }
     
     public var generators: Dictionary<Generator, BaseRing>.Keys {
@@ -181,6 +181,12 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
     
     public static var symbol: String {
         "FreeMod(\(R.symbol))"
+    }
+}
+
+extension FreeModule: Multiplicative, Monoid, Ring where A: Monoid {
+    public var degree: Int {
+        degree_FreeModuleType
     }
 }
 

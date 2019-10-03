@@ -13,9 +13,9 @@ extension PolynomialType {
     }
     
     public var degree: Int {
-        generators.max().map{ $0.degree } ?? 0
+        degree_FreeModuleType
     }
-    
+
     public var normalizingUnit: Self {
         if let a = leadCoeff.inverse {
             return a * .identity
