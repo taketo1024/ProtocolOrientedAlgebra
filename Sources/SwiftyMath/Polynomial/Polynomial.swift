@@ -110,10 +110,6 @@ public struct Polynomial<x: PolynomialIndeterminate, R: Ring>: UnivariatePolynom
     public static var zero: Self {
         .init(elements: [:])
     }
-    
-    public func mapCoefficients<R2: Ring>(_ f: (R) -> R2) -> Polynomial<x, R2> {
-        .init(elements: elements.mapValues{ f($0) })
-    }
 }
 
 extension Polynomial: EuclideanRing where R: Field {
@@ -173,10 +169,6 @@ public struct LaurentPolynomial<x: PolynomialIndeterminate, R: Ring>: Univariate
 
     public static var zero: Self {
         .init(elements: [:])
-    }
-    
-    public func mapCoefficients<R2: Ring>(_ f: (R) -> R2) -> LaurentPolynomial<x, R2> {
-        .init(elements: elements.mapValues{ f($0) })
     }
 }
 

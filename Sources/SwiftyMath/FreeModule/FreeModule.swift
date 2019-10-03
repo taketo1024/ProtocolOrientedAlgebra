@@ -38,6 +38,10 @@ extension FreeModuleType {
         self.init(elements: coefficients.components.map{ (i, _, r) in (array[i], r) } )
     }
     
+    public init(_ z: FreeModule<Generator, BaseRing>) {
+        self.init(elements: z.elements)
+    }
+
     public subscript(a: Generator) -> BaseRing {
         elements[a] ?? .zero
     }
@@ -114,6 +118,19 @@ extension FreeModuleType {
         }
     }
     
+    // MEMO: Swift does not support higher kinded types.
+    public func mapGenerators<A>(_ f: (Generator) -> A) -> FreeModule<A, BaseRing> {
+        mapPairs{ (a, r) in (f(a), r) }
+    }
+    
+    public func mapCoefficients<R>(_ f: (BaseRing) -> R) -> FreeModule<Generator, R> {
+        mapPairs{ (a, r) in (a, f(r)) }
+    }
+    
+    public func mapPairs<A, R>(_ f: (Generator, BaseRing) -> (A, R)) -> FreeModule<A, R> {
+        FreeModule<A, R>(elements: elements.map{ (a, r) in f(a, r) }, keysAreUnique: false)
+    }
+    
     public var asFreeModule: FreeModule<Generator, BaseRing> {
         FreeModule(elements: elements)
     }
@@ -167,18 +184,6 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
         self.elements = elements.exclude{ $0.value.isZero }
     }
     
-    public func mapGenerators<A2>(_ f: (A) -> A2) -> FreeModule<A2, R> {
-        map{ (a, r) in (f(a), r) }
-    }
-    
-    public func mapComponents<R2>(_ f: (R) -> R2) -> FreeModule<A, R2> {
-        map{ (a, r) in (a, f(r)) }
-    }
-    
-    public func map<A2, R2>(_ f: (A, R) -> (A2, R2)) -> FreeModule<A2, R2> {
-        FreeModule<A2, R2>(elements: elements.map{ (a, r) in f(a, r) }, keysAreUnique: false)
-    }
-    
     public static var symbol: String {
         "FreeMod(\(R.symbol))"
     }
@@ -192,13 +197,13 @@ extension FreeModule: Multiplicative, Monoid, Ring where A: Monoid {
 
 extension FreeModule where R: RealSubset {
     public var asReal: FreeModule<A, 𝐑> {
-        mapComponents{ $0.asReal }
+        mapCoefficients{ $0.asReal }
     }
 }
 
 extension FreeModule where R: ComplexSubset {
     public var asComplex: FreeModule<A, 𝐂> {
-        mapComponents{ $0.asComplex }
+        mapCoefficients{ $0.asComplex }
     }
 }
 
