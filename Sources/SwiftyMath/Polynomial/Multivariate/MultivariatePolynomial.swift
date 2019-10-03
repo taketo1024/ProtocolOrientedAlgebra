@@ -51,6 +51,10 @@ public struct MultivariatePolynomial<xn: MultivariatePolynomialIndeterminates, R
         self.elements = elements.exclude{ $0.value.isZero }
     }
     
+    public static var zero: Self {
+        .init(elements: [:])
+    }
+    
     public static func elementarySymmetric(_ i: Int) -> MultivariatePolynomial {
         assert(xn.isFinite)
         assert(i >= 0)

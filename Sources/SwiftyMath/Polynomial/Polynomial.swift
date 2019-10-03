@@ -8,37 +8,12 @@
 public protocol PolynomialType: FreeModuleType, Ring where Generator: PolynomialGeneratorType {}
 
 extension PolynomialType {
-    public init(from n: 𝐙) {
-        self.init(BaseRing(from: n))
-    }
-
-    public init(_ r: BaseRing) {
-        self.init(elements: [.identity : r])
-    }
-    
     public init(coeffs: [Generator.Exponent : BaseRing]) {
         self.init(elements: coeffs.mapKeys{ n in Generator(n) } )
     }
     
-    public static var zero: Self {
-        .init(elements: [:])
-    }
-    
     public var degree: Int {
         generators.max().map{ $0.degree } ?? 0
-    }
-    
-    public var inverse: Self? {
-        if !isSingleTerm {
-            return nil
-        }
-        
-        let (m, a) = self.decomposed().first!
-        if let n = m.inverse, let b = a.inverse {
-            return b * .wrap(n)
-        } else {
-            return nil
-        }
     }
     
     public var normalizingUnit: Self {
@@ -132,6 +107,10 @@ public struct Polynomial<x: PolynomialIndeterminate, R: Ring>: UnivariatePolynom
         self.elements = elements.exclude{ $0.value.isZero }
     }
 
+    public static var zero: Self {
+        .init(elements: [:])
+    }
+    
     public func mapCoefficients<R2: Ring>(_ f: (R) -> R2) -> Polynomial<x, R2> {
         .init(elements: elements.mapValues{ f($0) })
     }
@@ -192,6 +171,10 @@ public struct LaurentPolynomial<x: PolynomialIndeterminate, R: Ring>: Univariate
         self.elements = elements.exclude{ $0.value.isZero }
     }
 
+    public static var zero: Self {
+        .init(elements: [:])
+    }
+    
     public func mapCoefficients<R2: Ring>(_ f: (R) -> R2) -> LaurentPolynomial<x, R2> {
         .init(elements: elements.mapValues{ f($0) })
     }

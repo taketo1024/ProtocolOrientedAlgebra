@@ -134,6 +134,29 @@ extension FreeModuleType where Generator: Multiplicative {
     }
 }
 
+// concrete type to be conformed to Ring.
+extension FreeModuleType where Generator: Monoid {
+    public init(from n: 𝐙) {
+        self.init(BaseRing(from: n))
+    }
+
+    public init(_ r: BaseRing) {
+        self.init(elements: [.identity : r])
+    }
+    
+    public var inverse: Self? {
+        if isSingleTerm,
+            let (a, r) = self.elements.anyElement,
+            let aInv = a.inverse,
+            let rInv = r.inverse
+        {
+            return .init(elements: [aInv : rInv])
+        } else {
+            return nil
+        }
+    }
+}
+
 public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
     public typealias BaseRing = R
     public typealias Generator = A
