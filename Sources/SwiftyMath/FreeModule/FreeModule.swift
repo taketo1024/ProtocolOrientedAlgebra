@@ -1,55 +1,66 @@
+//
+//  FreeModule.swift
+//  SwiftyMath
+//
+//  Created by Taketo Sano on 2019/10/02.
+//
+
 public protocol FreeModuleType: Module {
     associatedtype Generator: FreeModuleGenerator
-    init<S: Sequence>(_ elements: S) where S.Element == (Generator, BaseRing)
-    static func wrap(_ a: Generator) -> Self
-    func unwrap() -> Generator?
-    var isGenerator: Bool { get }
-    func decomposed() -> [(Generator, BaseRing)]
+    init(elements: [Generator : BaseRing])
+    var elements: [Generator : BaseRing] { get }
 }
 
-public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
-    public typealias BaseRing = R
-    public typealias Generator = A
-    
-    private let elements: [(A, R)]
-    private let dictCache: Cache<[A : R]> = .empty
-    
-    public init<S: Sequence>(_ elements: S) where S.Element == (A, R) {
-        assert(elements.map{ $0.0 }.isUnique)
-        self.elements = Array(elements.exclude{ (_, r) in r.isZero })
-    }
-    
-    public init(_ elements: (A, R)...) {
-        self.init(elements)
-    }
-    
-    public subscript(a: A) -> R {
-        if !dictCache.hasValue {
-            dictCache.value = Dictionary(pairs: elements)
+extension FreeModuleType {
+    public init<S: Sequence>(elements: S, keysAreUnique: Bool = true) where S.Element == (Generator, BaseRing) {
+        if keysAreUnique {
+            self.init(elements: Dictionary(pairs: elements))
+        } else {
+            let dict = elements
+                .group(by: { $0.0 })
+                .mapValues{ BaseRing.sum($0.map{ $0.1 }) }
+            self.init(elements: dict)
         }
-        return dictCache.value?[a] ?? .zero
+    }
+    
+    public init(elements: (Generator, BaseRing) ...) {
+        self.init(elements: elements)
+    }
+
+    public init<S1: Sequence, S2: Sequence>(generators: S1, coefficients: S2) where S1.Element == Generator, S2.Element == BaseRing {
+        assert(generators.count >= coefficients.count)
+        self.init(elements: zip(generators, coefficients))
+    }
+    
+    public init<S1: Sequence, n>(generators: S1, coefficients: ColVector<n, BaseRing>) where S1.Element == Generator {
+        let array = Array(generators)
+        assert(array.count >= coefficients.size.rows)
+        self.init(elements: coefficients.components.map{ (i, _, r) in (array[i], r) } )
+    }
+    
+    public subscript(a: Generator) -> BaseRing {
+        elements[a] ?? .zero
     }
     
     @_transparent
-    public static func wrap(_ a: A) -> FreeModule {
-        FreeModule([(a, .identity)])
+    public static func wrap(_ a: Generator) -> Self {
+        .init(elements: [a : .identity])
     }
     
-    public func unwrap() -> A? {
+    public func unwrap() -> Generator? {
         isGenerator ? elements.first!.0 : nil
     }
     
+    public var isSingleTerm: Bool {
+        (elements.count == 1)
+    }
+    
     public var isGenerator: Bool {
-        (elements.count == 1) && elements.first!.1.isIdentity
+        isSingleTerm && elements.first!.1.isIdentity
     }
     
-    public static var zero: FreeModule {
-        FreeModule([])
-    }
-    
-    public static func combine<n>(generators: [A], vector: ColVector<n, R>) -> FreeModule {
-        assert(generators.count == vector.size.rows)
-        return (generators.map{ .wrap($0) } * vector)[0]
+    public static var zero: Self {
+        .init(elements: [:])
     }
     
     public var degree: Int {
@@ -60,78 +71,74 @@ public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
         }
     }
     
-    public var generators: [A] {
-        elements.map{ $0.0 }
+    public var generators: Dictionary<Generator, BaseRing>.Keys {
+        elements.keys
     }
     
-    public func decomposed() -> [(A, R)] {
-        elements
+    public func decomposed() -> [(Generator, BaseRing)] {
+        elements.map{ (a, r) in (a, r) }
     }
     
-    public func mapGenerators<A2>(_ f: (A) -> A2) -> FreeModule<A2, R> {
-        FreeModule<A2, R>(elements.map{ (a, r) in (f(a), r) })
+    public static func + (a: Self, b: Self) -> Self {
+        Self.sum([a, b])
     }
     
-    public func mapComponents<R2>(_ f: (R) -> R2) -> FreeModule<A, R2> {
-        FreeModule<A, R2>(elements.map{ (a, r) in (a, f(r)) })
+    public static prefix func - (a: Self) -> Self {
+        .init(elements: a.elements.mapValues{ -$0 })
     }
     
-    public func map<A2, R2>(_ f: (A, R) -> (A2, R2)) -> FreeModule<A2, R2> {
-        FreeModule<A2, R2>(elements.map{ (a, r) in f(a, r) })
+    public static func * (r: BaseRing, a: Self) -> Self {
+        .init(elements: a.elements.mapValues{ r * $0 } )
     }
     
-    public var reordered: FreeModule {
-        FreeModule(elements.sorted{ (a, _) in a })
+    public static func * (a: Self, r: BaseRing) -> Self {
+        .init(elements: a.elements.mapValues{ $0 * r } )
     }
     
-    public static func + (a: FreeModule, b: FreeModule) -> FreeModule {
-        FreeModule.sum([a, b])
-    }
-    
-    public static prefix func - (a: FreeModule) -> FreeModule {
-        FreeModule(a.elements.map{ (a, r) in (a, -r) })
-    }
-    
-    public static func * (r: R, a: FreeModule) -> FreeModule {
-        FreeModule(a.elements.map{ (a, s) in (a, r * s) })
-    }
-    
-    public static func * (a: FreeModule, r: R) -> FreeModule {
-        FreeModule(a.elements.map{ (a, s) in (a, s * r) })
-    }
-    
-    public static func sum(_ elements: [FreeModule]) -> FreeModule {
-        if elements.count == 1 {
-            return elements.first!
-        } else {
-            var dict: [A : R] = [:]
-            var gens: [A] = []
+    public static func sum(_ summands: [Self]) -> Self {
+        switch summands.count {
+        case 0: return .zero
+        case 1: return summands.first!
+        default:
+            let N = summands.sum { z in z.elements.count }
             
-            let size = elements.sum { z in z.elements.count }
-            dict.reserveCapacity(size)
-            gens.reserveCapacity(size)
-            
-            for z in elements {
+            var sum: [Generator : BaseRing] = [:]
+            sum.reserveCapacity(N)
+
+            for z in summands {
                 for (a, r) in z.elements {
-                    if let r0 = dict[a] {
-                        dict[a] = r0 + r
-                    } else {
-                        dict[a] = r
-                        gens.append(a)
-                    }
+                    sum[a] = sum[a, default: .zero] + r
                 }
             }
-            return FreeModule(gens.map{ a in (a, dict[a]!) })
+            return .init(elements: sum)
         }
     }
     
-    public static func ==(lhs: FreeModule, rhs: FreeModule) -> Bool {
-        lhs.elements.count == rhs.elements.count
-            && Dictionary(pairs: lhs.elements) == Dictionary(pairs: rhs.elements)
+    public var description: String {
+        Format.terms("+", elements.sorted(by: { $0.key }).map { (a, r) in (r, a.description, 1) })
+    }
+}
+
+public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
+    public typealias BaseRing = R
+    public typealias Generator = A
+    
+    public let elements: [A : R]
+    
+    public init(elements: [A : R]) {
+        self.elements = elements.exclude{ $0.value.isZero }
     }
     
-    public var description: String {
-        Format.terms("+", elements.map { (a, r) in (r, a.description, 1) })
+    public func mapGenerators<A2>(_ f: (A) -> A2) -> FreeModule<A2, R> {
+        map{ (a, r) in (f(a), r) }
+    }
+    
+    public func mapComponents<R2>(_ f: (R) -> R2) -> FreeModule<A, R2> {
+        map{ (a, r) in (a, f(r)) }
+    }
+    
+    public func map<A2, R2>(_ f: (A, R) -> (A2, R2)) -> FreeModule<A2, R2> {
+        FreeModule<A2, R2>(elements: elements.map{ (a, r) in f(a, r) }, keysAreUnique: false)
     }
     
     public static var symbol: String {
@@ -154,7 +161,7 @@ extension FreeModule where R: ComplexSubset {
 extension ModuleHom where X: FreeModuleType, Y: FreeModuleType {
     public static func linearlyExtend(_ f: @escaping (X.Generator) -> Codomain) -> ModuleHom<X, Y> {
         ModuleHom { (m: Domain) in
-            m.isGenerator ? f(m.unwrap()!) : m.decomposed().sum { (a, r) in r * f(a) }
+            m.isGenerator ? f(m.unwrap()!) : m.elements.sum { (a, r) in r * f(a) }
         }
     }
 }
