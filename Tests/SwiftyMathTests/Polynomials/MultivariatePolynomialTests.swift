@@ -9,9 +9,10 @@ import XCTest
 @testable import SwiftyMath
 
 class MPolynomialTests: XCTestCase {
-    typealias A = xyPolynomial<𝐙>
+    typealias A = BivariatePolynomial<_x, _y, 𝐙>
     
-    func testIndeterminates_xy() {
+    func testBivariateIndeterminates() {
+        typealias _xy = BivariatePolynomialIndeterminates<_x, _y>
         XCTAssertTrue (_xy.isFinite)
         XCTAssertEqual(_xy.numberOfIndeterminates, 2)
         XCTAssertEqual(_xy.degree(0), 1)
@@ -21,9 +22,20 @@ class MPolynomialTests: XCTestCase {
         XCTAssertEqual(_xy.totalDegree(exponents: [2, 3]), 5)
     }
     
-    func testIndeterminates_xn() {
+    func testFiniteVariateIndeterminates() {
+        typealias _xn = FiniteVariatePolynomialIndeterminates<_x, _3>
+        XCTAssertTrue (_xn.isFinite)
+        XCTAssertEqual(_xn.numberOfIndeterminates, 3)
+        XCTAssertEqual(_xn.degree(0), 1)
+        XCTAssertEqual(_xn.degree(1), 1)
+        XCTAssertEqual(_xn.symbol(0), "x₀")
+        XCTAssertEqual(_xn.symbol(1), "x₁")
+        XCTAssertEqual(_xn.totalDegree(exponents: [2, 3, 7]), 12)
+    }
+    
+    func testInfiniteVariateIndeterminates() {
+        typealias _xn = InfiniteVariatePolynomialIndeterminates<_x>
         XCTAssertFalse(_xn.isFinite)
-        XCTAssertEqual(_xn.numberOfIndeterminates, Int.max)
         XCTAssertEqual(_xn.degree(0), 1)
         XCTAssertEqual(_xn.degree(1), 1)
         XCTAssertEqual(_xn.symbol(0), "x₀")
@@ -35,7 +47,7 @@ class MPolynomialTests: XCTestCase {
         let a = A(from: 3)
         XCTAssertTrue(a.isConst)
         XCTAssertEqual(a.constTerm, 3)
-        XCTAssertEqual(a.coeff(1), 0)
+        XCTAssertEqual(a.coeff([1]), 0)
     }
 
     func testInitFromCoeffList() {
@@ -43,9 +55,15 @@ class MPolynomialTests: XCTestCase {
         let a = A(coeffs: [[]: 1, [1]: 2, [0, 1]: 1, [2, 1]: 3])
         XCTAssertTrue(!a.isConst)
         XCTAssertEqual(a.constTerm, 1)
-        XCTAssertEqual(a.coeff(1), 2)
-        XCTAssertEqual(a.coeff(0, 1), 1)
-        XCTAssertEqual(a.coeff(2, 1), 3)
+        XCTAssertEqual(a.coeff([1]), 2)
+        XCTAssertEqual(a.coeff([0, 1]), 1)
+        XCTAssertEqual(a.coeff([2, 1]), 3)
+    }
+    
+    func testCoeff() {
+        let a = A(coeffs: [[1]: 2])
+        XCTAssertEqual(a.coeff([1]), 2)
+        XCTAssertEqual(a.coeff([1, 0]), 2)
     }
     
     func testUniqueness() {
@@ -103,18 +121,12 @@ class MPolynomialTests: XCTestCase {
 
     func testEvaluate() {
         let a = A(coeffs: [[]: 2, [1]: -1, [0, 1]: 2, [1, 1]: 3]) // f(x,y) = 3xy - x + 2y + 2
-        XCTAssertEqual(a.evaluate(at: 1, 2), 11)                  // f(1, 2) = 6 - 1 + 4 + 2
+        XCTAssertEqual(a.evaluate(by: 1, 2), 11)                  // f(1, 2) = 6 - 1 + 4 + 2
     }
 
     func testSymmetricPolynomial() {
         XCTAssertEqual(A.elementarySymmetric(0), A(1))
         XCTAssertEqual(A.elementarySymmetric(1), A(coeffs: [[1]: 1, [0, 1]: 1]))
         XCTAssertEqual(A.elementarySymmetric(2), A(coeffs: [[1, 1]: 1]))
-    }
-    
-    func testMonomials() {
-        let mons = xnPolynomial<𝐙>.monomials(ofDegree: 3, usingIndeterminates: [0, 1, 2])
-        XCTAssertEqual(mons.count, 10)
-        XCTAssertTrue(mons.allSatisfy{ $0.degree == 3 })
     }
 }
