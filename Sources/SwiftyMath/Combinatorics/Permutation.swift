@@ -8,7 +8,7 @@
 
 public typealias DPermutation = Permutation<DynamicSize>
 
-public struct Permutation<n: SizeType>: Group, MapType { // SymmetricGroup<n>
+public struct Permutation<n: SizeType>: Group, MapType, Hashable { // SymmetricGroup<n>
     public typealias Domain = Int
     public typealias Codomain = Int
     

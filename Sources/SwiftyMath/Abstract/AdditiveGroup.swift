@@ -169,17 +169,18 @@ public extension Sequence {
 }
 
 public struct AsGroup<G: AdditiveGroup>: Group {
-    private let g: G
+    public let entity: G
+    
     public init(_ g: G) {
-        self.g = g
+        self.entity = g
     }
 
     public var inverse: AsGroup? {
-        AsGroup(-g)
+        AsGroup(-entity)
     }
 
     public static func * (a: AsGroup, b: AsGroup) -> AsGroup {
-        AsGroup(a.g + b.g)
+        AsGroup(a.entity + b.entity)
     }
 
     public static var identity: AsGroup {
@@ -187,7 +188,7 @@ public struct AsGroup<G: AdditiveGroup>: Group {
     }
 
     public var description: String {
-        g.description
+        entity.description
     }
 
     public static var symbol: String {
