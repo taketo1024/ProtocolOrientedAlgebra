@@ -114,6 +114,10 @@ extension FreeModuleType {
         }
     }
     
+    public var asFreeModule: FreeModule<Generator, BaseRing> {
+        FreeModule(elements: elements)
+    }
+    
     public var description: String {
         Format.terms("+", elements.sorted(by: { $0.key }).map { (a, r) in (r, a.description, 1) })
     }
@@ -177,4 +181,4 @@ extension ModuleHom where X: FreeModuleType, Y: FreeModuleType {
     }
 }
 
-//extension FreeModule: Codable where A: Codable, R: Codable {}
+extension FreeModule: Codable where A: Codable, R: Codable {}
