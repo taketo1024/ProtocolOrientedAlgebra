@@ -1,31 +1,9 @@
-public protocol Group: Monoid {
-    var inverse: Self { get }
-}
-
-public extension Group {
-    func pow(_ n: 𝐙) -> Self {
-        (n >= 0)
-            ? (0 ..< n).reduce(.identity){ (res, _) in self * res }
-            : (0 ..< -n).reduce(.identity){ (res, _) in inverse * res }
-    }
-}
+public protocol Group: Monoid {}
 
 public protocol Subgroup: Submonoid where Super: Group {}
-
-public extension Subgroup {
-    var inverse: Self {
-        Self(self.asSuper.inverse)
-    }
-}
-
 public protocol NormalSubgroup: Subgroup{}
 
 public protocol ProductGroupType: ProductMonoidType, Group where Left: Group, Right: Group {}
-public extension ProductGroupType {
-    var inverse: Self {
-        Self(left.inverse, right.inverse)
-    }
-}
 
 public struct ProductGroup<X: Group, Y: Group>: ProductGroupType {
     public let left: X
@@ -42,15 +20,15 @@ public protocol QuotientGroupType: QuotientSetType, Group where Base == Sub.Supe
 
 public extension QuotientGroupType {
     static func isEquivalent(_ x: Base, _ y: Base) -> Bool {
-        Sub.contains(x * y.inverse)
+        Sub.contains(x * y.inverse!)
     }
     
     static var identity: Self {
         Self(Base.identity)
     }
     
-    var inverse: Self {
-        Self(representative.inverse)
+    var inverse: Self? {
+        Self(representative.inverse!)
     }
     
     static func * (a: Self, b: Self) -> Self {

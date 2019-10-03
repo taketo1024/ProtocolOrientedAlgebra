@@ -1,7 +1,5 @@
 public protocol Ring: AdditiveGroup, Monoid {
     init(from: 𝐙)
-    var inverse: Self? { get }
-    var isInvertible: Bool { get }
     var normalizingUnit: Self { get }
     var normalized: Self { get }
     var isNormalized: Bool { get }
@@ -10,8 +8,12 @@ public protocol Ring: AdditiveGroup, Monoid {
 }
 
 public extension Ring {
-    var isInvertible: Bool {
-        inverse != nil
+    static var zero: Self {
+        Self(from: 0)
+    }
+    
+    static var identity: Self {
+        Self(from: 1)
     }
     
     var normalizingUnit: Self {
@@ -30,20 +32,6 @@ public extension Ring {
         0
     }
     
-    func pow(_ n: Int) -> Self {
-        (n >= 0)
-            ? (0 ..< n).reduce(.identity){ (res, _) in self * res }
-            : (0 ..< -n).reduce(.identity){ (res, _) in inverse! * res }
-    }
-    
-    static var zero: Self {
-        Self(from: 0)
-    }
-    
-    static var identity: Self {
-        Self(from: 1)
-    }
-    
     static var isField: Bool {
         false
     }
@@ -56,10 +44,6 @@ public extension Subring {
         self.init( Super.init(from: n) )
     }
 
-    var inverse: Self? {
-        asSuper.inverse.flatMap{ Self.init($0) }
-    }
-    
     static var zero: Self {
         Self.init(from: 0)
     }
@@ -100,27 +84,19 @@ public extension Ideal {
 
 public protocol MaximalIdeal: Ideal {}
 
-public protocol ProductRingType: AdditiveProductGroupType, Ring where Left: Ring, Right: Ring {}
+public protocol ProductRingType: ProductMonoidType, AdditiveProductGroupType, Ring where Left: Ring, Right: Ring {}
 
 public extension ProductRingType {
     init(from a: 𝐙) {
         self.init(Left(from: a), Right(from: a))
     }
     
-    var inverse: Self? {
-        left.inverse.flatMap{ r1 in right.inverse.flatMap{ r2 in Self(r1, r2) }  }
-    }
-    
     static var zero: Self {
-        Self(.zero, .zero)
+        .init(from: 0)
     }
     
     static var identity: Self {
-        Self(.identity, .identity)
-    }
-    
-    static func * (a: Self, b: Self) -> Self {
-        Self(a.left * b.left, a.right * b.right)
+        .init(from: 1)
     }
 }
 

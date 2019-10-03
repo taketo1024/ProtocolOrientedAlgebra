@@ -11,7 +11,6 @@ public protocol PolynomialGeneratorType: FreeModuleGenerator, Monoid {
     init(_ exponent: Exponent)
     var exponent: Exponent { get }
     var degree: Int { get }
-    var inverse: Self? { get }
 }
 
 public protocol UnivariatePolynomialGeneratorType: PolynomialGeneratorType where Exponent == Int {

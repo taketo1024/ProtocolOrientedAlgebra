@@ -174,7 +174,7 @@ public struct AsGroup<G: AdditiveGroup>: Group {
         self.g = g
     }
 
-    public var inverse: AsGroup {
+    public var inverse: AsGroup? {
         AsGroup(-g)
     }
 

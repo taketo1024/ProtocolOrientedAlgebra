@@ -51,7 +51,7 @@ public struct Permutation<n: SizeType>: Group, MapType { // SymmetricGroup<n>
         Permutation([:])
     }
     
-    public var inverse: Permutation {
+    public var inverse: Permutation? {
         let inv = elements.map{ (i, j) in (j, i)}
         return Permutation(Dictionary(pairs: inv))
     }

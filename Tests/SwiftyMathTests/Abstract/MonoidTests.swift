@@ -26,6 +26,10 @@ class MonoidTests: XCTestCase {
         static var identity: A {
             return A(0)
         }
+        
+        var inverse: A? {
+            return A(-value)
+        }
     }
     
     private struct B: Submonoid {

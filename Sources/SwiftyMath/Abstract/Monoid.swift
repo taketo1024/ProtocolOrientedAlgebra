@@ -5,7 +5,8 @@ public protocol Multiplicative {
 public protocol Monoid: SetType, Multiplicative {
     static var identity: Self { get }
     var isIdentity: Bool { get }
-    func pow(_ n: 𝐙) -> Self
+    var inverse: Self? { get }
+    var isInvertible: Bool { get }    
 }
 
 public extension Monoid {
@@ -13,9 +14,19 @@ public extension Monoid {
         return self == .identity
     }
     
-    func pow(_ n: 𝐙) -> Self {
-        assert(n >= 0)
-        return (0 ..< n).reduce(.identity){ (res, _) in self * res }
+    var isInvertible: Bool {
+        inverse != nil
+    }
+    
+    func pow(_ n: Int) -> Self {
+        if n >= 0 {
+            return (0 ..< n).reduce(.identity){ (res, _) in self * res }
+        } else {
+            guard let inv = inverse else {
+                fatalError()
+            }
+            return (0 ..< -n).reduce(.identity){ (res, _) in inv * res }
+        }
     }
 }
 
@@ -29,16 +40,29 @@ public extension Submonoid {
     static func * (a: Self, b: Self) -> Self {
         Self(a.asSuper * b.asSuper)
     }
+    
+    var inverse: Self? {
+        asSuper.inverse.map{ Self($0) }
+    }
 }
 
 public protocol ProductMonoidType: ProductSetType, Monoid where Left: Monoid, Right: Monoid {}
+
 public extension ProductMonoidType {
+    static func * (a: Self, b: Self) -> Self {
+        Self(a.left * b.left, a.right * b.right)
+    }
+    
     static var identity: Self {
         Self(.identity, .identity)
     }
     
-    static func * (a: Self, b: Self) -> Self {
-        Self(a.left * b.left, a.right * b.right)
+    var inverse: Self? {
+        if let lInv = left.inverse, let rInv = right.inverse {
+            return Self(lInv, rInv)
+        } else {
+            return nil
+        }
     }
 }
 

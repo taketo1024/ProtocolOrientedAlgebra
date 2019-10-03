@@ -7,16 +7,16 @@ extension 𝐙: EuclideanRing, Randomable {
         self.init(n)
     }
 
+    public static var zero: 𝐙 {
+        0
+    }
+
     public var inverse: 𝐙? {
         (self.abs == 1) ? self : nil
     }
 
     public var normalizingUnit: 𝐙 {
         (self >= 0) ? 1 : -1
-    }
-
-    public static var zero: 𝐙 {
-        0
     }
 
     public var sign: 𝐙 {

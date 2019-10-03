@@ -27,7 +27,7 @@ class GroupTests: XCTestCase {
             return A(0)
         }
         
-        var inverse: A {
+        var inverse: A? {
             return A(-value)
         }
     }
@@ -65,7 +65,7 @@ class GroupTests: XCTestCase {
     
     func testInverse() {
         let a = A(3)
-        XCTAssertEqual(a.inverse, A(-3))
+        XCTAssertEqual(a.inverse, .some(A(-3)))
     }
     
     func testPow() {
@@ -95,9 +95,14 @@ class GroupTests: XCTestCase {
     
     func testSubgroupInverse() {
         let a = B(A(3))
-        XCTAssertEqual(a.inverse, B(A(-3)))
-        XCTAssertEqual(a * a.inverse, B.identity)
-        XCTAssertEqual(a.inverse * a, B.identity)
+        guard let aInv = a.inverse else {
+            XCTFail()
+            return
+        }
+        
+        XCTAssertEqual(aInv, B(A(-3)))
+        XCTAssertEqual(a * aInv, B.identity)
+        XCTAssertEqual(aInv * a, B.identity)
     }
     
     func testProductGroupMul() {
