@@ -216,3 +216,6 @@ extension ModuleHom where X: FreeModuleType, Y: FreeModuleType {
 }
 
 extension FreeModule: Codable where A: Codable, R: Codable {}
+
+public typealias MonoidRing<M: Monoid & FreeModuleGenerator, R: Ring> = FreeModule<M, R>
+public typealias  GroupRing<G:  Group & FreeModuleGenerator, R: Ring> = FreeModule<G, R>
