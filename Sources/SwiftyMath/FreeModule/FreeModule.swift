@@ -119,6 +119,17 @@ extension FreeModuleType {
     }
 }
 
+extension FreeModuleType where Generator: Multiplicative {
+    public static func * (a: Self, b: Self) -> Self {
+        let elements = (a.elements * b.elements).map { (ca, cb) -> (Generator, BaseRing) in
+            let (x, r) = ca
+            let (y, s) = cb
+            return (x * y, r * s)
+        }
+        return .init(elements: elements, keysAreUnique: false)
+    }
+}
+
 public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
     public typealias BaseRing = R
     public typealias Generator = A

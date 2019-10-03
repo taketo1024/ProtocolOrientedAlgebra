@@ -354,7 +354,7 @@ extension Matrix: AdditiveGroup, Module where n: StaticSizeType, m: StaticSizeTy
     }
 }
 
-extension Matrix: Monoid, Ring where n == m, n: StaticSizeType {
+extension Matrix: Multiplicative, Monoid, Ring where n == m, n: StaticSizeType {
     public init(from a : 𝐙) {
         let size = (n.intValue, n.intValue)
         let data = !a.isZero ? (0 ..< n.intValue).map{ i in (MatrixCoord(i, i), R(from: a)) } : []

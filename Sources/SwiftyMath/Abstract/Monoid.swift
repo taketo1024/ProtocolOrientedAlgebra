@@ -1,8 +1,10 @@
-public protocol Monoid: SetType {
+public protocol Multiplicative {
+    static func * (a: Self, b: Self) -> Self
+}
+
+public protocol Monoid: SetType, Multiplicative {
     static var identity: Self { get }
     var isIdentity: Bool { get }
-    
-    static func * (a: Self, b: Self) -> Self
     func pow(_ n: 𝐙) -> Self
 }
 
