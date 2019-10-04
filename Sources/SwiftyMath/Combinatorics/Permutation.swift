@@ -110,6 +110,10 @@ public struct Permutation<n: SizeType>: Group, MapType, Hashable { // SymmetricG
         return .init(d)
     }
     
+    public static func ==(a: Self, b: Self) -> Bool {
+        a.elements == b.elements
+    }
+    
     public var description: String {
         elements.isEmpty
             ? "id"
@@ -122,8 +126,16 @@ public struct Permutation<n: SizeType>: Group, MapType, Hashable { // SymmetricG
 }
 
 extension Permutation: FiniteSetType where n: StaticSizeType {
+    public static var size: Int {
+        n.intValue
+    }
+    
     public static var allElements: [Self] {
-        DPermutation.rawPermutations(length: n.intValue).map{ .init($0) }
+        (0 ..< n.intValue).permutations.map{ .init($0) }
+    }
+    
+    public static var allTranspositions: [Self] {
+        (0 ..< n.intValue).choose(2).map { .transposition($0[0], $0[1]) }
     }
     
     public static var countElements: Int {
@@ -132,49 +144,12 @@ extension Permutation: FiniteSetType where n: StaticSizeType {
 }
 
 extension Permutation where n == DynamicSize {
-    
-    // MEMO Heap's algorithm: https://en.wikipedia.org/wiki/Heap%27s_algorithm
-    public static func rawPermutations(length n: Int) -> [[Int]] {
-        assert(n >= 0)
-        
-        func generate(_ k: Int, _ arr: inout [Int], _ result: inout [[Int]]) {
-            if k == 1 {
-                result.append(arr)
-            } else {
-                generate(k - 1, &arr, &result)
-                for i in 0 ..< k - 1 {
-                    let swap = k.isEven ? (i, k - 1) : (0, k - 1)
-                    arr.swapAt(swap.0, swap.1)
-                    generate(k - 1, &arr, &result)
-                }
-            }
-        }
-        
-        var arr = (0 ..< n).toArray()
-        var result: [[Int]] = []
-        
-        generate(n, &arr, &result)
-        
-        return result
-    }
-
-    public static func permutations(length n: Int) -> [Self] {
-        rawPermutations(length: n).map{ .init($0) }
+    public static func allPermutations(length n: Int) -> [Self] {
+        (0 ..< n).permutations.map{ .init($0) }
     }
     
-    public static func rawTranspositions(within n: Int) -> [(Int, Int)] {
-        if n <= 1 {
-            return []
-        }
-        return (0 ..< n - 1).flatMap { i in
-            (i + 1 ..< n).map{ j in (i, j) }
-        }
-    }
-    
-    public static func transpositions(within n: Int) -> [Self] {
-        rawTranspositions(within: n).map{ (i, j) in
-            transposition(i, j)
-        }
+    public static func allTranspositions(within n: Int) -> [Self] {
+        (0 ..< n).choose(2).map { .transposition($0[0], $0[1]) }
     }
 }
 

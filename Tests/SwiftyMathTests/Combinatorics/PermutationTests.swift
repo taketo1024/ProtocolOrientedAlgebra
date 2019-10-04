@@ -13,31 +13,27 @@ class PermutationTests: XCTestCase {
     typealias S3 = Permutation<_3>
     typealias S4 = Permutation<_4>
 
-    func testRawPermutations_4() {
-        let n = 4
-        let ps = DPermutation.rawPermutations(length: n)
-        XCTAssertEqual(ps.count, n.factorial)
-        XCTAssertTrue(ps.isUnique)
+    func testAllPermutations_3() {
+        let all = S3.allElements
+        XCTAssertEqual(all.count, 6)
+        XCTAssertTrue(all.isUnique)
     }
     
-    func testRawPermutations_5() {
-        let n = 5
-        let ps = DPermutation.rawPermutations(length: n)
-        XCTAssertEqual(ps.count, n.factorial)
-        XCTAssertTrue(ps.isUnique)
+    func testAllPermutations_4() {
+        let all = S4.allElements
+        XCTAssertEqual(all.count, 24)
+        XCTAssertTrue(all.isUnique)
     }
     
-    func testRawTranspositions_4() {
-        let n = 4
-        let ps = DPermutation.rawTranspositions(within: n)
-        XCTAssertEqual(ps.count, n * (n - 1) / 2)
-        XCTAssertTrue(ps.map{ [$0, $1] }.isUnique)
+    func testAllTranspositions_3() {
+        let all = S3.allTranspositions
+        XCTAssertEqual(all.count, 3)
+        XCTAssertTrue(all.isUnique)
     }
 
-    func testRawTranspositions_5() {
-        let n = 5
-        let ps = DPermutation.rawTranspositions(within: n)
-        XCTAssertEqual(ps.count, n * (n - 1) / 2)
-        XCTAssertTrue(ps.map{ [$0, $1] }.isUnique)
+    func testAllTranspositions_4() {
+        let all = S4.allTranspositions
+        XCTAssertEqual(all.count, 6)
+        XCTAssertTrue(all.isUnique)
     }
 }
