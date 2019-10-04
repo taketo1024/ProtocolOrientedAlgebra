@@ -101,7 +101,7 @@ public struct Polynomial<x: PolynomialIndeterminate, R: Ring>: UnivariatePolynom
     public typealias Generator = UnivariatePolynomialGenerator<x>
     public typealias BaseRing = R
     
-    public var elements: [Generator : Polynomial<x, R>.BaseRing]
+    public var elements: [Generator : BaseRing]
     
     public init(elements: [Generator : BaseRing]) {
         self.elements = elements.exclude{ $0.value.isZero }
@@ -117,12 +117,12 @@ extension Polynomial: EuclideanRing where R: Field {
         maxExponent ?? 0
     }
     
-    public static func /%(f: Polynomial, g: Polynomial) -> (q: Polynomial, r: Polynomial) {
+    public static func /%(f: Self, g: Self) -> (q: Self, r: Self) {
         assert(!g.isZero)
         
-        let x = Polynomial.indeterminate
+        let x = indeterminate
         
-        func eucDivMonomial(_ f: Polynomial, _ g: Polynomial) -> (q: Polynomial, r: Polynomial) {
+        func eucDivMonomial(_ f: Self, _ g: Self) -> (q: Self, r: Self) {
             if f.euclideanDegree < g.euclideanDegree {
                 return (.zero, f)
             } else {
@@ -136,7 +136,7 @@ extension Polynomial: EuclideanRing where R: Field {
         
         return (0 ... max(0, f.euclideanDegree - g.euclideanDegree))
             .reversed()
-            .reduce( (.zero, f) ) { (result: (Polynomial, Polynomial), degree: Int) in
+            .reduce( (.zero, f) ) { (result: (Self, Self), degree: Int) in
                 let (q, r) = result
                 let m = eucDivMonomial(r, g)
                 return (q + m.q, m.r)

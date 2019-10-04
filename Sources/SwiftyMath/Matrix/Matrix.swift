@@ -15,15 +15,15 @@ internal struct MatrixCoord: Hashable, Comparable, Codable, CustomStringConverti
         self.col = col
     }
     
-    public func shift(_ i: Int, _ j: Int) -> MatrixCoord {
-        MatrixCoord(row + i, col + j)
+    public func shift(_ i: Int, _ j: Int) -> Self {
+        .init(row + i, col + j)
     }
     
-    public var transposed: MatrixCoord {
+    public var transposed: Self {
         MatrixCoord(col, row)
     }
     
-    public static func < (lhs: MatrixCoord, rhs: MatrixCoord) -> Bool {
+    public static func < (lhs: Self, rhs: Self) -> Bool {
         (lhs.row < rhs.row) || (lhs.row == rhs.row && lhs.col < rhs.col)
     }
     
@@ -146,7 +146,7 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         return ε * A._determinant
     }
     
-    fileprivate var _inverse: Matrix? {
+    fileprivate var _inverse: Self? {
         assert(isSquare)
         if size.rows >= 5 {
             print("warn: Directly computing matrix-inverse can be extremely slow. Use eliminate().inverse instead.")
@@ -210,41 +210,41 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         }
     }
     
-    fileprivate static func _identity(size: Int) -> Matrix {
+    fileprivate static func _identity(size: Int) -> Self {
         let data = (0 ..< size).map{ i in (MatrixCoord(i, i), R.identity) }
-        return Matrix(size: (size, size), data: Dictionary(pairs: data))
+        return .init(size: (size, size), data: Dictionary(pairs: data))
     }
     
-    fileprivate static func _zero(size: (Int, Int)) -> Matrix {
-        Matrix(size: size, data: [:])
+    fileprivate static func _zero(size: (Int, Int)) -> Self {
+        .init(size: size, data: [:])
     }
     
-    fileprivate static func _unit(size: (Int, Int), coord: (Int, Int)) -> Matrix {
-        Matrix(size: size, data: [MatrixCoord(coord.0, coord.1): .identity])
+    fileprivate static func _unit(size: (Int, Int), coord: (Int, Int)) -> Self {
+        .init(size: size, data: [MatrixCoord(coord.0, coord.1): .identity])
     }
     
-    public static func ==(a: Matrix, b: Matrix) -> Bool {
+    public static func ==(a: Self, b: Self) -> Bool {
         a.data == b.data
     }
     
-    public static func +(a: Matrix, b: Matrix) -> Matrix {
+    public static func +(a: Self, b: Self) -> Matrix {
         assert(a.size == b.size)
-        return Matrix(size: a.size, data: a.data.merging(b.data, uniquingKeysWith: +))
+        return .init(size: a.size, data: a.data.merging(b.data, uniquingKeysWith: +))
     }
     
-    public prefix static func -(a: Matrix) -> Matrix {
+    public prefix static func -(a: Self) -> Self {
         a.mapComponents(zerosExcluded: true, (-))
     }
     
-    public static func -(a: Matrix, b: Matrix) -> Matrix {
+    public static func -(a: Self, b: Self) -> Self {
         a + (-b)
     }
     
-    public static func *(r: R, a: Matrix) -> Matrix {
+    public static func *(r: R, a: Self) -> Self {
         a.mapComponents{ r * $0 }
     }
     
-    public static func *(a: Matrix, r: R) -> Matrix {
+    public static func *(a: Self, r: R) -> Self {
         a.mapComponents{ $0 * r }
     }
     
@@ -343,12 +343,12 @@ extension Matrix: AdditiveGroup, Module where n: StaticSizeType, m: StaticSizeTy
         self.init(size: size, diagonal: d)
     }
     
-    public static var zero: Matrix {
+    public static var zero: Self {
         let size = (n.intValue, m.intValue)
         return ._zero(size: size)
     }
     
-    public static func unit(_ i: Int, _ j: Int) -> Matrix {
+    public static func unit(_ i: Int, _ j: Int) -> Self {
         let size = (n.intValue, m.intValue)
         return ._unit(size: size, coord: (i, j))
     }
@@ -361,7 +361,7 @@ extension Matrix: Multiplicative, Monoid, Ring where n == m, n: StaticSizeType {
         self.init(size: size, data: Dictionary(pairs: data), zerosExcluded: true)
     }
     
-    public static var identity: SquareMatrix<n, R> {
+    public static var identity: Self {
         _identity(size: n.intValue)
     }
     
@@ -369,7 +369,7 @@ extension Matrix: Multiplicative, Monoid, Ring where n == m, n: StaticSizeType {
         determinant.isInvertible
     }
     
-    public var inverse: SquareMatrix<n, R>? {
+    public var inverse: Self? {
         _inverse
     }
     
@@ -381,7 +381,7 @@ extension Matrix: Multiplicative, Monoid, Ring where n == m, n: StaticSizeType {
         _determinant
     }
     
-    public func pow(_ n: 𝐙) -> SquareMatrix<n, R> {
+    public func pow(_ n: 𝐙) -> Self {
         assert(n >= 0)
         return (0 ..< n).reduce(.identity){ (res, _) in self * res }
     }
@@ -394,19 +394,19 @@ extension Matrix where n == m, n == _1 {
 }
 
 extension Matrix where n == DynamicSize, m == DynamicSize {
-    public static func identity(size: Int) -> DMatrix<R> {
+    public static func identity(size: Int) -> Self {
         _identity(size: size)
     }
     
-    public static func zero(size: (Int, Int)) -> DMatrix<R> {
+    public static func zero(size: (Int, Int)) -> Self {
         _zero(size: size)
     }
     
-    public static func unit(size: (Int, Int), coord: (Int, Int)) -> DMatrix<R> {
+    public static func unit(size: (Int, Int), coord: (Int, Int)) -> Self {
         _unit(size: size, coord: coord)
     }
     
-    public var inverse: DMatrix<R>? {
+    public var inverse: Self? {
         _inverse
     }
     
@@ -418,7 +418,7 @@ extension Matrix where n == DynamicSize, m == DynamicSize {
         _determinant
     }
     
-    public func pow(_ p: 𝐙) -> DMatrix<R> {
+    public func pow(_ p: 𝐙) -> Self {
         assert(isSquare)
         assert(p >= 0)
         let I = DMatrix<R>.identity(size: size.rows)
@@ -447,7 +447,7 @@ extension Matrix where n == DynamicSize, m == DynamicSize {
         self.size = (size.rows + B.size.cols, size.cols + B.size.cols)
     }
     
-    public static func concat(_ vs: [DVector<R>]) -> DMatrix<R> {
+    public static func concat(_ vs: [DVector<R>]) -> Self {
         if vs.isEmpty {
             return .zero(size: (0, 0))
         }

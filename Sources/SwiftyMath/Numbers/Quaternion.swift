@@ -38,16 +38,16 @@ public struct Quaternion<Base: Ring>: Ring, Module {
         self.w = w
     }
     
-    public static var i: Quaternion {
-        Quaternion(.zero, .identity, .zero, .zero)
+    public static var i: Self {
+        .init(.zero, .identity, .zero, .zero)
     }
     
-    public static var j: Quaternion {
-        Quaternion(.zero, .zero, .identity, .zero)
+    public static var j: Self {
+        .init(.zero, .zero, .identity, .zero)
     }
     
-    public static var k: Quaternion {
-        Quaternion(.zero, .zero, .zero, .identity)
+    public static var k: Self {
+        .init(.zero, .zero, .zero, .identity)
     }
     
     public var components: [Base] {
@@ -58,15 +58,15 @@ public struct Quaternion<Base: Ring>: Ring, Module {
         x
     }
     
-    public var imaginaryPart: Quaternion {
-        Quaternion(.zero, y, z, w)
+    public var imaginaryPart: Self {
+        .init(.zero, y, z, w)
     }
     
-    public var conjugate: Quaternion {
-        Quaternion(x, -y, -z, -w)
+    public var conjugate: Self {
+        .init(x, -y, -z, -w)
     }
 
-    public var inverse: Quaternion? {
+    public var inverse: Self? {
         let r2 = components.map{ $0 * $0 }.sumAll()
         if let r2Inv = r2.inverse {
             return conjugate * r2Inv
@@ -75,25 +75,25 @@ public struct Quaternion<Base: Ring>: Ring, Module {
         }
     }
     
-    public static func +(a: Quaternion, b: Quaternion) -> Quaternion {
-        Quaternion(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w)
+    public static func +(a: Self, b: Self) -> Self {
+        .init(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w)
     }
     
-    public static prefix func -(a: Quaternion) -> Quaternion {
-        Quaternion(-a.x, -a.y, -a.z, -a.w)
+    public static prefix func -(a: Self) -> Self {
+        .init(-a.x, -a.y, -a.z, -a.w)
     }
     
-    public static func *(a: Base, b: Quaternion) -> Quaternion {
-        return Quaternion(a * b.x, a * b.y, a * b.z, a * b.w)
+    public static func *(a: Base, b: Self) -> Self {
+        Self(a * b.x, a * b.y, a * b.z, a * b.w)
     }
     
-    public static func *(a: Quaternion, b: Base) -> Quaternion {
-        return Quaternion(a.x * b, a.y * b, a.z * b, a.w * b)
+    public static func *(a: Self, b: Base) -> Self {
+        Self(a.x * b, a.y * b, a.z * b, a.w * b)
     }
     
-    public static func *(a: Quaternion, b: Quaternion) -> Quaternion {
+    public static func *(a: Self, b: Self) -> Self {
         let v = a.asMatrix * b.asVector
-        return Quaternion(v[0], v[1], v[2], v[3])
+        return .init(v[0], v[1], v[2], v[3])
     }
     
     public var asVector: Vector4<Base> {
@@ -130,7 +130,7 @@ extension Quaternion where Base == 𝐑 {
         √(x * x + y * y + z * z + w * w)
     }
     
-    public func isApproximatelyEqualTo(_ b: Quaternion, error e: 𝐑? = nil) -> Bool {
+    public func isApproximatelyEqualTo(_ b: Self, error e: 𝐑? = nil) -> Bool {
         return
             self.x.isApproximatelyEqualTo(b.x, error: e) &&
             self.y.isApproximatelyEqualTo(b.y, error: e) &&

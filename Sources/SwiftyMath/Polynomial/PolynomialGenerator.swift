@@ -67,7 +67,7 @@ public struct UnivariateLaurentPolynomialGenerator<x: PolynomialIndeterminate>: 
         self.exponent = exponent
     }
     
-    public var inverse: UnivariateLaurentPolynomialGenerator? {
+    public var inverse: Self? {
         .init(-exponent)
     }
 }

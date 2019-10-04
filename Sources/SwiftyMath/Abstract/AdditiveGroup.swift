@@ -160,16 +160,16 @@ public struct AsGroup<G: AdditiveGroup>: Group {
         self.entity = g
     }
 
-    public var inverse: AsGroup? {
-        AsGroup(-entity)
+    public var inverse: Self? {
+        .init(-entity)
     }
 
-    public static func * (a: AsGroup, b: AsGroup) -> AsGroup {
-        AsGroup(a.entity + b.entity)
+    public static func * (a: Self, b: Self) -> Self {
+        .init(a.entity + b.entity)
     }
 
-    public static var identity: AsGroup {
-        AsGroup(G.zero)
+    public static var identity: Self {
+        .init(G.zero)
     }
 
     public var description: String {

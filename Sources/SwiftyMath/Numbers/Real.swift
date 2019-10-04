@@ -25,7 +25,7 @@ extension RealNumber: Field {
     }
     
     public var abs: 𝐑 {
-        𝐑(Swift.abs(self))
+        .init(Swift.abs(self))
     }
     
     public var inverse: 𝐑? {
@@ -57,12 +57,12 @@ public protocol RealSubset {
 
 extension 𝐙: RealSubset {
     public var asReal: 𝐑 {
-        𝐑(self)
+        .init(self)
     }
 }
 
 extension 𝐐: RealSubset {
     public var asReal: 𝐑 {
-        𝐑(self)
+        .init(self)
     }
 }

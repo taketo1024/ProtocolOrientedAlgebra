@@ -51,15 +51,15 @@ public struct RationalNumber: Field, Comparable, Hashable, Codable {
     }
     
     public static func + (a: 𝐐, b: 𝐐) -> 𝐐 {
-        𝐐(a.p * b.q + a.q * b.p, a.q * b.q)
+        .init(a.p * b.q + a.q * b.p, a.q * b.q)
     }
     
     public static prefix func - (a: 𝐐) -> 𝐐 {
-        𝐐(-a.p, a.q)
+        .init(-a.p, a.q)
     }
     
     public static func * (a: 𝐐, b: 𝐐) -> 𝐐 {
-        𝐐(a.p * b.p, a.q * b.q)
+        .init(a.p * b.p, a.q * b.q)
     }
     
     public static func <(lhs: 𝐐, rhs: 𝐐) -> Bool {
@@ -85,7 +85,7 @@ extension 𝐐: Randomable {
         let p0 = q * x0.numerator / x0.denominator
         let p1 = q * x1.numerator / x1.denominator
         let p = closed ? 𝐙.random(in: p0 ... p1) : 𝐙.random(in: p0 ..< p1)
-        return 𝐐(p, q)
+        return .init(p, q)
     }
     
     public static func random(in range: Range<𝐐>) -> 𝐐 {
@@ -99,6 +99,6 @@ extension 𝐐: Randomable {
 
 extension 𝐙 {
     public static func ./(a: 𝐙, b: 𝐙) -> 𝐐 {
-        𝐐(a, b)
+        .init(a, b)
     }
 }

@@ -179,28 +179,28 @@ public struct AsModule<R: Ring>: Module {
         self.value = x
     }
     
-    public static func wrap(_ r: R) -> AsModule {
-        AsModule(r)
+    public static func wrap(_ r: R) -> Self {
+        .init(r)
     }
     
-    public static var zero: AsModule {
-        AsModule(.zero)
+    public static var zero: Self {
+        .init(.zero)
     }
     
-    public static func +(a: AsModule, b: AsModule) -> AsModule {
-        AsModule(a.value + b.value)
+    public static func +(a: Self, b: Self) -> Self {
+        .init(a.value + b.value)
     }
     
-    public static prefix func -(x: AsModule) -> AsModule {
-        AsModule(-x.value)
+    public static prefix func -(x: Self) -> Self {
+        .init(-x.value)
     }
     
-    public static func *(m: AsModule, r: R) -> AsModule {
-        AsModule(m.value * r)
+    public static func *(m: Self, r: R) -> Self {
+        .init(m.value * r)
     }
     
-    public static func *(r: R, m: AsModule) -> AsModule {
-        AsModule(r * m.value)
+    public static func *(r: R, m: Self) -> Self {
+        .init(r * m.value)
     }
     
     public var description: String {

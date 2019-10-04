@@ -40,8 +40,8 @@ extension QuotientRing: FiniteSetType where Sub: IntegerIdealType {
         Sub.mod
     }
     
-    public static var allElements: [QuotientRing] {
-        (0 ..< mod).map{ QuotientRing($0) }
+    public static var allElements: [Self] {
+        (0 ..< mod).map{ .init($0) }
     }
     
     public static var countElements: Int {

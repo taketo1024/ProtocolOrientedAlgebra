@@ -56,7 +56,7 @@ public struct MultivariatePolynomialGenerator<xn: MultivariatePolynomialIndeterm
         self.exponent = exponents.dropLast{ $0 == 0 }
     }
     
-    public var inverse: MultivariatePolynomialGenerator? {
+    public var inverse: Self? {
         (exponent.isEmpty) ? self : nil
     }
 }

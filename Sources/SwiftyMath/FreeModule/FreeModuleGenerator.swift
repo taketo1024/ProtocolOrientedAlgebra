@@ -30,7 +30,7 @@ public struct TensorGenerator<A, B>: FreeModuleGenerator where A: FreeModuleGene
         left.degree + right.degree
     }
     
-    public static func < (a: TensorGenerator, b: TensorGenerator) -> Bool {
+    public static func < (a: Self, b: Self) -> Bool {
         [a.left.degree, a.right.degree] < [b.left.degree, b.right.degree]
     }
     

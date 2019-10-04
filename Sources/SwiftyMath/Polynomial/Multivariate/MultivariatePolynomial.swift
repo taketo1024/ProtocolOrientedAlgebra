@@ -55,7 +55,7 @@ public struct MultivariatePolynomial<xn: MultivariatePolynomialIndeterminates, R
         .init(elements: [:])
     }
     
-    public static func elementarySymmetric(_ i: Int) -> MultivariatePolynomial {
+    public static func elementarySymmetric(_ i: Int) -> Self {
         assert(xn.isFinite)
         assert(i >= 0)
         
@@ -71,7 +71,7 @@ public struct MultivariatePolynomial<xn: MultivariatePolynomialIndeterminates, R
         }
         
         let coeffs = Dictionary(pairs: exponents.map{ ($0, R.identity) } )
-        return MultivariatePolynomial(coeffs: coeffs)
+        return .init(coeffs: coeffs)
     }
 }
 

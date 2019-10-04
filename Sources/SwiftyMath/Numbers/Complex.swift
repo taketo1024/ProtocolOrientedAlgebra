@@ -30,8 +30,8 @@ public struct Complex<Base: Ring>: Ring, Module {
         self.y = y
     }
     
-    public static var imaginaryUnit: Complex {
-        Complex(.zero, .identity)
+    public static var imaginaryUnit: Self {
+        .init(.zero, .identity)
     }
     
     public var realPart: Base {
@@ -42,11 +42,11 @@ public struct Complex<Base: Ring>: Ring, Module {
         y
     }
     
-    public var conjugate: Complex {
-        Complex(x, -y)
+    public var conjugate: Self {
+        .init(x, -y)
     }
 
-    public var inverse: Complex? {
+    public var inverse: Self? {
         let r2 = x * x + y * y
         if let r2Inv = r2.inverse {
             return r2Inv * conjugate
@@ -55,24 +55,26 @@ public struct Complex<Base: Ring>: Ring, Module {
         }
     }
     
-    public static func +(a: Complex, b: Complex) -> Complex {
-        Complex(a.x + b.x, a.y + b.y)
+    public static func +(a: Self, b: Self) -> Self {
+        .init(a.x + b.x, a.y + b.y)
     }
     
-    public static prefix func -(a: Complex) -> Complex {
-        Complex(-a.x, -a.y)
+    public static prefix func -(a: Self) -> Self {
+        .init(-a.x, -a.y)
     }
     
-    public static func *(a: Base, b: Complex) -> Complex {
-        Complex(a * b.x, a * b.y)
+    public static func *(a: Base, b: Self) -> Self {
+        .init(a * b.x, a * b.y)
     }
     
-    public static func *(a: Complex, b: Base) -> Complex {
-        Complex(a.x * b, a.y * b)
+    public static func *(a: Self, b: Base) -> Self {
+        .init(a.x * b, a.y * b)
     }
     
-    public static func *(a: Complex, b: Complex) -> Complex {
-        Complex(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x)
+    public static func *(a: Self, b: Self) -> Self {
+        let x = a.x * b.x - a.y * b.y
+        let y = a.x * b.y + a.y * b.x
+        return .init(x, y)
     }
     
     public var description: String {
@@ -124,26 +126,26 @@ extension Complex where Base == 𝐑 {
         return (y >= 0) ? t : 2 * π - t
     }
     
-    public static func random(radius r: 𝐑) -> Complex {
+    public static func random(radius r: 𝐑) -> Self {
         .init(r: .random(in: 0 ... r), θ: .random(in: 0 ... 2 * π))
     }
     
-    public func rounded(_ rule: FloatingPointRoundingRule = .toNearestOrAwayFromZero) -> 𝐂 {
-        𝐂(x.rounded(rule), y.rounded(rule))
+    public func rounded(_ rule: FloatingPointRoundingRule = .toNearestOrAwayFromZero) -> Self {
+        .init(x.rounded(rule), y.rounded(rule))
     }
     
-    public func isApproximatelyEqualTo(_ z: 𝐂, error e: 𝐑? = nil) -> Bool {
-        self.realPart.isApproximatelyEqualTo(z.realPart, error: e) &&
-               self.imaginaryPart.isApproximatelyEqualTo(z.imaginaryPart, error: e)
+    public func isApproximatelyEqualTo(_ z: Self, error e: 𝐑? = nil) -> Bool {
+        realPart.isApproximatelyEqualTo(z.realPart, error: e) &&
+               imaginaryPart.isApproximatelyEqualTo(z.imaginaryPart, error: e)
     }
 }
 
 extension Complex where Base: Randomable & Comparable {
-    public static func random(in real: Range<Base>, _ imaginary: Range<Base>) -> Complex {
+    public static func random(in real: Range<Base>, _ imaginary: Range<Base>) -> Self {
         .init(.random(in: real), .random(in: imaginary))
     }
     
-    public static func random(in real: ClosedRange<Base>, _ imaginary: ClosedRange<Base>) -> Complex {
+    public static func random(in real: ClosedRange<Base>, _ imaginary: ClosedRange<Base>) -> Self {
         .init(.random(in: real), .random(in: imaginary))
     }
 }
@@ -168,6 +170,6 @@ extension 𝐐: ComplexSubset {
 
 extension 𝐑: ComplexSubset {
     public var asComplex: 𝐂 {
-        𝐂(self)
+        .init(self)
     }
 }
