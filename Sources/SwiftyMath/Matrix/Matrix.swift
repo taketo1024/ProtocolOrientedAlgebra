@@ -23,6 +23,12 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         self.init(impl: impl)
     }
     
+    public init<S: Sequence>(size: (Int, Int), components: S) where S.Element == MatrixComponent<R> {
+        self.init(size: size) { setEntry in
+            components.forEach { (i, j, a) in setEntry(i, j, a) }
+        }
+    }
+    
     public init<S: Sequence>(size: (Int, Int), grid: S) where S.Element == R {
         let cols = size.1
         self.init(size: size) { setEntry in
@@ -63,12 +69,12 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         size.rows == size.cols
     }
     
-    public var isDiagonal: Bool {
-        isSquare && nonZeroComponents.allSatisfy{ (i, j, a) in i == j }
-    }
-    
     public var isIdentity: Bool {
         isSquare && nonZeroComponents.allSatisfy{ (i, j, a) in (i == j && a.isIdentity) }
+    }
+    
+    public var isDiagonal: Bool {
+        nonZeroComponents.allSatisfy{ (i, j, a) in i == j }
     }
     
     public var diagonalComponents: [R] {
@@ -347,23 +353,6 @@ extension Matrix where n == DynamicSize, m == DynamicSize {
         return (0 ..< p).reduce(I){ (res, _) in self * res }
     }
 }
-
-//extension Matrix where R: EuclideanRing {
-//    public func eliminate(mode: MatrixEliminator<R>.Mode = .balanced, form: MatrixEliminator<R>.Form = .Diagonal, debug: Bool = false) -> MatrixEliminationResult<n, m, R> {
-//        let e: MatrixEliminator<R> = {
-//            switch form {
-//            case .RowEchelon: return RowEchelonEliminator(mode: mode, debug: debug)
-//            case .ColEchelon: return ColEchelonEliminator(mode: mode, debug: debug)
-//            case .RowHermite: return RowHermiteEliminator(mode: mode, debug: debug)
-//            case .ColHermite: return ColHermiteEliminator(mode: mode, debug: debug)
-//            case .Smith:      return SmithEliminator     (mode: mode, debug: debug)
-//            default:          return DiagonalEliminator  (mode: mode, debug: debug)
-//            }
-//        }()
-//
-//        return e.run(target: self)
-//    }
-//}
 
 //extension Matrix where R: RealSubset {
 //    public var asReal: Matrix<n, m, 𝐑> {

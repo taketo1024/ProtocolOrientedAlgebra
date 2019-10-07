@@ -42,10 +42,6 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
         }
     }
     
-    convenience init<n, m>(from matrix: Matrix<n, m, R>, trackRowInfos: Bool = false) {
-        self.init(size: matrix.size, components: matrix.components, trackRowInfos: trackRowInfos)
-    }
-    
     func headElement(_ i: Int) -> (col: Int, value: R)? {
         return working[i]?.value
     }
@@ -189,13 +185,13 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
         working.isEmpty
     }
     
-    var resultData: MatrixData<R> {
-        Dictionary(pairs: (result + working).flatMap{ (i, list) -> [(MatrixCoord, R)] in
-            list.map{ c in
+    var components: [MatrixComponent<R>] {
+        (result + working).flatMap { (i, list) in
+            list.map{ c -> MatrixComponent<R> in
                 let (j, a) = c.value
-                return (MatrixCoord(i, j), a)
+                return (i, j, a)
             }
-        })
+        }
     }
     
     func redo() {
@@ -258,10 +254,6 @@ internal final class ColEliminationWorker<R: EuclideanRing>: Equatable {
         rowWorker = RowEliminationWorker(size: (size.1, size.0), components: components.map{(i, j, a) in (j, i, a)})
     }
     
-    convenience init<n, m>(from matrix: Matrix<n, m, R>, trackRowInfos: Bool = false) {
-        self.init(size: matrix.size, components: matrix.components)
-    }
-    
     func apply(_ s: MatrixEliminator<R>.ElementaryOperation) {
         switch s {
         case .AddCol, .MulCol, .SwapCols:
@@ -271,8 +263,8 @@ internal final class ColEliminationWorker<R: EuclideanRing>: Equatable {
         }
     }
     
-    var resultData: MatrixData<R> {
-        rowWorker.resultData.mapKeys{ $0.transposed }
+    var components: [MatrixComponent<R>] {
+        rowWorker.components.map{ (i, j, a) in (j, i, a) }
     }
     
     static func identity(size n: Int) -> ColEliminationWorker<R> {

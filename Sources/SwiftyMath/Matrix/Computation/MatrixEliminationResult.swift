@@ -29,7 +29,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
             for s in rowOps {
                 P.apply(s)
             }
-            return DMatrix(size: (n, n), data: P.resultData)
+            return DMatrix(size: (n, n), components: P.components)
         }.as(Matrix.self)
     }
     
@@ -42,7 +42,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
             for s in rowOps.reversed() {
                 P.apply(s.inverse)
             }
-            return DMatrix(size: (n, n), data: P.resultData)
+            return DMatrix(size: (n, n), components: P.components)
         }.as(Matrix.self)
     }
     
@@ -55,7 +55,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
             for s in colOps {
                 Q.apply(s)
             }
-            return DMatrix(size: (m, m), data: Q.resultData)
+            return DMatrix(size: (m, m), components: Q.components)
         }.as(Matrix.self)
     }
     
@@ -68,7 +68,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
             for s in colOps.reversed() {
                 Q.apply(s.inverse)
             }
-            return DMatrix(size: (m, m), data: Q.resultData)
+            return DMatrix(size: (m, m), components: Q.components)
         }.as(Matrix.self)
     }
     
@@ -80,7 +80,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     public var rank: Int {
         // TODO support Echelon types
         assert(result.isDiagonal)
-        return result.diagonal.count{ !$0.isZero }
+        return result.diagonalComponents.count{ !$0.isZero }
     }
     
     // Returns the matrix consisting of the basis vectors of Im(A).
@@ -107,14 +107,14 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
                 return DMatrix.zero(size: size)
             }
             
-            let diag = result.diagonal
+            let diag = result.diagonalComponents
             let comps = (0 ..< r).map{ i -> MatrixComponent<R> in (i, i, diag[i]) }
             let D = RowEliminationWorker<R>(size: size, components: comps)
             for s in rowOps.reversed() {
                 D.apply(s.inverse)
             }
             
-            return DMatrix(size: size, data: D.resultData)
+            return DMatrix(size: size, components: D.components)
         }.as(Matrix.self)
     }
     
@@ -162,7 +162,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
                 }
             }
             
-            return DMatrix(size: size, data: Z.resultData)
+            return DMatrix(size: size, components: Z.components)
         }.as(Matrix.self)
     }
     
@@ -194,7 +194,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
             for s in colOps.reversed() {
                 T.apply(s.inverse)
             }
-            return DMatrix(size: size, data: T.resultData)
+            return DMatrix(size: size, components: T.components)
         }.as(Matrix.self)
     }
     
@@ -228,7 +228,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
                     T.apply(s.transposed)
                 }
             }
-            return DMatrix(size: size, data: T.resultData)
+            return DMatrix(size: size, components: T.components)
         }.as(Matrix.self)
     }
     
@@ -247,18 +247,18 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
         let P = left
         let Pb = P * b
         
-        if B.diagonal.enumerated().contains(where: { (i, d) in
+        if B.diagonalComponents.enumerated().contains(where: { (i, d) in
             (d.isZero && !Pb[i].isZero) || (!d.isZero && !Pb[i].isDivible(by: d))
         }) {
             return nil // no solution
         }
         
-        if Pb.components.contains(where: { (i, _, a) in i >= r && !a.isZero } ) {
+        if Pb.nonZeroComponents.contains(where: { (i, _, a) in i >= r && !a.isZero } ) {
             return nil // no solution
         }
         
         let Q = right
-        let y = ColVector<m, R>(size: (B.size.cols, 1), grid: B.diagonal.enumerated().map{ (i, d) in
+        let y = ColVector<m, R>(size: (B.size.cols, 1), grid: B.diagonalComponents.enumerated().map{ (i, d) in
             d.isZero ? .zero : Pb[i] / d
         })
         return Q * y
@@ -272,7 +272,7 @@ extension MatrixEliminationResult where n == m {
         if rank == result.size.rows {
             return rowOps.multiply { $0.determinant }.inverse!
                 * colOps.multiply { $0.determinant }.inverse!
-                * result.diagonal.multiplyAll()
+                * result.diagonalComponents.multiplyAll()
         } else {
             return .zero
         }

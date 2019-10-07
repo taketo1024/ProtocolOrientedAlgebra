@@ -11,16 +11,12 @@ public final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     var currentRow = 0
     var currentCol = 0
     
-    override var form: Form {
-        .RowEchelon
-    }
-    
     override func prepare() {
-        worker = RowEliminationWorker(from: target.pointee, trackRowInfos: true)
+        worker = RowEliminationWorker(size: size, components: components, trackRowInfos: true)
     }
     
-    override func shouldIterate() -> Bool {
-        !worker.isAllDone
+    override func isDone() -> Bool {
+        worker.isAllDone
     }
     
     @_specialize(where R == 𝐙)
@@ -38,11 +34,6 @@ public final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         
         log("Pivot: \((i0, currentCol)), \(a0)")
         
-        if !a0.isNormalized {
-            apply(.MulRow(at: i0, by: a0.normalizingUnit))
-            a0 = a0.normalized
-        }
-        
         // eliminate target col
         
         var again = false
@@ -52,11 +43,7 @@ public final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
             apply(.AddRow(at: i0, to: i, mul: -q))
             
             if !r.isZero {
-                if mode == .fast && r.isInvertible {
-                    return
-                } else {
-                    again = true
-                }
+                again = true
             }
         }
         
@@ -65,6 +52,10 @@ public final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         }
         
         // final step
+        
+        if !a0.isNormalized {
+            apply(.MulRow(at: i0, by: a0.normalizingUnit))
+        }
         
         if i0 != currentRow {
             apply(.SwapRows(i0, currentRow))
@@ -77,20 +68,10 @@ public final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     
     @_specialize(where R == 𝐙)
     private func findPivot(in candidates: [(row: Int, value: R)]) -> (row: Int, value: R)? {
-        switch mode {
-        case .fast:
-            if let p = candidates.first(where: { c in c.value.isInvertible }) {
-                return p
-            }
-            return candidates.min { (c1, c2) in
-                c1.value.euclideanDegree < c2.value.euclideanDegree
-            }
-        case .balanced:
-            return candidates.sorted{ c in c.row }.min { (c1, c2) in
-                let (i1, i2) = (c1.row, c2.row)
-                let (d1, d2) = (c1.value.euclideanDegree, c2.value.euclideanDegree)
-                return d1 < d2 || (d1 == d2 && worker.weight(ofRow: i1) < worker.weight(ofRow: i2))
-            }
+        candidates.sorted{ c in c.row }.min { (c1, c2) in
+            let (i1, i2) = (c1.row, c2.row)
+            let (d1, d2) = (c1.value.euclideanDegree, c2.value.euclideanDegree)
+            return d1 < d2 || (d1 == d2 && worker.weight(ofRow: i1) < worker.weight(ofRow: i2))
         }
     }
     
@@ -98,24 +79,20 @@ public final class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         worker.apply(s)
         
         if debug {
-            target.pointee.data = worker.resultData
+            components = worker.components
         }
         
         super.apply(s)
     }
     
     override func finalize() {
-        target.pointee.data = worker.resultData
+        components = worker.components
     }
 }
 
 public final class ColEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
-    override var form: Form {
-        .ColEchelon
-    }
-
     override func prepare() {
-        subrun(RowEchelonEliminator(mode: mode, debug: debug), transpose: true)
+        subrun(RowEchelonEliminator.self, transpose: true)
         exit()
     }
 }

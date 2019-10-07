@@ -8,19 +8,14 @@
 
 public final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     var currentIndex = 0
-    var diagonal: [R] = []
-    
-    override var form: Form {
-        .Smith
-    }
     
     override func prepare() {
-        subrun(DiagonalEliminator(mode: mode, debug: debug))
-        diagonal = target.pointee.diagonal.exclude{ $0.isZero }
+        subrun(DiagonalEliminator.self)
+        components.sort(by: { $0.row < $1.row })
     }
     
-    override func shouldIterate() -> Bool {
-        currentIndex < diagonal.count
+    override func isDone() -> Bool {
+        currentIndex >= components.count
     }
     
     @_specialize(where R == 𝐙)
@@ -29,8 +24,8 @@ public final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
             return exit()
         }
         
-        let i0 = pivot.0
-        var a0 = pivot.1
+        let i0 = pivot.row
+        var a0 = pivot.value
         
         if !a0.isNormalized {
             apply(.MulRow(at: i0, by: a0.normalizingUnit))
@@ -40,8 +35,8 @@ public final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         if !a0.isIdentity {
             var again = false
 
-            for i in (currentIndex ..< diagonal.count) where i != i0 {
-                let a = diagonal[i]
+            for i in (currentIndex ..< components.count) where i != i0 {
+                let a = components[i].value
                 if !a.isDivible(by: a0) {
                     diagonalGCD((i0, a0), (i, a))
                     again = true
@@ -64,7 +59,7 @@ public final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     override func apply(_ s: MatrixEliminator<R>.ElementaryOperation) {
         switch s {
         case let .MulRow(at: i, by: a):
-            set(i, a * diagonal[i])
+            components[i].value = a * components[i].value
         default:
             fatalError()
         }
@@ -72,16 +67,10 @@ public final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         super.apply(s)
     }
     
-    private func set(_ i: Int, _ a: R) {
-        diagonal[i] = a
-        target.pointee[i, i] = a
-    }
-    
-    private func findPivot() -> (Int, R)? {
-        diagonal
-            .enumerated()
-            .filter{ (i, _) in i >= currentIndex }
-            .min { (c1, c2) in c1.1.euclideanDegree < c2.1.euclideanDegree }
+    private func findPivot() -> MatrixComponent<R>? {
+        components
+            .filter{ (i, _, _) in i >= currentIndex }
+            .min { (c1, c2) in c1.value.euclideanDegree < c2.value.euclideanDegree }
     }
     
     private func diagonalGCD(_ d1: (Int, R), _ d2: (Int, R)) {
@@ -94,8 +83,8 @@ public final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         let (p, q, d) = extendedGcd(a, b)
         let m = -(a * b) / d
         
-        set(i, d)
-        set(j, m)
+        components[i].value = d
+        components[j].value = m
         
         append(.AddRow(at: i, to: j, mul: p))     // [a, 0; pa, b]
         append(.AddCol(at: j, to: i, mul: q))     // [a, 0;  d, b]
@@ -107,9 +96,7 @@ public final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     }
     
     private func swapDiagonal(_ i: Int, _ j: Int) {
-        let d0 = diagonal[i]
-        set(i, diagonal[j])
-        set(j, d0)
+        swap(&components[i].value, &components[j].value)
         
         append(.SwapRows(i, j))
         append(.SwapCols(i, j))

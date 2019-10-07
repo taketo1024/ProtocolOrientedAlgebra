@@ -7,18 +7,16 @@
 //
 
 public final class DiagonalEliminator<R: EuclideanRing>: MatrixEliminator<R> {
-    override var form: Form {
-        .Diagonal
-    }
-    
-    override func shouldIterate() -> Bool {
-        !(target.pointee.isDiagonal && target.pointee.diagonal.allSatisfy{ $0.isNormalized })
+    override func isDone() -> Bool {
+        components.allSatisfy { (i, j, a) in
+            (i == j) && a.isNormalized
+        }
     }
     
     override func iteration() {
-        subrun(RowEchelonEliminator(mode: mode, debug: debug))
-        if shouldIterate() {
-            subrun(ColEchelonEliminator(mode: mode, debug: debug))
+        subrun(RowEchelonEliminator.self)
+        if !isDone() {
+            subrun(ColEchelonEliminator.self)
         }
     }
 }

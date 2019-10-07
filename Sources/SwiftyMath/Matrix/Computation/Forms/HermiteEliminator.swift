@@ -11,20 +11,18 @@ public final class RowHermiteEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     var currentRow = 0
     var rank = 0
     
-    override var form: Form {
-        .RowHermite
-    }
-    
     override func prepare() {
-        let e = RowEchelonEliminator<R>(mode: mode, debug: debug)
-        subrun(e)
+        let e = RowEchelonEliminator(size: size, components: components, debug: debug)
+        e.run()
         
+        components = e.components
         worker = e.worker
+        
         worker.redo()
     }
     
-    override func shouldIterate() -> Bool {
-        currentRow < target.pointee.size.rows
+    override func isDone() -> Bool {
+        currentRow >= size.rows
     }
     
     @_specialize(where R == 𝐙)
@@ -34,7 +32,8 @@ public final class RowHermiteEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         }
         
         for i in 0 ..< currentRow {
-            let a = target.pointee[i, j0]
+            let a = R.zero // TODO
+//            let a = components.pointee[i, j0]
             if a.isZero {
                 continue
             }
@@ -52,24 +51,20 @@ public final class RowHermiteEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         worker.apply(s)
         
         if debug {
-            target.pointee.data = worker.resultData
+            components = worker.components
         }
         
         super.apply(s)
     }
     
     override func finalize() {
-        target.pointee.data = worker.resultData
+        components = worker.components
     }
 }
 
 public final class ColHermiteEliminator<R: EuclideanRing>: MatrixEliminator<R> {
-    override var form: Form {
-        .ColHermite
-    }
-
     override func prepare() {
-        subrun(RowHermiteEliminator(mode: mode, debug: debug), transpose: true)
+        subrun(RowHermiteEliminator.self, transpose: true)
         exit()
     }
 }

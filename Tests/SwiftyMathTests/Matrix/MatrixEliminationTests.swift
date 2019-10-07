@@ -13,7 +13,8 @@ class MatrixEliminatonWorkerTests: XCTestCase {
     private typealias R = 𝐙
     
     private func M2(_ xs: R...) -> RowEliminationWorker<R> {
-        return RowEliminationWorker(from: Matrix2(xs))
+        let A = Matrix2(size: (2, 2), grid: xs)
+        return RowEliminationWorker(size: A.size, components: A.nonZeroComponents)
     }
     
     func testEqual() {
@@ -57,34 +58,34 @@ class MatrixEliminationTests: XCTestCase {
     func testNormalize_Z() {
         let A = M1(-2)
         let B = M1(2)
-        let E = A.eliminate()
+        let E = MatrixEliminator.eliminate(target: A) 
         XCTAssertEqual(E.result, B)
     }
     
     func testNormalize_Q() {
         let A = M1(-3./1)
         let B = M1(1./1)
-        let E = A.eliminate()
+        let E = MatrixEliminator.eliminate(target: A)
         XCTAssertEqual(E.result, B)
     }
 
     func testFullRank() {
         let A = M5(2, -1, -2, -2, -3, 1, 2, -1, 1, -1, 2, -2, -4, -3, -6, 1, 7, 1, 5, 3, 1, -12, -6, -10, -11)
-        let E = A.eliminate(form: .Smith)
+        let E = MatrixEliminator.eliminate(target: A, form: .Smith)
         
         XCTAssertEqual(E.rank, 5)
     }
     
     func testRank4() {
         let A = M5(3, -5, -22, 20, 8, 6, -11, -50, 45, 18, -1, 2, 10, -9, -3, 3, -6, -30, 27, 10, -1, 2, 7, -6, -3)
-        let E = A.eliminate(form: .Smith)
+        let E = MatrixEliminator.eliminate(target: A, form: .Smith)
         
         XCTAssertEqual(E.rank, 4)
     }
     
     func testLeftAndLeftInverse() {
         let A = M5(2, -1, -2, -2, -3, 1, 2, -1, 1, -1, 2, -2, -4, -3, -6, 1, 7, 1, 5, 3, 1, -12, -6, -10, -11)
-        let E = A.eliminate(form: .Smith)
+        let E = MatrixEliminator.eliminate(target: A, form: .Smith)
         
         XCTAssertEqual(E.left * E.leftInverse, M5.identity)
         XCTAssertEqual(E.leftInverse * E.left, M5.identity)
@@ -92,7 +93,7 @@ class MatrixEliminationTests: XCTestCase {
     
     func testRightAndRightInverse() {
         let A = M5(2, -1, -2, -2, -3, 1, 2, -1, 1, -1, 2, -2, -4, -3, -6, 1, 7, 1, 5, 3, 1, -12, -6, -10, -11)
-        let E = A.eliminate(form: .Smith)
+        let E = MatrixEliminator.eliminate(target: A, form: .Smith)
         
         XCTAssertEqual(E.right * E.rightInverse, M5.identity)
         XCTAssertEqual(E.rightInverse * E.right, M5.identity)
@@ -100,63 +101,63 @@ class MatrixEliminationTests: XCTestCase {
     
     func testPAQ() {
         let A = M5(2, -1, -2, -2, -3, 1, 2, -1, 1, -1, 2, -2, -4, -3, -6, 1, 7, 1, 5, 3, 1, -12, -6, -10, -11)
-        let E = A.eliminate(form: .Smith)
+        let E = MatrixEliminator.eliminate(target: A, form: .Smith)
         
         XCTAssertEqual(E.left * A * E.right, E.result)
     }
     
     func testZ55_regular() {
         let A = M5(2, -1, -2, -2, -3, 1, 2, -1, 1, -1, 2, -2, -4, -3, -6, 1, 7, 1, 5, 3, 1, -12, -6, -10, -11)
-        let E = A.eliminate(form: .Smith)
+        let E = MatrixEliminator.eliminate(target: A, form: .Smith)
 
         XCTAssertEqual(E.result, M5.identity)
     }
 
     func testZ55_rank4() {
         let A = M5(3, -5, -22, 20, 8, 6, -11, -50, 45, 18, -1, 2, 10, -9, -3, 3, -6, -30, 27, 10, -1, 2, 7, -6, -3)
-        let E = A.eliminate(form: .Smith)
+        let E = MatrixEliminator.eliminate(target: A, form: .Smith)
 
         XCTAssertEqual(E.result, M5(diagonal: [1,1,1,1,0]))
     }
 
     func testZ55_fullRankWithFactors() {
         let A = M5(-20, -7, -27, 2, 29, 17, 8, 14, -4, -10, 13, 8, 10, -4, -6, -9, -2, -14, 0, 16, 5, 0, 5, -1, -4)
-        let E = A.eliminate(form: .Smith)
+        let E = MatrixEliminator.eliminate(target: A, form: .Smith)
 
         XCTAssertEqual(E.result, M5(diagonal: [1,1,1,2,60]))
     }
 
     func testZ55_rank3WithFactors() {
         let A = M5(4, 6, -18, -15, -46, -1, 0, 6, 4, 13, -13, -12, 36, 30, 97, -7, -6, 18, 15, 49, -6, -6, 18, 15, 48)
-        let E = A.eliminate(form: .Smith)
+        let E = MatrixEliminator.eliminate(target: A, form: .Smith)
         
         XCTAssertEqual(E.result, M5(diagonal: [1,1,6]))
     }
 
     func testZ46_rank4WithFactors() {
         let A = M<_4, _6, 𝐙>(8, -6, 14, -10, -14, 6, 12, -8, 18, -18, -20, 8, -16, 7, -23, 22, 23, -7, 32, -17, 44, -49, -49, 17)
-        let E = A.eliminate(form: .Smith)
+        let E = MatrixEliminator.eliminate(target: A, form: .Smith)
 
         XCTAssertEqual(E.result, M(size: (4,6), diagonal: [1,1,2,12]))
     }
 
     func testZ46_zero() {
         let A = M<_4, _6, 𝐙>.zero
-        let E = A.eliminate(form: .Smith)
+        let E = MatrixEliminator.eliminate(target: A, form: .Smith)
         
         XCTAssertEqual(E.result, M.zero)
     }
 
     func testQ55_regular() {
         let A = M5<𝐐>(-3./1, 0./1, 0./1, -9./2, 0./1, 10./3, 2./1, 0./1, -15./2, 6./1, -10./3, -2./1, 0./1, 15./2, -10./1, 0./1, 0./1, 3./4, -5./1, 0./1, 0./1, 0./1, 1./1, 0./1, 0./1)
-        let E = A.eliminate(form: .Smith)
+        let E = MatrixEliminator.eliminate(target: A, form: .Smith)
 
         XCTAssertEqual(E.result, M.identity)
     }
 
     func testQ55_rank3() {
         let A = M5<𝐐>(1./1, 1./1, 0./1, 8./3, 10./3, -3./1, 0./1, 0./1, -3./1, -5./1, 2./1, 0./1, 10./3, 2./1, 16./3, 79./8, 0./1, 395./24, 79./8, 79./3, 7./2, 0./1, 35./6, 7./2, 28./3)
-        let E = A.eliminate(form: .Smith)
+        let E = MatrixEliminator.eliminate(target: A, form: .Smith)
 
         XCTAssertEqual(E.result, M(diagonal: [1,1,1]))
     }
@@ -166,18 +167,18 @@ class MatrixEliminationTests: XCTestCase {
         
         let x = R.indeterminate
         let I = Matrix3<R>.identity
-        let A = Matrix3(0, 2, 1,
+        let A = Matrix3([0, 2, 1,
                         -4, 6, 2,
-                        4, -4, 0).mapComponents{ R($0) }
+                        4, -4, 0].map{ R($0)} )
         let P = x * I - A
-        let e = P.eliminate(form: .Smith)
+        let e = MatrixEliminator.eliminate(target: P, form: .Smith)
         
         XCTAssertEqual(e.result, Matrix3<R>(diagonal: [R(1), x - R(2), (x - R(2)).pow(2)]))
     }
     
     public func testKernel() {
         let A = M2(1, 2, 1, 2)
-        let E = A.eliminate()
+        let E = MatrixEliminator.eliminate(target: A)
         let K = E.kernelMatrix
         
         XCTAssertTrue(K.size == (2, 1))
@@ -189,7 +190,7 @@ class MatrixEliminationTests: XCTestCase {
     
     func testKernel2() {
         let A = DMatrix(size: (6, 15), grid: [-1, -1, 0, 0, 0, 0, 0, -1, -1, 0, -1, 0, 0, 0, 0, 1, 0, -1, -1, 0, -1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 1, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, 0, 1, 1, 0, 1, 1, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 1, 0, 0, 0, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1] )
-        let E = A.eliminate()
+        let E = MatrixEliminator.eliminate(target: A)
         let K = E.kernelMatrix
         
         XCTAssertEqual(A * K, DMatrix.zero(size: (6, 10)))
@@ -200,7 +201,7 @@ class MatrixEliminationTests: XCTestCase {
 
     public func testImage() {
         let A = M2(2, 4, 2, 4)
-        let E = A.eliminate()
+        let E = MatrixEliminator.eliminate(target: A)
         let I = E.imageMatrix
         
         XCTAssertTrue(I.size == (2, 1))
@@ -212,13 +213,13 @@ class MatrixEliminationTests: XCTestCase {
                         2,1,1,3,
                         -2,0,3,-1,
                         0,-2,1,3)
-        let E = A.eliminate()
+        let E = MatrixEliminator.eliminate(target: A)
         XCTAssertEqual(E.determinant, 66)
     }
     
     public func testLinEq() {
         let A = M<_6, _4, 𝐙>(8, -6, 14, -10, -14, 6, 12, -8, 18, -18, -20, 8, -16, 7, -23, 22, 23, -7, 32, -17, 44, -49, -49, 17)
-        let E = A.eliminate()
+        let E = MatrixEliminator.eliminate(target: A)
         let y = A * Vector4(1,2,3,4)
         
         if let x = E.invert(y) {
