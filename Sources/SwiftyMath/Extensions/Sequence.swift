@@ -11,6 +11,10 @@ public extension Sequence {
         Array(self)
     }
     
+    var isEmpty: Bool {
+        anyElement == nil
+    }
+    
     var anyElement: Element? {
         first { _ in true }
     }

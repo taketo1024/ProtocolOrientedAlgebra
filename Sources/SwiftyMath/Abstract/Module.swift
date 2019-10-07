@@ -6,7 +6,7 @@ public protocol Module: AdditiveGroup {
 
 public func *<M: Module, n, m>(v: [M], A: Matrix<n, m, M.BaseRing>) -> [M] {
     assert(v.count == A.size.rows)
-    let cols = A.components.group{ $0.col }
+    let cols = A.nonZeroComponents.group{ $0.col }
     
     return (0 ..< A.size.cols).map{ j in
         guard let col = cols[j] else {

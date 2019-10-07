@@ -52,13 +52,9 @@ public extension Matrix where n == DynamicSize, m == _1 { // DColVector
     init(_ grid: R...) {
         self.init(grid)
     }
-
-    init(size: Int, generator g: (Int) -> R) {
-        self.init(size: (size, 1), generator: { (i, _) in g(i) })
-    }
     
     static func zero(size: Int) -> Self {
-        .init(size: (size, 1), components: [], zerosExcluded: true)
+        .init(size: (size, 1), grid: [])
     }
 }
 
@@ -70,12 +66,8 @@ public extension Matrix where n == _1, m == DynamicSize { // DRowVector
     init(_ grid: R...) {
         self.init(grid)
     }
-
-    init(size: Int, generator g: (Int) -> R) {
-        self.init(size: (1, size), generator: { (_, j) in g(j) })
-    }
     
     static func zero(size: Int) -> Self {
-        .init(size: (1, size), components: [], zerosExcluded: true)
+        .init(size: (1, size), grid: [])
     }
 }

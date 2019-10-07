@@ -35,7 +35,9 @@ extension FreeModuleType {
     public init<S1: Sequence, n>(generators: S1, coefficients: ColVector<n, BaseRing>) where S1.Element == Generator {
         let array = Array(generators)
         assert(array.count >= coefficients.size.rows)
-        self.init(elements: coefficients.components.map{ (i, _, r) in (array[i], r) } )
+        
+        let elements = coefficients.nonZeroComponents.map{ (i, _, r) in (array[i], r) }
+        self.init(elements: elements)
     }
     
     public init(_ z: FreeModule<Generator, BaseRing>) {
