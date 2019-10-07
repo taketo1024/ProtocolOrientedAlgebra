@@ -81,6 +81,7 @@ class MatrixTests: XCTestCase {
     func testNeg() {
         let a = Matrix2(1,2,3,4)
         XCTAssertEqual(-a, Matrix2(-1,-2,-3,-4))
+        XCTAssertEqual(a - a, Matrix2.zero)
     }
 
     func testSub() {
@@ -93,6 +94,12 @@ class MatrixTests: XCTestCase {
         let a = Matrix2(1,2,3,4)
         let b = Matrix2(2,3,4,5)
         XCTAssertEqual(a * b, Matrix2(10,13,22,29))
+    }
+    
+    func testMul2() {
+        let a = Matrix2(1,1,-1,1)
+        let b = Matrix2(1,1,1,-1)
+        XCTAssertEqual(a * b, Matrix2(2, 0, 0, -2))
     }
     
     func testScalarMul() {

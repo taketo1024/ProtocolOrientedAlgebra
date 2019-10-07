@@ -40,6 +40,7 @@ public struct DefaultMatrixImpl<R: Ring>: MatrixImpl {
     private var data: Data
     
     private init(size: (Int, Int), data: Data) {
+        assert(!data.contains{ $0.value.isZero })
         self.size = size
         self.data = data
     }
@@ -116,7 +117,7 @@ public struct DefaultMatrixImpl<R: Ring>: MatrixImpl {
     
     public static func +(a: Self, b: Self) -> Self {
         assert(a.size == b.size)
-        return .init(size: a.size, data: a.data.merging(b.data, uniquingKeysWith: +))
+        return .init(size: a.size, data: a.data.merging(b.data, uniquingKeysWith: +).exclude{ $0.value.isZero })
     }
     
     public static func *(a: Self, b: Self) -> Self {
@@ -151,7 +152,7 @@ public struct DefaultMatrixImpl<R: Ring>: MatrixImpl {
             }
         }
         
-        return .init(size: (a.size.rows, b.size.cols), data: cData)
+        return .init(size: (a.size.rows, b.size.cols), data: cData.exclude{ $0.value.isZero })
     }
     
     private func cofactor(_ i: Int, _ j: Int) -> R {
