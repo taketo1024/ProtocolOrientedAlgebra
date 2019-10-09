@@ -9,9 +9,10 @@
 import XCTest
 @testable import SwiftyMath
 
-extension QuotientRing: ExpressibleByIntegerLiteral, DelegatingIntegerLiteralInitialization where R: ExpressibleByIntegerLiteral {
-    public typealias IntegerLiteralDelegate = R
-    public typealias IntegerLiteralType = R.IntegerLiteralType
+extension IntegerQuotientRing: ExpressibleByIntegerLiteral {
+    public init(integerLiteral value: Int) {
+        self.init(value)
+    }
 }
 
 class IntegerQuotientRingTests: XCTestCase {
