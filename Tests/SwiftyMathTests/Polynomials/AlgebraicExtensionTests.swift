@@ -9,21 +9,22 @@
 import XCTest
 @testable import SwiftyMath
 
-extension AlgebraicExtension: ExpressibleByIntegerLiteral, DelegatingIntegerLiteralInitialization where Base.BaseRing: ExpressibleByIntegerLiteral {
-    public typealias IntegerLiteralDelegate = Base.BaseRing
-    public typealias IntegerLiteralType = IntegerLiteralDelegate.IntegerLiteralType
+extension AlgebraicExtension: ExpressibleByIntegerLiteral {
+    public init(integerLiteral value: Int) {
+        self.init(Base(from: value))
+    }
 }
 
 class AlgebraicExtensionTests: XCTestCase {
     
     struct p1: IrrPolynomialTP {
-        static let value = xPolynomial<𝐐>(coeffs: -2, 0, 1)
+        static let value = Polynomial<_x, 𝐐>(coeffs: -2, 0, 1)
     }
     
     typealias A = AlgebraicExtension<𝐐, p1>
     
     struct p2: IrrPolynomialTP {
-        static let value = xPolynomial<A>(coeffs: -3, 0, 1)
+        static let value = Polynomial<_x, A>(coeffs: -3, 0, 1)
     }
     
     typealias B = AlgebraicExtension<A, p2>
