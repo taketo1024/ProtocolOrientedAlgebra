@@ -92,7 +92,7 @@ class MatrixEliminationTests: XCTestCase {
     
     func testRank4_HNF() {
         let A = M5(3, -5, -22, 20, 8, 6, -11, -50, 45, 18, -1, 2, 10, -9, -3, 3, -6, -30, 27, 10, -1, 2, 7, -6, -3)
-        let E = MatrixEliminator.eliminate(target: A, form: .RowHermite, debug: true)
+        let E = MatrixEliminator.eliminate(target: A, form: .RowHermite)
         print(E.result.detailDescription)
     }
     

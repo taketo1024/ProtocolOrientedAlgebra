@@ -9,28 +9,32 @@
 internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
     var size: (rows: Int, cols: Int)
     
-    typealias Table = [Int : LinkedList<(col: Int, value: R)>]
+    typealias Table = [Int : EntityPointer]
     
     private var working: Table
+    private var pool: EntityPointerPool
+    
     private var trackRowInfos: Bool
     private var rowWeights: [Int : Int]
     private var col2rowTable: [Int : Set<Int>] // [col : { rows having head at col }]
     
     init<S: Sequence>(size: (Int, Int), components: S, trackRowInfos: Bool = false) where S.Element == MatrixComponent<R> {
+        let pool = EntityPointerPool()
         self.size = size
+        self.pool = pool
         self.working = components.group{ c in c.row }
             .mapValues { l in
                 let sorted = l.sorted{ c in c.col }.map{ c in (c.col, c.value) }
-                return LinkedList.generate(from: sorted)!
+                return pool.generateSequence(from: sorted)
         }
         
         self.trackRowInfos = trackRowInfos
         if trackRowInfos {
             self.rowWeights = working
-                .mapValues{ l in l.sum{ c in c.value.euclideanDegree } }
+                .mapValues{ l in l.pointee.sum{ c in c.value.euclideanDegree } }
             
             self.col2rowTable = working
-                .map{ (i, head) in (i, head.value.col) }
+                .map{ (i, list) in (i, list.pointee.col) }
                 .group{ (_, j) in j }
                 .mapValues{ l in Set( l.map{ (i, _) in i } ) }
             
@@ -42,28 +46,28 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
     
     var components: [MatrixComponent<R>] {
         working.flatMap { (i, list) in
-            list.map{ (j, a) in (i, j, a) }
+            list.pointee.map{ (j, a) in (i, j, a) }
         }
     }
     
     func headComponent(ofRow i: Int) -> MatrixComponent<R>? {
-        if let (j, a) = working[i]?.value {
-            return (i, j, a)
+        if let e = working[i]?.pointee {
+            return (i, e.col, e.value)
         } else {
             return nil
         }
     }
     
     func headComponents(inCol j: Int) -> [MatrixComponent<R>] {
-        col2rowTable[j]?.map { i in (i, j, working[i]!.value.value) } ?? []
+        col2rowTable[j]?.map { i in (i, j, working[i]!.pointee.value) } ?? []
     }
     
     func components(inCol j0: Int, withinRows rowRange: CountableRange<Int>) -> [MatrixComponent<R>] {
         rowRange.compactMap { i -> MatrixComponent<R>? in
-            guard let head = working[i] else {
+            guard let list = working[i]?.pointee else {
                 return nil
             }
-            for (j, a) in head {
+            for (j, a) in list {
                 if j == j0 {
                     return (i, j, a)
                 } else if j > j0 {
@@ -94,10 +98,10 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
     @_specialize(where R == 𝐙)
     func multiplyRow(at i: Int, by r: R) {
         assert(!r.isZero)
-        var p = working[i]
-        while let c = p {
-            c.value.value = r * c.value.value
-            p = c.next
+        var pOpt = working[i]
+        while let p = pOpt {
+            p.pointee.value = r * p.pointee.value
+            pOpt = p.pointee.next
         }
     }
     
@@ -107,36 +111,41 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
             removeFromCol2RowTable(j)
         }
 
-        (working[i], working[j]) = (working[j], working[i])
+        working.swap(i, j)
         
         if trackRowInfos {
             insertToCol2RowTable(i)
             insertToCol2RowTable(j)
-            (rowWeights[i], rowWeights[j]) = (rowWeights[j], rowWeights[i])
+            rowWeights.swap(i, j)
         }
     }
     
     @_specialize(where R == 𝐙)
     func addRow(at i1: Int, to i2: Int, multipliedBy r: R) {
-        guard let fromHead = working[i1] else {
+        guard let fromHead = working[i1]?.pointee else {
             return
         }
+        
+        let w = weight(ofRow: i2)
+        var dw = 0
         
         if trackRowInfos {
             removeFromCol2RowTable(i2)
         }
 
-        let toHead = {() -> LinkedList<(col: Int, value: R)> in
+        let toHead = {() -> EntityPointer in
             let toHead = working[i2] // possibly nil
-            if toHead == nil || fromHead.value.col < toHead!.value.col {
+            if toHead == nil || fromHead.col < toHead!.pointee.col {
                 
                 // from: ●-->○-->○----->○-------->
                 //   to:            ●------->○--->
-                
-                return LinkedList((fromHead.value.col, .zero), next: toHead)
-                
+                //
+                //   ↓
+                //
                 // from: ●-->○-->○----->○-------->
                 //   to: ●--------->○------->○--->
+                
+                return pool.use(col: fromHead.col, value: .zero, next: toHead)
                 
             } else {
                 return toHead!
@@ -144,6 +153,7 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
         }()
         
         var (from, to) = (fromHead, toHead)
+        var prev = to
         
         while true {
             // At this point, it is assured that
@@ -152,25 +162,43 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
             // from: ------------->●--->○-------->
             //   to: -->●----->○------------>○--->
             
-            while let next = to.next, next.value.col <= from.value.col {
-                to = next
+            while let next = to.pointee.next, next.pointee.col <= from.col {
+                (prev, to) = (to, next)
             }
             
             // from: ------------->●--->○-------->
             //   to: -->○----->●------------>○--->
 
-            if from.value.col == to.value.col {
-                to.value.value = to.value.value + r * from.value.value
+            if from.col == to.pointee.col {
+                let a0 = to.pointee.value
+                let a = a0 + r * from.value
+                
+                if a.isZero && to != prev {
+                    to = prev
+                    let drop = to.pointee.dropNext()!
+                    pool.unuse(drop)
+                } else {
+                    to.pointee.value = a
+                }
+                
+                if trackRowInfos {
+                    dw += a.euclideanDegree - a0.euclideanDegree
+                }
             } else {
-                let c = LinkedList((col: from.value.col, value: r * from.value.value))
-                to.insert(c)
-                to = c
+                let a = r * from.value
+                let p = pool.use(col: from.col, value: a)
+                to.pointee.insertNext(p)
+                (prev, to) = (to, p)
+                
+                if trackRowInfos {
+                    dw += a.euclideanDegree
+                }
             }
             
             // from: ------------->●--->○-------->
             //   to: -->○----->○-->●-------->○--->
 
-            if let next = from.next {
+            if let next = from.next?.pointee {
                 from = next
                 
                 // from: ------------->○--->●-------->
@@ -181,26 +209,25 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
             }
         }
         
-        let result = toHead.drop{ c in c.value.isZero } // possibly nil
-        
-        working[i2] = result
+        if toHead.pointee.value.isZero {
+            if let next = toHead.pointee.next, !next.pointee.value.isZero {
+                working[i2] = next
+            } else {
+                working[i2] = nil
+            }
+            pool.unuse(toHead)
+        } else {
+            working[i2] = toHead
+        }
         
         if trackRowInfos {
             insertToCol2RowTable(i2)
-            updateRowWeight(i2)
-        }
-    }
-    
-    private func updateRowWeight(_ i: Int) {
-        if let head = working[i] {
-            rowWeights[i] = head.sum{ c in c.value.euclideanDegree }
-        } else {
-            rowWeights[i] = nil
+            rowWeights[i2] = (working[i2] == nil) ? 0 : w + dw
         }
     }
     
     private func removeFromCol2RowTable(_ i: Int) {
-        guard let j = working[i]?.value.col else { return }
+        guard let j = working[i]?.pointee.col else { return }
         if col2rowTable[j]!.count == 1 {
             col2rowTable[j] = nil
         } else {
@@ -209,7 +236,7 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
     }
     
     private func insertToCol2RowTable(_ i: Int) {
-        guard let j = working[i]?.value.col else { return }
+        guard let j = working[i]?.pointee.col else { return }
         if col2rowTable[j] == nil {
             col2rowTable[j] = [i]
         } else {
@@ -225,8 +252,8 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
     // for test
     static func ==(a: RowEliminationWorker, b: RowEliminationWorker) -> Bool {
         (a.working.keys == b.working.keys) && a.working.keys.allSatisfy{ i in
-            var itr1 = a.working[i]!.makeIterator()
-            var itr2 = b.working[i]!.makeIterator()
+            var itr1 = a.working[i]!.pointee.makeIterator()
+            var itr2 = b.working[i]!.pointee.makeIterator()
             
             while let c1 = itr1.next(), let c2 = itr2.next() {
                 if c1.value != c2.value {
@@ -234,6 +261,88 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
                 }
             }
             return itr1.next() == nil && itr2.next() == nil
+        }
+    }
+    
+    typealias EntityPointer = UnsafeMutablePointer<Entity>
+    
+    struct Entity: Sequence, Equatable {
+        let col: Int
+        var value: R
+        var next: EntityPointer? = nil
+        
+        mutating func insertNext(_ p: EntityPointer) {
+            assert(p.pointee.next?.pointee != self)
+            p.pointee.next = next
+            next = p
+        }
+        
+        mutating func dropNext() -> EntityPointer? {
+            guard let drop = next else {
+                return nil
+            }
+            self.next = drop.pointee.next
+            return drop
+        }
+        
+        func makeIterator() -> Iterator {
+            Iterator(self)
+        }
+        
+        struct Iterator: IteratorProtocol {
+            private var current: Entity?
+            fileprivate init(_ start: Entity) {
+                current = start
+            }
+            
+            public mutating func next() -> (col: Int, value: R)? {
+                if let e = current {
+                    current = e.next?.pointee
+                    return (e.col, e.value)
+                } else {
+                    return nil
+                }
+            }
+        }
+    }
+    
+    class EntityPointerPool {
+        private var used: Set<EntityPointer> = []
+        private var unused: Set<EntityPointer> = []
+        
+        func use(col: Int, value: R, next: EntityPointer? = nil) -> EntityPointer {
+            let p = unused.popFirst() ?? EntityPointer.allocate(capacity: 1)
+            p.initialize(to: Entity(col: col, value: value, next: next))
+            used.insert(p)
+            return p
+        }
+        
+        func unuse(_ p: EntityPointer) {
+            used.remove(p)
+            p.deinitialize(count: 1)
+            unused.insert(p)
+        }
+        
+        func generateSequence<S: Sequence>(from seq: S) -> EntityPointer where S.Element == (Int, R) {
+            var head: EntityPointer?
+            var prev: EntityPointer?
+            
+            for (j, a) in seq {
+                let p = use(col: j, value: a)
+                if head == nil {
+                    head = p
+                }
+                prev?.pointee.next = p
+                prev = p
+            }
+            
+            return head!
+        }
+        
+        deinit {
+            used.union(unused).forEach { p in
+                p.deallocate()
+            }
         }
     }
 }
