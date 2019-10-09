@@ -34,19 +34,25 @@ public final class LinkedList<T>: Sequence, CustomStringConvertible {
     }
     
     public func drop(where shouldDrop: (T) -> Bool) -> LinkedList<T>? {
-        if let head = self.first(where: {c in !shouldDrop(c.value)}) {
-            var current = head
-            while let next = current.next {
-                if shouldDrop(next.value) {
-                    current.next = next.next
-                } else {
-                    current = next
-                }
+        var head = self
+        while shouldDrop(head.value) {
+            if let next = head.next {
+                head = next
+            } else {
+                return nil
             }
-            return head
-        } else {
-            return nil
         }
+        
+        var current = head
+        while let next = current.next {
+            if shouldDrop(next.value) {
+                current.next = next.next
+            } else {
+                current = next
+            }
+        }
+        
+        return head
     }
     
     public func makeIterator() -> Iterator {
@@ -59,11 +65,11 @@ public final class LinkedList<T>: Sequence, CustomStringConvertible {
             current = start
         }
         
-        public mutating func next() -> LinkedList<T>? {
+        public mutating func next() -> T? {
             defer {
                 current = current?.next
             }
-            return current
+            return current?.value
         }
     }
     

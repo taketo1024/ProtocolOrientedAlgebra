@@ -45,6 +45,12 @@ public extension Dictionary {
         self.merging(other, uniquingKeysWith: { (v1, v2) in !overwrite ? v1 : v2 })
     }
     
+    mutating func swap(_ k1: Key, _ k2: Key) {
+        let v1 = self[k1]
+        self[k1] = self[k2]
+        self[k2] = v1
+    }
+    
     static func + (a: Dictionary, b: Dictionary) -> Dictionary {
         a.merging(b)
     }

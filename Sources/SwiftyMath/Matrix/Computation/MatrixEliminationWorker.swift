@@ -10,12 +10,11 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
     var size: (rows: Int, cols: Int)
     
     typealias Table = [Int : LinkedList<(col: Int, value: R)>]
-    private var working: Table
-    private var result : Table
     
+    private var working: Table
     private var trackRowInfos: Bool
-    private var headPositions: [Int : Set<Int>] // [col : { rows having head at col }]
     private var rowWeights: [Int : Int]
+    private var col2rowTable: [Int : Set<Int>] // [col : { rows having head at col }]
     
     init<S: Sequence>(size: (Int, Int), components: S, trackRowInfos: Bool = false) where S.Element == MatrixComponent<R> {
         self.size = size
@@ -24,38 +23,59 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
                 let sorted = l.sorted{ c in c.col }.map{ c in (c.col, c.value) }
                 return LinkedList.generate(from: sorted)!
         }
-        self.result = [:]
-        result.reserveCapacity(working.count)
         
         self.trackRowInfos = trackRowInfos
         if trackRowInfos {
-            self.headPositions = working
+            self.rowWeights = working
+                .mapValues{ l in l.sum{ c in c.value.euclideanDegree } }
+            
+            self.col2rowTable = working
                 .map{ (i, head) in (i, head.value.col) }
                 .group{ (_, j) in j }
                 .mapValues{ l in Set( l.map{ (i, _) in i } ) }
             
-            self.rowWeights = working.mapValues{ l in l.sum{ c in c.value.value.euclideanDegree } }
-            
         } else {
-            self.headPositions = [:]
             self.rowWeights = [:]
+            self.col2rowTable = [:]
         }
     }
     
-    func headElement(_ i: Int) -> (col: Int, value: R)? {
-        return working[i]?.value
+    var components: [MatrixComponent<R>] {
+        working.flatMap { (i, list) in
+            list.map{ (j, a) in (i, j, a) }
+        }
     }
     
-    @_specialize(where R == 𝐙)
-    func headElements(ofCol j: Int) -> [(row: Int, value: R)] {
-        assert(trackRowInfos)
-        return headPositions[j]?.map { i in (i, working[i]!.value.value) } ?? []
+    func headComponent(ofRow i: Int) -> MatrixComponent<R>? {
+        if let (j, a) = working[i]?.value {
+            return (i, j, a)
+        } else {
+            return nil
+        }
     }
     
-    @_specialize(where R == 𝐙)
+    func headComponents(inCol j: Int) -> [MatrixComponent<R>] {
+        col2rowTable[j]?.map { i in (i, j, working[i]!.value.value) } ?? []
+    }
+    
+    func components(inCol j0: Int, withinRows rowRange: CountableRange<Int>) -> [MatrixComponent<R>] {
+        rowRange.compactMap { i -> MatrixComponent<R>? in
+            guard let head = working[i] else {
+                return nil
+            }
+            for (j, a) in head {
+                if j == j0 {
+                    return (i, j, a)
+                } else if j > j0 {
+                    return nil
+                }
+            }
+            return nil
+        }
+    }
+    
     func weight(ofRow i: Int) -> Int {
-        assert(trackRowInfos)
-        return rowWeights[i] ?? 0
+        rowWeights[i] ?? 0
     }
     
     func apply(_ s: MatrixEliminator<R>.ElementaryOperation) {
@@ -74,29 +94,24 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
     @_specialize(where R == 𝐙)
     func multiplyRow(at i: Int, by r: R) {
         assert(!r.isZero)
-        guard let row = working[i] else {
-            return
-        }
-        for t in row {
-            t.value.value = r * t.value.value
-        }
-        
-        if trackRowInfos {
-            updateRowWeight(i)
+        var p = working[i]
+        while let c = p {
+            c.value.value = r * c.value.value
+            p = c.next
         }
     }
     
     func swapRows(_ i: Int, _ j: Int) {
         if trackRowInfos {
-            removeHeadPosition(i)
-            removeHeadPosition(j)
+            removeFromCol2RowTable(i)
+            removeFromCol2RowTable(j)
         }
 
         (working[i], working[j]) = (working[j], working[i])
         
         if trackRowInfos {
-            updateHeadPosition(i)
-            updateHeadPosition(j)
+            insertToCol2RowTable(i)
+            insertToCol2RowTable(j)
             (rowWeights[i], rowWeights[j]) = (rowWeights[j], rowWeights[i])
         }
     }
@@ -107,6 +122,10 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
             return
         }
         
+        if trackRowInfos {
+            removeFromCol2RowTable(i2)
+        }
+
         let toHead = {() -> LinkedList<(col: Int, value: R)> in
             let toHead = working[i2] // possibly nil
             if toHead == nil || fromHead.value.col < toHead!.value.col {
@@ -164,65 +183,37 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
         
         let result = toHead.drop{ c in c.value.isZero } // possibly nil
         
-        if trackRowInfos {
-            removeHeadPosition(i2)
-        }
-
         working[i2] = result
         
         if trackRowInfos {
-            updateHeadPosition(i2)
+            insertToCol2RowTable(i2)
             updateRowWeight(i2)
-        }
-    }
-    
-    func finished(row i: Int) {
-        result[i] = working[i]
-        working[i] = nil
-    }
-    
-    var isAllDone: Bool {
-        working.isEmpty
-    }
-    
-    var components: [MatrixComponent<R>] {
-        (result + working).flatMap { (i, list) in
-            list.map{ c -> MatrixComponent<R> in
-                let (j, a) = c.value
-                return (i, j, a)
-            }
-        }
-    }
-    
-    func redo() {
-        working = result
-        result = [:]
-        result.reserveCapacity(working.count)
-    }
-    
-    private func removeHeadPosition(_ i: Int) {
-        guard let j = working[i]?.value.col else { return }
-        if headPositions[j]!.count == 1 {
-            headPositions[j] = nil
-        } else {
-            headPositions[j]!.remove(i)
-        }
-    }
-    
-    private func updateHeadPosition(_ i: Int) {
-        guard let j = working[i]?.value.col else { return }
-        if headPositions[j] == nil {
-            headPositions[j] = [i]
-        } else {
-            headPositions[j]!.insert(i)
         }
     }
     
     private func updateRowWeight(_ i: Int) {
         if let head = working[i] {
-            rowWeights[i] = head.sum{ c in c.value.value.euclideanDegree }
+            rowWeights[i] = head.sum{ c in c.value.euclideanDegree }
         } else {
             rowWeights[i] = nil
+        }
+    }
+    
+    private func removeFromCol2RowTable(_ i: Int) {
+        guard let j = working[i]?.value.col else { return }
+        if col2rowTable[j]!.count == 1 {
+            col2rowTable[j] = nil
+        } else {
+            col2rowTable[j]!.remove(i)
+        }
+    }
+    
+    private func insertToCol2RowTable(_ i: Int) {
+        guard let j = working[i]?.value.col else { return }
+        if col2rowTable[j] == nil {
+            col2rowTable[j] = [i]
+        } else {
+            col2rowTable[j]!.insert(i)
         }
     }
     
