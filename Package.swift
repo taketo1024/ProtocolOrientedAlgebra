@@ -21,7 +21,7 @@ let package = Package(
             name: "SwiftyMathTests",
             dependencies: ["SwiftyMath"]),
         .target(
-            name: "Sample",
+            name: "SwiftyMath-Sample",
             dependencies: ["SwiftyMath"],
             path: "Sources/Sample"),
     ]
