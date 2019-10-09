@@ -33,11 +33,18 @@ public struct IntegerIdeal<n: StaticSizeType>: IntegerIdealType {
 
 extension IntegerIdeal: MaximalIdeal where n: PrimeSizeType {}
 
-public typealias IntegerQuotientRing<n: StaticSizeType> = QuotientRing<Int, IntegerIdeal<n>>
+public struct IntegerQuotientRing<n: StaticSizeType>: QuotientRingType, FiniteSetType, Hashable {
+    public typealias Ideal = IntegerIdeal<n>
+    public typealias Sub = Ideal
 
-extension QuotientRing: FiniteSetType where Sub: IntegerIdealType {
+    public let representative: 𝐙
+    
+    public init(_ x: 𝐙) {
+        self.representative = Ideal.quotientRepresentative(of: x)
+    }
+    
     public static var mod: 𝐙 {
-        Sub.mod
+        n.intValue
     }
     
     public static var allElements: [Self] {
@@ -52,3 +59,5 @@ extension QuotientRing: FiniteSetType where Sub: IntegerIdealType {
         "𝐙\(Format.sub(mod))"
     }
 }
+
+extension IntegerQuotientRing: EuclideanRing, Field where n: PrimeSizeType {}
