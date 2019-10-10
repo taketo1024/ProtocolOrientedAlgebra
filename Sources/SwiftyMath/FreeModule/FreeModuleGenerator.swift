@@ -38,3 +38,7 @@ public struct TensorGenerator<A, B>: FreeModuleGenerator where A: FreeModuleGene
         "\(left.description)⊗\(right.description)"
     }
 }
+
+public func ⊗<A: FreeModuleGenerator, B: FreeModuleGenerator>(_ a: A, _ b: B) -> TensorGenerator<A, B> {
+    .init(a, b)
+}
