@@ -129,4 +129,10 @@ class MPolynomialTests: XCTestCase {
         XCTAssertEqual(A.elementarySymmetric(1), A(coeffs: [[1]: 1, [0, 1]: 1]))
         XCTAssertEqual(A.elementarySymmetric(2), A(coeffs: [[1, 1]: 1]))
     }
+    
+    func testGenerateMonomials() {
+        let mons = A.monomials(ofTotalExponent: 3)
+        XCTAssertEqual(mons.count, 4)
+        XCTAssertTrue(mons.allSatisfy{ $0.degree == 3 })
+    }
 }

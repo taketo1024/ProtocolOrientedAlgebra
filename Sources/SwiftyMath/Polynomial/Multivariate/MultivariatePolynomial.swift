@@ -19,6 +19,14 @@ extension MultivariatePolynomialType {
         .init(coeffs: [I: .identity])
     }
     
+    public static func monomials(ofTotalExponent e: Int) -> [Self] {
+        monomials(ofTotalExponent: e, usingIndeterminates: (0 ..< Indeterminates.numberOfIndeterminates).toArray())
+    }
+    
+    public static func monomials(ofTotalExponent e: Int, usingIndeterminates indices: [Int]) -> [Self] {
+        Generator.monomials(ofTotalExponent: e, usingIndeterminates: indices).map { .init(elements: [$0: .identity] )}
+    }
+    
     public func evaluate(by values: [BaseRing]) -> BaseRing {
         assert(Indeterminates.isFinite && values.count == Indeterminates.numberOfIndeterminates)
         return elements.sum { (xn, a) in

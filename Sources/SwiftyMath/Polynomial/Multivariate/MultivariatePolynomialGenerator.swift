@@ -10,12 +10,21 @@ public protocol MultivariatePolynomialGeneratorType: PolynomialGeneratorType whe
 }
 
 extension MultivariatePolynomialGeneratorType {
-    public var degree: Int {
-        Indeterminates.totalDegree(exponents: exponent)
+    public init(_ exponent: [Int: Int]) {
+        if let n = exponent.keys.max() {
+            let list = (0 ... n).map { i in exponent[i] ?? 0 }
+            self.init(list)
+        } else {
+            self.init([])
+        }
     }
     
     public static var identity: Self {
         .init([])
+    }
+    
+    public var degree: Int {
+        Indeterminates.totalDegree(exponents: exponent)
     }
     
     public static func *(_ f: Self, _ g: Self) -> Self {
@@ -34,6 +43,33 @@ extension MultivariatePolynomialGeneratorType {
             return a.pow(n)
         }
     }
+    
+    public static func monomials(ofTotalExponent total: Int) -> [Self] {
+        assert(Indeterminates.isFinite)
+        return monomials(ofTotalExponent: total, usingIndeterminates: (0 ..< Indeterminates.numberOfIndeterminates).toArray())
+    }
+
+    public static func monomials(ofTotalExponent total: Int, usingIndeterminates indices: [Int]) -> [Self] {
+        typealias xn = Indeterminates
+        guard !indices.isEmpty else {
+            return []
+        }
+        
+        func generate(_ total: Int, _ i: Int) -> [[Int : Int]] {
+            if i == 0 {
+                return [[indices[i] : total]]
+            } else {
+                return (0 ... total).flatMap { e_i -> [[Int : Int]] in
+                    generate(total - e_i, i - 1).map { exponents in
+                        exponents.merging([indices[i] : e_i])
+                    }
+                }
+            }
+        }
+        
+        return generate(total, indices.count - 1).map { .init($0) }
+    }
+
     
     public var description: String {
         exponent.enumerated().compactMap { (i, n) -> String? in
