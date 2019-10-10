@@ -27,6 +27,14 @@ extension MultivariatePolynomialType {
         Generator.monomials(ofTotalExponent: e, usingIndeterminates: indices).map { .init(elements: [$0: .identity] )}
     }
     
+    public var highestExponent: [Int] {
+        _highestExponent ?? []
+    }
+    
+    public var lowestExponent: [Int] {
+        _lowestExponent ?? []
+    }
+    
     public func evaluate(by values: [BaseRing]) -> BaseRing {
         assert(Indeterminates.isFinite && values.count == Indeterminates.numberOfIndeterminates)
         return elements.sum { (xn, a) in

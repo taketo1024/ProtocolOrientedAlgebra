@@ -27,8 +27,8 @@ class PolynomialTests: XCTestCase {
         XCTAssertEqual(a.leadCoeff, 5)
         XCTAssertEqual(a.leadTerm, A(coeffs: [3: 5]))
         XCTAssertEqual(a.constTerm, 3)
-        XCTAssertEqual(a.maxExponent, .some(3))
-        XCTAssertEqual(a.minExponent, .some(0))
+        XCTAssertEqual(a.highestExponent, 3)
+        XCTAssertEqual(a.lowestExponent, 0)
         XCTAssertEqual(a.degree, 3)
         XCTAssertFalse(a.isSingleTerm)
     }
@@ -38,8 +38,8 @@ class PolynomialTests: XCTestCase {
         XCTAssertEqual(x, A(coeffs: [1: 1]))
         XCTAssertEqual(x.description, "x")
         XCTAssertEqual(x.degree, 1)
-        XCTAssertEqual(x.maxExponent, .some(1))
-        XCTAssertEqual(x.minExponent, .some(1))
+        XCTAssertEqual(x.highestExponent, 1)
+        XCTAssertEqual(x.lowestExponent, 1)
         XCTAssertTrue (x.isSingleTerm)
     }
     
@@ -144,7 +144,7 @@ class PolynomialTests: XCTestCase {
         XCTAssertEqual(t, T(coeffs: [1: 1]))
         XCTAssertEqual(t.description, "t")
         XCTAssertEqual(t.degree, 2)
-        XCTAssertEqual(t.maxExponent, .some(1))
-        XCTAssertEqual(t.minExponent, .some(1))
+        XCTAssertEqual(t.highestExponent, 1)
+        XCTAssertEqual(t.lowestExponent, 1)
     }
 }

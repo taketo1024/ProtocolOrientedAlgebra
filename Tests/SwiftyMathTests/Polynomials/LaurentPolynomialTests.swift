@@ -32,8 +32,8 @@ class LaurentPolynomialTests: XCTestCase {
         XCTAssertEqual(a.leadCoeff, 5)
         XCTAssertEqual(a.leadTerm, A(coeffs: [1: 5]))
         XCTAssertEqual(a.constTerm, 0)
-        XCTAssertEqual(a.maxExponent, .some(1))
-        XCTAssertEqual(a.minExponent, .some(-2))
+        XCTAssertEqual(a.highestExponent, 1)
+        XCTAssertEqual(a.lowestExponent, -2)
         XCTAssertEqual(a.degree, 1)
     }
     

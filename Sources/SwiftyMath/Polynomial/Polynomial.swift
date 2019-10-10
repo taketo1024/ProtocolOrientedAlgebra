@@ -32,20 +32,20 @@ extension PolynomialType {
         elements.mapKeys { t in t.exponent }
     }
  
-    public var maxExponent: Generator.Exponent? {
+    internal var _highestExponent: Generator.Exponent? {
         generators.max().map{ $0.exponent }
     }
     
-    public var minExponent: Generator.Exponent? {
+    internal var _lowestExponent: Generator.Exponent? {
         generators.min().map{ $0.exponent }
     }
     
     public var leadCoeff: BaseRing {
-        maxExponent.map{ self.coeff($0) } ?? .zero
+        _highestExponent.map{ self.coeff($0) } ?? .zero
     }
     
     public var leadTerm: Self {
-        maxExponent.map{ n in .init(elements: [Generator(n) : coeff(n)] ) } ?? .zero
+        _highestExponent.map{ n in .init(elements: [Generator(n) : coeff(n)] ) } ?? .zero
     }
     
     public var isMonic: Bool {
@@ -84,6 +84,14 @@ extension UnivariatePolynomialType {
         .init(coeffs: [.zero, .identity])
     }
     
+    public var highestExponent: Int {
+        _highestExponent ?? 0
+    }
+    
+    public var lowestExponent: Int {
+        _lowestExponent ?? 0
+    }
+    
     public var derivative: Self {
         .init(coeffs: coeffsTable
             .filter{ (n, _) in n != 0 }
@@ -114,7 +122,7 @@ public struct Polynomial<x: PolynomialIndeterminate, R: Ring>: UnivariatePolynom
 
 extension Polynomial: EuclideanRing where R: Field {
     public var euclideanDegree: Int {
-        maxExponent ?? 0
+        highestExponent
     }
     
     public static func /%(f: Self, g: Self) -> (q: Self, r: Self) {

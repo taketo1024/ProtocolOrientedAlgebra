@@ -58,6 +58,8 @@ class MPolynomialTests: XCTestCase {
         XCTAssertEqual(a.coeff([1]), 2)
         XCTAssertEqual(a.coeff([0, 1]), 1)
         XCTAssertEqual(a.coeff([2, 1]), 3)
+        XCTAssertEqual(a.highestExponent, [2, 1])
+        XCTAssertEqual(a.lowestExponent, [])
     }
     
     func testCoeff() {
