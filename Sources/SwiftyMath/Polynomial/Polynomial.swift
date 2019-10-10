@@ -24,7 +24,7 @@ extension PolynomialType {
         }
     }
     
-    func coeff(_ exponent: Generator.Exponent) -> BaseRing {
+    public func coeff(_ exponent: Generator.Exponent) -> BaseRing {
         self[Generator(exponent)]
     }
     
