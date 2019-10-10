@@ -52,7 +52,7 @@ extension MultivariatePolynomialGeneratorType {
     public static func monomials(ofTotalExponent total: Int, usingIndeterminates indices: [Int]) -> [Self] {
         typealias xn = Indeterminates
         guard !indices.isEmpty else {
-            return []
+            return (total == 0) ? [.identity] : []
         }
         
         func generate(_ total: Int, _ i: Int) -> [[Int : Int]] {
