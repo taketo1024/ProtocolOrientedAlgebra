@@ -102,3 +102,21 @@ public typealias FiniteVariatePolynomial<_x: PolynomialIndeterminate, n: StaticS
 
 public typealias InifiniteVariatePolynomial<_x: PolynomialIndeterminate, R: Ring> =
     MultivariatePolynomial<InfiniteVariatePolynomialIndeterminates<_x>, R>
+
+// MEMO: Waiting for parameterized extension on FreeModule.
+public func splitPolynomials<xn, A, R>(_ z: FreeModule<A, MultivariatePolynomial<xn, R>>) -> FreeModule<TensorGenerator<MultivariatePolynomialGenerator<xn>, A>, R> {
+    return z.decomposed().sum { (a, p) in
+        p.decomposed().sum { (m, r) in
+            FreeModule(elements: [ m ⊗ a : r])
+        }
+    }
+}
+
+// MEMO: Waiting for parameterized extension on FreeModule.
+public func combineMonomials<xn, A, R>(_ z: FreeModule<TensorGenerator<MultivariatePolynomialGenerator<xn>, A>, R>) -> FreeModule<A, MultivariatePolynomial<xn, R>> {
+    return z.decomposed().sum { (x, r) in
+        let (m, a) = x.factors
+        let p = r * MultivariatePolynomial<xn, R>.wrap(m)
+        return FreeModule(elements: [a : p])
+    }
+}
