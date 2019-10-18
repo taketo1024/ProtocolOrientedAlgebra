@@ -215,6 +215,10 @@ extension ModuleHom where X: FreeModuleType, Y: FreeModuleType {
             m.isGenerator ? f(m.unwrap()!) : m.elements.sum { (a, r) in r * f(a) }
         }
     }
+    
+    public func applied(to x: X.Generator) -> Y {
+        applied(to: .wrap(x))
+    }
 }
 
 extension FreeModule: Codable where A: Codable, R: Codable {}
