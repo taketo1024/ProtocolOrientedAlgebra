@@ -96,8 +96,8 @@ public final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     }
     
     private func swapDiagonal(_ i: Int, _ j: Int) {
-        swap(&components[i].value, &components[j].value)
-        
+        (components[i].value, components[j].value) = (components[j].value, components[i].value)
+
         append(.SwapRows(i, j))
         append(.SwapCols(i, j))
         
