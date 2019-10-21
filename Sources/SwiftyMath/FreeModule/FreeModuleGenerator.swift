@@ -42,3 +42,95 @@ public struct TensorGenerator<A, B>: FreeModuleGenerator where A: FreeModuleGene
 public func ⊗<A: FreeModuleGenerator, B: FreeModuleGenerator>(_ a: A, _ b: B) -> TensorGenerator<A, B> {
     .init(a, b)
 }
+
+public protocol TensorMonoid {
+    static func ⊗(lhs: Self, rhs: Self) -> Self
+}
+
+public struct MultiTensorGenerator<A: FreeModuleGenerator>: FreeModuleGenerator, TensorMonoid {
+    public let factors: [A]
+    public init(_ factors: [A]) {
+        self.factors = factors
+    }
+    
+    public init(_ factors: A ...) {
+        self.init(factors)
+    }
+    
+    public static var identity: Self {
+        .init([])
+    }
+    
+    public var degree: Int {
+        factors.sum { $0.degree }
+    }
+    
+    public static func ⊗(t1: Self, t2: Self) -> Self {
+        .init(t1.factors + t2.factors)
+    }
+    
+    public static func < (t1: Self, t2: Self) -> Bool {
+        t1.factors < t2.factors
+    }
+    
+    public var description: String {
+        return factors.map{ $0.description }.joined(separator: "⊗")
+    }
+}
+
+extension FreeModuleType where Generator: TensorMonoid {
+    public static func ⊗(lhs: Self, rhs: Self) -> Self {
+        return lhs.elements.sum { (t1, r1) in
+            rhs.elements.sum { (t2, r2) in
+                let r = r1 * r2
+                let t = t1 ⊗ t2
+                return r * .wrap(t)
+            }
+        }
+    }
+}
+
+extension FreeModule: TensorMonoid where A: TensorMonoid {}
+
+public func MultiTensorHom<A, R>(from f: ModuleEnd<FreeModule<A, R>>, inputIndex: Int, outputIndex: Int) -> ModuleEnd<FreeModule<MultiTensorGenerator<A>, R>> {
+    .linearlyExtend { t in
+        let x = t.factors[inputIndex]
+        let fx = f.applied(to: x)
+        return fx.mapGenerators { y in
+            MultiTensorGenerator(t.factors.with { factors in
+                factors.remove(at: inputIndex)
+                factors.insert(y, at: outputIndex)
+            })
+        }
+    }
+}
+
+public func MultiTensorHom<A, R>(from f: ModuleHom<FreeModule<TensorGenerator<A, A>, R>, FreeModule<A, R>>, inputIndices: (Int, Int), outputIndex: Int) -> ModuleEnd<FreeModule<MultiTensorGenerator<A>, R>> {
+    .linearlyExtend { t in
+        let (x1, x2) = (t.factors[inputIndices.0], t.factors[inputIndices.1])
+        let fx = f.applied(to: x1 ⊗ x2)
+        return fx.mapGenerators { y in
+            MultiTensorGenerator(t.factors.with { factors in
+                factors.remove(at: inputIndices.1)
+                factors.remove(at: inputIndices.0)
+                factors.insert(y, at: outputIndex)
+            })
+        }
+    }
+}
+
+public func MultiTensorHom<A, R>(from f: ModuleHom<FreeModule<A, R>, FreeModule<TensorGenerator<A, A>, R>>, inputIndex: Int, outputIndices: (Int, Int)) -> ModuleEnd<FreeModule<MultiTensorGenerator<A>, R>> {
+    .linearlyExtend { t in
+        let x = t.factors[inputIndex]
+        let fx = f.applied(to: x)
+        return fx.mapGenerators { y in
+            MultiTensorGenerator(t.factors.with { factors in
+                factors.remove(at: inputIndex)
+                factors.insert(y.factors.0, at: outputIndices.0)
+                factors.insert(y.factors.1, at: outputIndices.1)
+            })
+        }
+    }
+}
+
+extension MultiTensorGenerator: Codable where A: Codable {}
