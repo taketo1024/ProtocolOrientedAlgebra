@@ -11,7 +11,7 @@ import SwiftyMath
 extension String: FreeModuleGenerator {}
 
 class FreeModuleTests: XCTestCase {
-    typealias M = FreeModule<String, 𝐙>
+    typealias M = LinearCombination<String, 𝐙>
     
     func testWrap() {
         let z = M.wrap("a")

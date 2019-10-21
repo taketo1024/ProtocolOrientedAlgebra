@@ -5,13 +5,13 @@
 //  Created by Taketo Sano on 2019/10/02.
 //
 
-public protocol FreeModuleType: Module {
+public protocol FreeModule: Module {
     associatedtype Generator: FreeModuleGenerator
     init(elements: [Generator : BaseRing])
     var elements: [Generator : BaseRing] { get }
 }
 
-extension FreeModuleType {
+extension FreeModule {
     public init<S: Sequence>(elements: S, keysAreUnique: Bool = true) where S.Element == (Generator, BaseRing) {
         if keysAreUnique {
             self.init(elements: Dictionary(pairs: elements))
@@ -40,7 +40,7 @@ extension FreeModuleType {
         self.init(elements: elements)
     }
     
-    public init(_ z: FreeModule<Generator, BaseRing>) {
+    public init(_ z: LinearCombination<Generator, BaseRing>) {
         self.init(elements: z.elements)
     }
 
@@ -69,12 +69,12 @@ extension FreeModuleType {
         .init(elements: [:])
     }
     
-    internal var degree_FreeModuleType: Int {
+    internal var degree_FreeModule: Int {
         isZero ? 0 : elements.map{ (a, r) in a.degree + r.degree }.max()!
     }
     
     public var degree: Int {
-        degree_FreeModuleType
+        degree_FreeModule
     }
     
     public var generators: Dictionary<Generator, BaseRing>.Keys {
@@ -121,20 +121,20 @@ extension FreeModuleType {
     }
     
     // MEMO: Swift does not support higher kinded types.
-    public func mapGenerators<A>(_ f: (Generator) -> A) -> FreeModule<A, BaseRing> {
+    public func mapGenerators<A>(_ f: (Generator) -> A) -> LinearCombination<A, BaseRing> {
         mapPairs{ (a, r) in (f(a), r) }
     }
     
-    public func mapCoefficients<R>(_ f: (BaseRing) -> R) -> FreeModule<Generator, R> {
+    public func mapCoefficients<R>(_ f: (BaseRing) -> R) -> LinearCombination<Generator, R> {
         mapPairs{ (a, r) in (a, f(r)) }
     }
     
-    public func mapPairs<A, R>(_ f: (Generator, BaseRing) -> (A, R)) -> FreeModule<A, R> {
-        FreeModule<A, R>(elements: elements.map{ (a, r) in f(a, r) }, keysAreUnique: false)
+    public func mapPairs<A, R>(_ f: (Generator, BaseRing) -> (A, R)) -> LinearCombination<A, R> {
+        LinearCombination<A, R>(elements: elements.map{ (a, r) in f(a, r) }, keysAreUnique: false)
     }
     
-    public var asFreeModule: FreeModule<Generator, BaseRing> {
-        FreeModule(elements: elements)
+    public var asLinearCombination: LinearCombination<Generator, BaseRing> {
+        LinearCombination(elements: elements)
     }
     
     public var description: String {
@@ -142,7 +142,7 @@ extension FreeModuleType {
     }
 }
 
-extension FreeModuleType where Generator: Multiplicative {
+extension FreeModule where Generator: Multiplicative {
     public static func * (a: Self, b: Self) -> Self {
         let elements = (a.elements * b.elements).map { (ca, cb) -> (Generator, BaseRing) in
             let (x, r) = ca
@@ -154,7 +154,7 @@ extension FreeModuleType where Generator: Multiplicative {
 }
 
 // concrete type to be conformed to Ring.
-extension FreeModuleType where Generator: Monoid {
+extension FreeModule where Generator: Monoid {
     public init(from n: 𝐙) {
         self.init(BaseRing(from: n))
     }
@@ -176,40 +176,7 @@ extension FreeModuleType where Generator: Monoid {
     }
 }
 
-public struct FreeModule<A: FreeModuleGenerator, R: Ring>: FreeModuleType {
-    public typealias BaseRing = R
-    public typealias Generator = A
-    
-    public let elements: [A : R]
-    
-    public init(elements: [A : R]) {
-        self.elements = elements.exclude{ $0.value.isZero }
-    }
-    
-    public static var symbol: String {
-        "FreeMod(\(R.symbol))"
-    }
-}
-
-extension FreeModule: Multiplicative, Monoid, Ring where A: Monoid {
-    public var degree: Int {
-        degree_FreeModuleType
-    }
-}
-
-extension FreeModule where R: RealSubset {
-    public var asReal: FreeModule<A, 𝐑> {
-        mapCoefficients{ $0.asReal }
-    }
-}
-
-extension FreeModule where R: ComplexSubset {
-    public var asComplex: FreeModule<A, 𝐂> {
-        mapCoefficients{ $0.asComplex }
-    }
-}
-
-extension ModuleHom where X: FreeModuleType, Y: FreeModuleType {
+extension ModuleHom where X: FreeModule, Y: FreeModule {
     public static func linearlyExtend(_ f: @escaping (X.Generator) -> Codomain) -> ModuleHom<X, Y> {
         ModuleHom { (m: Domain) in
             m.isGenerator ? f(m.unwrap()!) : m.elements.sum { (a, r) in r * f(a) }
@@ -220,8 +187,3 @@ extension ModuleHom where X: FreeModuleType, Y: FreeModuleType {
         applied(to: .wrap(x))
     }
 }
-
-extension FreeModule: Codable where A: Codable, R: Codable {}
-
-public typealias MonoidRing<M: Monoid & FreeModuleGenerator, R: Ring> = FreeModule<M, R>
-public typealias  GroupRing<G:  Group & FreeModuleGenerator, R: Ring> = FreeModule<G, R>

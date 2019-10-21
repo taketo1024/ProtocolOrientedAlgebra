@@ -5,7 +5,7 @@
 //  Created by Taketo Sano on 2019/10/02.
 //
 
-public protocol PolynomialType: FreeModuleType, Ring where Generator: PolynomialGeneratorType {}
+public protocol PolynomialType: FreeModule, Ring where Generator: PolynomialGeneratorType {}
 
 extension PolynomialType {
     public init(coeffs: [Generator.Exponent : BaseRing]) {
@@ -13,7 +13,7 @@ extension PolynomialType {
     }
     
     public var degree: Int {
-        degree_FreeModuleType
+        degree_FreeModule
     }
 
     public var normalizingUnit: Self {

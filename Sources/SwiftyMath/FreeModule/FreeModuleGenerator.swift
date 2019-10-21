@@ -78,7 +78,7 @@ public struct MultiTensorGenerator<A: FreeModuleGenerator>: FreeModuleGenerator,
     }
 }
 
-extension FreeModuleType where Generator: TensorMonoid {
+extension FreeModule where Generator: TensorMonoid {
     public static func ⊗(lhs: Self, rhs: Self) -> Self {
         return lhs.elements.sum { (t1, r1) in
             rhs.elements.sum { (t2, r2) in
@@ -90,9 +90,7 @@ extension FreeModuleType where Generator: TensorMonoid {
     }
 }
 
-extension FreeModule: TensorMonoid where A: TensorMonoid {}
-
-public func MultiTensorHom<A, R>(from f: ModuleEnd<FreeModule<A, R>>, inputIndex: Int, outputIndex: Int) -> ModuleEnd<FreeModule<MultiTensorGenerator<A>, R>> {
+public func MultiTensorHom<A, R>(from f: ModuleEnd<LinearCombination<A, R>>, inputIndex: Int, outputIndex: Int) -> ModuleEnd<LinearCombination<MultiTensorGenerator<A>, R>> {
     .linearlyExtend { t in
         let x = t.factors[inputIndex]
         let fx = f.applied(to: x)
@@ -105,7 +103,7 @@ public func MultiTensorHom<A, R>(from f: ModuleEnd<FreeModule<A, R>>, inputIndex
     }
 }
 
-public func MultiTensorHom<A, R>(from f: ModuleHom<FreeModule<TensorGenerator<A, A>, R>, FreeModule<A, R>>, inputIndices: (Int, Int), outputIndex: Int) -> ModuleEnd<FreeModule<MultiTensorGenerator<A>, R>> {
+public func MultiTensorHom<A, R>(from f: ModuleHom<LinearCombination<TensorGenerator<A, A>, R>, LinearCombination<A, R>>, inputIndices: (Int, Int), outputIndex: Int) -> ModuleEnd<LinearCombination<MultiTensorGenerator<A>, R>> {
     .linearlyExtend { t in
         let (x1, x2) = (t.factors[inputIndices.0], t.factors[inputIndices.1])
         let fx = f.applied(to: x1 ⊗ x2)
@@ -119,7 +117,7 @@ public func MultiTensorHom<A, R>(from f: ModuleHom<FreeModule<TensorGenerator<A,
     }
 }
 
-public func MultiTensorHom<A, R>(from f: ModuleHom<FreeModule<A, R>, FreeModule<TensorGenerator<A, A>, R>>, inputIndex: Int, outputIndices: (Int, Int)) -> ModuleEnd<FreeModule<MultiTensorGenerator<A>, R>> {
+public func MultiTensorHom<A, R>(from f: ModuleHom<LinearCombination<A, R>, LinearCombination<TensorGenerator<A, A>, R>>, inputIndex: Int, outputIndices: (Int, Int)) -> ModuleEnd<LinearCombination<MultiTensorGenerator<A>, R>> {
     .linearlyExtend { t in
         let x = t.factors[inputIndex]
         let fx = f.applied(to: x)
