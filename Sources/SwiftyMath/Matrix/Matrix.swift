@@ -1,3 +1,5 @@
+import Dispatch
+
 public typealias SquareMatrix<n: StaticSizeType, R: Ring> = Matrix<n, n, R>
 
 public typealias Matrix1<R: Ring> = SquareMatrix<_1, R>
@@ -21,6 +23,17 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
     public init(size: (Int, Int), initializer: ( (Int, Int, R) -> Void ) -> Void) {
         let impl = Impl(size: size, initializer: initializer)
         self.init(impl: impl)
+    }
+    
+    public init(size: (Int, Int), concurrentIterations n: Int, initializer: @escaping (Int, (Int, Int, R) -> Void ) -> Void) {
+        let queue = DispatchQueue(label: "MatrixInit", qos: .userInteractive)
+        self.init(size: size) { setEntry in
+            DispatchQueue.concurrentPerform(iterations: n) { itr in
+                initializer(itr) { (i: Int, j: Int, r: R) -> Void in
+                    queue.sync { setEntry(i, j, r) }
+                }
+            }
+        }
     }
     
     public init<S: Sequence>(size: (Int, Int), components: S) where S.Element == MatrixComponent<R> {

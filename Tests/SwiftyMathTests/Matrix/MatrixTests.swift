@@ -256,4 +256,14 @@ class MatrixTests: XCTestCase {
         let b = try! JSONDecoder().decode(Matrix2<R>.self, from: d)
         XCTAssertEqual(a, b)
     }
+
+    func testConcurrent() {
+        let (n, m) = (10, 10)
+        let a = DMatrix<R>(size: (n, m), concurrentIterations: n) { (i, setEntry) in
+            for j in 0 ..< m {
+                setEntry(i, j, i * m + j)
+            }
+        }
+        XCTAssertEqual(a.asArray, (0 ..< n * m).toArray())
+    }
 }
