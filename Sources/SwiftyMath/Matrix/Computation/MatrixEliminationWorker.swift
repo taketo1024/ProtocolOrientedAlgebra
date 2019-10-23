@@ -6,47 +6,53 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
+internal final class RowEliminationWorker<R: EuclideanRing> {
     var size: (rows: Int, cols: Int)
-    
-    typealias Table = [Int : EntityPointer]
-    
-    private var working: Table
+    private var working: [EntityPointer?]
     private var pool: EntityPointerPool
     
     private var trackRowInfos: Bool
-    private var rowWeights: [Int : Int]
-    private var col2rowTable: [Int : Set<Int>] // [col : { rows having head at col }]
+    private var rowWeights: [Int]
+    private var col2rowTable: [Set<Int>] // [col : { rows having head at col }]
     
     init<S: Sequence>(size: (Int, Int), components: S, trackRowInfos: Bool = false) where S.Element == MatrixComponent<R> {
         let pool = EntityPointerPool()
         self.size = size
         self.pool = pool
-        self.working = components.group{ c in c.row }
-            .mapValues { l in
+        
+        let group = components.group{ c in c.row }
+            .mapValues { l -> EntityPointer in
                 let sorted = l.sorted{ c in c.col }.map{ c in (c.col, c.value) }
                 return pool.generateSequence(from: sorted)
         }
+        self.working = (0 ..< size.0).map { i in group[i] }
         
         self.trackRowInfos = trackRowInfos
         if trackRowInfos {
             self.rowWeights = working
-                .mapValues{ l in l.pointee.sum{ c in c.value.euclideanDegree } }
+                .map{ l in l?.pointee.sum{ c in c.value.euclideanDegree } ?? 0 }
             
-            self.col2rowTable = working
-                .map{ (i, list) in (i, list.pointee.col) }
+            let sets = working
+                .enumerated()
+                .compactMap{ (i, head) in head == nil ? nil : (i, head!.pointee.col) }
                 .group{ (_, j) in j }
                 .mapValues{ l in Set( l.map{ (i, _) in i } ) }
             
+            self.col2rowTable = (0 ..< size.1).map { j in sets[j] ?? [] }
+            
         } else {
-            self.rowWeights = [:]
-            self.col2rowTable = [:]
+            self.rowWeights = []
+            self.col2rowTable = []
         }
     }
     
+    convenience init<n, m>(_ A: Matrix<n, m, R>, trackRowInfos: Bool = false) {
+        self.init(size: A.size, components: A.nonZeroComponents, trackRowInfos: trackRowInfos)
+    }
+    
     var components: [MatrixComponent<R>] {
-        working.flatMap { (i, list) in
-            list.pointee.map{ (j, a) in (i, j, a) }
+        working.enumerated().flatMap { (i, head) in
+            head?.pointee.map{ (j, a) in (i, j, a) } ?? []
         }
     }
     
@@ -59,7 +65,7 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
     }
     
     func headComponents(inCol j: Int) -> [MatrixComponent<R>] {
-        col2rowTable[j]?.map { i in (i, j, working[i]!.pointee.value) } ?? []
+        col2rowTable[j].map { i in (i, j, working[i]!.pointee.value) }
     }
     
     func components(inCol j0: Int, withinRows rowRange: CountableRange<Int>) -> [MatrixComponent<R>] {
@@ -78,8 +84,12 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
         }
     }
     
+    func resultAs<n, m>(_ type: Matrix<n, m, R>.Type) -> Matrix<n, m, R> {
+        Matrix<n, m, R>(size: size, components: components)
+    }
+    
     func weight(ofRow i: Int) -> Int {
-        rowWeights[i] ?? 0
+        rowWeights[i]
     }
     
     func apply(_ s: MatrixEliminator<R>.ElementaryOperation) {
@@ -111,12 +121,12 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
             removeFromCol2RowTable(j)
         }
 
-        working.swap(i, j)
+        working.swapAt(i, j)
         
         if trackRowInfos {
+            rowWeights.swapAt(i, j)
             insertToCol2RowTable(i)
             insertToCol2RowTable(j)
-            rowWeights.swap(i, j)
         }
     }
     
@@ -126,7 +136,7 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
             return
         }
         
-        let w = weight(ofRow: i2)
+        let w = trackRowInfos ? weight(ofRow: i2) : 0
         var dw = 0
         
         if trackRowInfos {
@@ -228,20 +238,12 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
     
     private func removeFromCol2RowTable(_ i: Int) {
         guard let j = working[i]?.pointee.col else { return }
-        if col2rowTable[j]!.count == 1 {
-            col2rowTable[j] = nil
-        } else {
-            col2rowTable[j]!.remove(i)
-        }
+        col2rowTable[j].remove(i)
     }
     
     private func insertToCol2RowTable(_ i: Int) {
         guard let j = working[i]?.pointee.col else { return }
-        if col2rowTable[j] == nil {
-            col2rowTable[j] = [i]
-        } else {
-            col2rowTable[j]!.insert(i)
-        }
+        col2rowTable[j].insert(i)
     }
     
     static func identity(size n: Int) -> RowEliminationWorker<R> {
@@ -249,21 +251,6 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
         return RowEliminationWorker(size: (n, n), components: comps)
     }
 
-    // for test
-    static func ==(a: RowEliminationWorker, b: RowEliminationWorker) -> Bool {
-        (a.working.keys == b.working.keys) && a.working.keys.allSatisfy{ i in
-            var itr1 = a.working[i]!.pointee.makeIterator()
-            var itr2 = b.working[i]!.pointee.makeIterator()
-            
-            while let c1 = itr1.next(), let c2 = itr2.next() {
-                if c1.value != c2.value {
-                    return false
-                }
-            }
-            return itr1.next() == nil && itr2.next() == nil
-        }
-    }
-    
     typealias EntityPointer = UnsafeMutablePointer<Entity>
     
     struct Entity: Sequence, Equatable {
@@ -320,6 +307,7 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
         func unuse(_ p: EntityPointer) {
             used.remove(p)
             p.deinitialize(count: 1)
+//            p.deallocate()
             unused.insert(p)
         }
         
@@ -347,11 +335,19 @@ internal final class RowEliminationWorker<R: EuclideanRing>: Equatable {
     }
 }
 
-internal final class ColEliminationWorker<R: EuclideanRing>: Equatable {
+internal final class ColEliminationWorker<R: EuclideanRing> {
     private let rowWorker: RowEliminationWorker<R>
     
     init<S: Sequence>(size: (Int, Int), components: S, trackRowInfos: Bool = false) where S.Element == MatrixComponent<R> {
         rowWorker = RowEliminationWorker(size: (size.1, size.0), components: components.map{(i, j, a) in (j, i, a)})
+    }
+    
+    convenience init<n, m>(_ A: Matrix<n, m, R>, trackRowInfos: Bool = false) {
+        self.init(size: A.size, components: A.nonZeroComponents, trackRowInfos: trackRowInfos)
+    }
+    
+    var size: (Int, Int) {
+        (rowWorker.size.cols, rowWorker.size.rows)
     }
     
     func apply(_ s: MatrixEliminator<R>.ElementaryOperation) {
@@ -367,13 +363,12 @@ internal final class ColEliminationWorker<R: EuclideanRing>: Equatable {
         rowWorker.components.map{ (i, j, a) in (j, i, a) }
     }
     
+    func resultAs<n, m>(_ type: Matrix<n, m, R>.Type) -> Matrix<n, m, R> {
+        Matrix<n, m, R>(size: size, components: components)
+    }
+    
     static func identity(size n: Int) -> ColEliminationWorker<R> {
         let comps = (0 ..< n).map { i in (i, i, R.identity) }
         return ColEliminationWorker(size: (n, n), components: comps)
-    }
-    
-    // for test
-    static func ==(a: ColEliminationWorker, b: ColEliminationWorker) -> Bool {
-        a.rowWorker == b.rowWorker
     }
 }

@@ -11,40 +11,41 @@ import XCTest
 
 class MatrixEliminatonWorkerTests: XCTestCase {
     private typealias R = 𝐙
-    
-    private func M2(_ xs: R...) -> RowEliminationWorker<R> {
-        let A = Matrix2(size: (2, 2), grid: xs)
-        return RowEliminationWorker(size: A.size, components: A.nonZeroComponents)
-    }
+    private typealias M2 = Matrix2<R>
+    private typealias worker = RowEliminationWorker<R>
     
     func testEqual() {
         let a = M2(1,2,3,4)
-        XCTAssertEqual(a, M2(1,2,3,4))
-        XCTAssertNotEqual(a, M2(1,3,2,4))
+        let w = worker(a)
+        XCTAssertEqual(a, w.resultAs(M2.self))
     }
     
     func testAddRow() {
         let a = M2(1,2,3,4)
-        a.addRow(at: 0, to: 1, multipliedBy: 1)
-        XCTAssertEqual(a, M2(1,2,4,6))
+        let w = worker(a)
+        w.addRow(at: 0, to: 1, multipliedBy: 1)
+        XCTAssertEqual(w.resultAs(M2.self), M2(1,2,4,6))
     }
     
     func testAddRowWithMul() {
         let a = M2(1,2,3,4)
-        a.addRow(at: 0, to: 1, multipliedBy: 2)
-        XCTAssertEqual(a, M2(1,2,5,8))
+        let w = worker(a)
+        w.addRow(at: 0, to: 1, multipliedBy: 2)
+        XCTAssertEqual(w.resultAs(M2.self), M2(1,2,5,8))
     }
     
     func testMulRow() {
         let a = M2(1,2,3,4)
-        a.multiplyRow(at: 0, by: 2)
-        XCTAssertEqual(a, M2(2,4,3,4))
+        let w = worker(a)
+        w.multiplyRow(at: 0, by: 2)
+        XCTAssertEqual(w.resultAs(M2.self), M2(2,4,3,4))
     }
     
     func testSwapRows() {
         let a = M2(1,2,3,4)
-        a.swapRows(0, 1)
-        XCTAssertEqual(a, M2(3,4,1,2))
+        let w = worker(a)
+        w.swapRows(0, 1)
+        XCTAssertEqual(w.resultAs(M2.self), M2(3,4,1,2))
     }
 }
 
