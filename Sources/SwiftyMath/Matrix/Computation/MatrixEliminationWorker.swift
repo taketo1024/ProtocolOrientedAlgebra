@@ -8,27 +8,23 @@
 
 internal final class RowEliminationWorker<R: EuclideanRing> {
     var size: (rows: Int, cols: Int)
-    private var working: [EntityPointer?]
-    private var pool: EntityPointerPool
     
+    private var working: [EntityPointer?]
     private var trackRowInfos: Bool
     private var rowWeights: [Int]
     private var col2rowTable: [Set<Int>] // [col : { rows having head at col }]
     
     init<S: Sequence>(size: (Int, Int), components: S, trackRowInfos: Bool = false) where S.Element == MatrixComponent<R> {
-        let pool = EntityPointerPool()
         self.size = size
-        self.pool = pool
         
-        let group = components.group{ c in c.row }
-            .mapValues { l -> EntityPointer in
-                let sorted = l.sorted{ c in c.col }.map{ c in (c.col, c.value) }
-                return pool.generateSequence(from: sorted)
-        }
+        let group = components
+            .group{ c in c.row }
+            .mapValues { l in Entity.generatePointers(from: l) }
+        
         self.working = (0 ..< size.0).map { i in group[i] }
         
-        self.trackRowInfos = trackRowInfos
         if trackRowInfos {
+            self.trackRowInfos = true
             self.rowWeights = working
                 .map{ l in l?.pointee.sum{ c in c.value.euclideanDegree } ?? 0 }
             
@@ -41,6 +37,7 @@ internal final class RowEliminationWorker<R: EuclideanRing> {
             self.col2rowTable = (0 ..< size.1).map { j in sets[j] ?? [] }
             
         } else {
+            self.trackRowInfos = false
             self.rowWeights = []
             self.col2rowTable = []
         }
@@ -48,6 +45,23 @@ internal final class RowEliminationWorker<R: EuclideanRing> {
     
     convenience init<n, m>(_ A: Matrix<n, m, R>, trackRowInfos: Bool = false) {
         self.init(size: A.size, components: A.nonZeroComponents, trackRowInfos: trackRowInfos)
+    }
+    
+    deinit {
+        for head in working where head != nil {
+            var p = head!
+            while true {
+                let next = p.pointee.next
+                
+                p.delete()
+                
+                if let next = next {
+                    p = next
+                } else {
+                    break
+                }
+            }
+        }
     }
     
     var components: [MatrixComponent<R>] {
@@ -155,7 +169,7 @@ internal final class RowEliminationWorker<R: EuclideanRing> {
                 // from: ●-->○-->○----->○-------->
                 //   to: ●--------->○------->○--->
                 
-                return pool.use(col: fromHead.col, value: .zero, next: toHead)
+                return EntityPointer.new(Entity(col: fromHead.col, value: .zero, next: toHead))
                 
             } else {
                 return toHead!
@@ -186,7 +200,7 @@ internal final class RowEliminationWorker<R: EuclideanRing> {
                 if a.isZero && to != prev {
                     to = prev
                     let drop = to.pointee.dropNext()!
-                    pool.unuse(drop)
+                    drop.delete()
                 } else {
                     to.pointee.value = a
                 }
@@ -196,7 +210,7 @@ internal final class RowEliminationWorker<R: EuclideanRing> {
                 }
             } else {
                 let a = r * from.value
-                let p = pool.use(col: from.col, value: a)
+                let p = EntityPointer.new( Entity(col: from.col, value: a) )
                 to.pointee.insertNext(p)
                 (prev, to) = (to, p)
                 
@@ -225,7 +239,7 @@ internal final class RowEliminationWorker<R: EuclideanRing> {
             } else {
                 working[i2] = nil
             }
-            pool.unuse(toHead)
+            toHead.delete()
         } else {
             working[i2] = toHead
         }
@@ -272,6 +286,26 @@ internal final class RowEliminationWorker<R: EuclideanRing> {
             return drop
         }
         
+        static func generatePointers<S: Sequence>(from seq: S) -> EntityPointer where S.Element == MatrixComponent<R> {
+            let sorted = seq.sorted { c in c.col }
+
+            var head: EntityPointer?
+            var prev: EntityPointer?
+            
+            for (_, j, a) in sorted {
+                let p = EntityPointer.new( Entity(col: j, value: a) )
+
+                if head == nil {
+                    head = p
+                }
+                
+                prev?.pointee.next = p
+                prev = p
+            }
+            
+            return head!
+        }
+        
         func makeIterator() -> Iterator {
             Iterator(self)
         }
@@ -289,47 +323,6 @@ internal final class RowEliminationWorker<R: EuclideanRing> {
                 } else {
                     return nil
                 }
-            }
-        }
-    }
-    
-    class EntityPointerPool {
-        private var used: Set<EntityPointer> = []
-        private var unused: Set<EntityPointer> = []
-        
-        func use(col: Int, value: R, next: EntityPointer? = nil) -> EntityPointer {
-            let p = unused.popFirst() ?? EntityPointer.allocate(capacity: 1)
-            p.initialize(to: Entity(col: col, value: value, next: next))
-            used.insert(p)
-            return p
-        }
-        
-        func unuse(_ p: EntityPointer) {
-            used.remove(p)
-            p.deinitialize(count: 1)
-//            p.deallocate()
-            unused.insert(p)
-        }
-        
-        func generateSequence<S: Sequence>(from seq: S) -> EntityPointer where S.Element == (Int, R) {
-            var head: EntityPointer?
-            var prev: EntityPointer?
-            
-            for (j, a) in seq {
-                let p = use(col: j, value: a)
-                if head == nil {
-                    head = p
-                }
-                prev?.pointee.next = p
-                prev = p
-            }
-            
-            return head!
-        }
-        
-        deinit {
-            used.union(unused).forEach { p in
-                p.deallocate()
             }
         }
     }
@@ -370,5 +363,18 @@ internal final class ColEliminationWorker<R: EuclideanRing> {
     static func identity(size n: Int) -> ColEliminationWorker<R> {
         let comps = (0 ..< n).map { i in (i, i, R.identity) }
         return ColEliminationWorker(size: (n, n), components: comps)
+    }
+}
+
+private extension UnsafeMutablePointer {
+    static func new(_ entity: Pointee) -> Self {
+        let p = allocate(capacity: 1)
+        p.initialize(to: entity)
+        return p
+    }
+    
+    func delete() {
+        self.deinitialize(count: 1)
+        self.deallocate()
     }
 }
