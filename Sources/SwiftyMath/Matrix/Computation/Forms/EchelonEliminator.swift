@@ -35,13 +35,21 @@ public class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         
         var again = false
         
-        for (i, _, a) in elements where i != i0 {
+        let targets = elements.compactMap { (i, _, a) -> (Int, R)? in
+            if i == i0 { return nil }
             let (q, r) = a /% a0
-            apply(.AddRow(at: i0, to: i, mul: -q))
             
             if !r.isZero {
                 again = true
             }
+            
+            return (i, -q)
+        }
+        
+        worker.batchAddRow(at: i0, to: targets.map{ $0.0 }, multipliedBy: targets.map{ $0.1 })
+        
+        for (i, r) in targets {
+            append(.AddRow(at: i0, to: i, mul: r))
         }
         
         if again {

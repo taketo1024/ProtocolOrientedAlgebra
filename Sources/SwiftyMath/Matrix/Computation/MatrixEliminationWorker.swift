@@ -120,18 +120,52 @@ internal final class RowEliminationWorker<R: EuclideanRing> {
         working.swapAt(i, j)
     }
     
-    @_specialize(where R == 𝐙)
     func addRow(at i1: Int, to i2: Int, multipliedBy r: R) {
         guard let fromHead = working[i1]?.pointee else {
             return
         }
         
-        let j2 = headComponent(ofRow: i2)?.col
+        let oldToHead = working[i2]
+        let oldCol = oldToHead?.pointee.col
+        
+        let (toHead, weightDiff) = addRow(fromHead, oldToHead, r)
+        
+        if toHead != oldToHead {
+            working[i2] = toHead
+        }
+        
+        tracker?.addRowWeight(weightDiff, to: i2)
+        tracker?.updateRowHead(i2, oldCol, toHead?.pointee.col)
+    }
+    
+    func batchAddRow(at i1: Int, to rows: [Int], multipliedBy rs: [R]) {
+        guard let fromHead = working[i1]?.pointee else {
+            return
+        }
+        
+        let oldCols = rows.map{ i in working[i]?.pointee.col }
+        let toHeads = zip(rows, rs)
+            .map{ (i, r) in (working[i], r) }
+            .parallelMap { (toHead, r) in addRow(fromHead, toHead, r) }
+        
+        for (i, res) in zip(rows, toHeads) {
+            let (toHead, dw) = res
+            
+            working[i] = toHead
+            tracker?.addRowWeight(dw, to: i)
+        }
+        
+        for (i, oldCol) in zip(rows, oldCols) {
+            tracker?.updateRowHead(i, oldCol, working[i]?.pointee.col)
+        }
+    }
+    
+    @_specialize(where R == 𝐙)
+    private func addRow(_ fromHead: Entity, _ toHeadOpt: EntityPointer?, _ r: R) -> (EntityPointer?, Int) {
         var dw = 0
         
         let toHead = {() -> EntityPointer in
-            let toHead = working[i2] // possibly nil
-            if toHead == nil || fromHead.col < toHead!.pointee.col {
+            if toHeadOpt == nil || fromHead.col < toHeadOpt!.pointee.col {
                 
                 // from: ●-->○-->○----->○-------->
                 //   to:            ●------->○--->
@@ -141,10 +175,10 @@ internal final class RowEliminationWorker<R: EuclideanRing> {
                 // from: ●-->○-->○----->○-------->
                 //   to: ●--------->○------->○--->
                 
-                return EntityPointer.new(Entity(col: fromHead.col, value: .zero, next: toHead))
+                return EntityPointer.new(Entity(col: fromHead.col, value: .zero, next: toHeadOpt))
                 
             } else {
-                return toHead!
+                return toHeadOpt!
             }
         }()
         
@@ -203,18 +237,15 @@ internal final class RowEliminationWorker<R: EuclideanRing> {
         }
         
         if toHead.pointee.value.isZero {
-            if let next = toHead.pointee.next, !next.pointee.value.isZero {
-                working[i2] = next
+            defer { toHead.delete() }
+            if let next = toHead.pointee.next {
+                return (next, dw)
             } else {
-                working[i2] = nil
+                return (nil, dw)
             }
-            toHead.delete()
         } else {
-            working[i2] = toHead
+            return (toHead, dw)
         }
-        
-        tracker?.addRowWeight(dw, to: i2)
-        tracker?.updateRowHead(i2, j2, headComponent(ofRow: i2)?.col)
     }
     
     static func identity(size n: Int) -> RowEliminationWorker<R> {
