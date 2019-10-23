@@ -11,8 +11,6 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     let rowOps: [RowElementaryOperation<R>]
     let colOps: [ColElementaryOperation<R>]
     
-    private let matrixCache: CacheDictionary<String, DMatrix<R>> = .empty
-    
     internal init(form: MatrixEliminator<R>.Form, result: Matrix<n, m, R>, rowOps: [RowElementaryOperation<R>], colOps: [ColElementaryOperation<R>]) {
         self.form = form
         self.result = result
@@ -23,53 +21,45 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     // returns P of: P * A * Q = B
     
     public var left: Matrix<n, n, R> {
-        matrixCache.useCacheOrSet(key: "left") {
-            let n = result.size.rows
-            let P = RowEliminationWorker<R>.identity(size: n)
-            for s in rowOps {
-                P.apply(s)
-            }
-            return DMatrix(size: (n, n), components: P.components)
-        }.as(Matrix.self)
+        let n = result.size.rows
+        let P = RowEliminationWorker<R>.identity(size: n)
+        for s in rowOps {
+            P.apply(s)
+        }
+        return P.resultAs(Matrix.self)
     }
     
     // returns P^{-1} of: P * A * Q = B
     
     public var leftInverse: Matrix<n, n, R> {
-        matrixCache.useCacheOrSet(key: "leftinv") {
-            let n = result.size.rows
-            let P = RowEliminationWorker<R>.identity(size: n)
-            for s in rowOps.reversed() {
-                P.apply(s.inverse)
-            }
-            return DMatrix(size: (n, n), components: P.components)
-        }.as(Matrix.self)
+        let n = result.size.rows
+        let P = RowEliminationWorker<R>.identity(size: n)
+        for s in rowOps.reversed() {
+            P.apply(s.inverse)
+        }
+        return P.resultAs(Matrix.self)
     }
     
     // returns Q of: P * A * Q = B
     
     public var right: Matrix<m, m, R> {
-        matrixCache.useCacheOrSet(key: "right") {
-            let m = result.size.cols
-            let Q = ColEliminationWorker<R>.identity(size: m)
-            for s in colOps {
-                Q.apply(s)
-            }
-            return DMatrix(size: (m, m), components: Q.components)
-        }.as(Matrix.self)
+        let m = result.size.cols
+        let Q = ColEliminationWorker<R>.identity(size: m)
+        for s in colOps {
+            Q.apply(s)
+        }
+        return Q.resultAs(Matrix.self)
     }
     
     // returns Q^{-1} of: P * A * Q = B
     
     public var rightInverse: Matrix<m, m, R> {
-        matrixCache.useCacheOrSet(key: "rightinv") {
-            let m = result.size.cols
-            let Q = ColEliminationWorker<R>.identity(size: m)
-            for s in colOps.reversed() {
-                Q.apply(s.inverse)
-            }
-            return DMatrix(size: (m, m), components: Q.components)
-        }.as(Matrix.self)
+        let m = result.size.cols
+        let Q = ColEliminationWorker<R>.identity(size: m)
+        for s in colOps.reversed() {
+            Q.apply(s.inverse)
+        }
+        return Q.resultAs(Matrix.self)
     }
     
     // returns r of:
@@ -98,24 +88,22 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     
     public var imageMatrix: Matrix<n, DynamicSize, R> {
         assert(result.isDiagonal)
-        return matrixCache.useCacheOrSet(key: "image") {
-            let n = result.size.rows
-            let r = rank
-            let size = (rows: n, cols: r)
-            
-            if size.rows == 0 || size.cols == 0 {
-                return DMatrix.zero(size: size)
-            }
-            
-            let diag = result.diagonalComponents
-            let comps = (0 ..< r).map{ i -> MatrixComponent<R> in (i, i, diag[i]) }
-            let D = RowEliminationWorker<R>(size: size, components: comps)
-            for s in rowOps.reversed() {
-                D.apply(s.inverse)
-            }
-            
-            return DMatrix(size: size, components: D.components)
-        }.as(Matrix.self)
+        let n = result.size.rows
+        let r = rank
+        let size = (rows: n, cols: r)
+        
+        if size.rows == 0 || size.cols == 0 {
+            return DMatrix.zero(size: size).as(Matrix.self)
+        }
+        
+        let diag = result.diagonalComponents
+        let comps = (0 ..< r).map{ i -> MatrixComponent<R> in (i, i, diag[i]) }
+        let D = RowEliminationWorker<R>(size: size, components: comps)
+        for s in rowOps.reversed() {
+            D.apply(s.inverse)
+        }
+        
+        return D.resultAs(Matrix.self)
     }
     
     // Returns the matrix consisting of the basis vectors of Ker(A).
@@ -142,28 +130,26 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     
     public var kernelMatrix: Matrix<m, DynamicSize, R>  {
         assert(result.isDiagonal)
-        return matrixCache.useCacheOrSet(key: "kernel") {
-            let (m, r) = (result.size.cols, rank)
-            let k = m - r
-            let size = (rows: m, cols: k)
-            
-            if size.rows == 0 || size.cols == 0 {
-                return DMatrix.zero(size: size)
+        let (m, r) = (result.size.cols, rank)
+        let k = m - r
+        let size = (rows: m, cols: k)
+        
+        if size.rows == 0 || size.cols == 0 {
+            return DMatrix.zero(size: size).as(Matrix.self)
+        }
+        
+        let comps = (0 ..< k).map{ j -> MatrixComponent<R> in (r + j, j, R.identity) }
+        let Z = RowEliminationWorker<R>(size: size, components: comps)
+        for s in colOps.reversed() {
+            switch s {
+            case let .AddCol(at: i, to: j, mul: a):
+                Z.apply(.AddRow(at: j, to: i, mul: a))
+            default:
+                Z.apply(s.transposed)
             }
-            
-            let comps = (0 ..< k).map{ j -> MatrixComponent<R> in (r + j, j, R.identity) }
-            let Z = RowEliminationWorker<R>(size: size, components: comps)
-            for s in colOps.reversed() {
-                switch s {
-                case let .AddCol(at: i, to: j, mul: a):
-                    Z.apply(.AddRow(at: j, to: i, mul: a))
-                default:
-                    Z.apply(s.transposed)
-                }
-            }
-            
-            return DMatrix(size: size, components: Z.components)
-        }.as(Matrix.self)
+        }
+        
+        return Z.resultAs(Matrix.self)
     }
     
     // Returns the transition matrix T from Z to I,
@@ -180,22 +166,20 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     
     public var kernelTransitionMatrix: Matrix<DynamicSize, m, R> {
         assert(result.isDiagonal)
-        return matrixCache.useCacheOrSet(key: "kerneltrans") {
-            let (m, r) = (result.size.cols, rank)
-            let k = m - r
-            let size = (rows: k, cols: m)
-            
-            if size.rows == 0 || size.cols == 0 {
-                return DMatrix.zero(size: size)
-            }
-            
-            let comps = (0 ..< k).map{ i -> MatrixComponent<R> in (i, r + i, R.identity) }
-            let T = ColEliminationWorker<R>(size: size, components: comps)
-            for s in colOps.reversed() {
-                T.apply(s.inverse)
-            }
-            return DMatrix(size: size, components: T.components)
-        }.as(Matrix.self)
+        let (m, r) = (result.size.cols, rank)
+        let k = m - r
+        let size = (rows: k, cols: m)
+        
+        if size.rows == 0 || size.cols == 0 {
+            return DMatrix.zero(size: size).as(Matrix.self)
+        }
+        
+        let comps = (0 ..< k).map{ i -> MatrixComponent<R> in (i, r + i, R.identity) }
+        let T = ColEliminationWorker<R>(size: size, components: comps)
+        for s in colOps.reversed() {
+            T.apply(s.inverse)
+        }
+        return T.resultAs(Matrix.self)
     }
     
     // Returns the transition matrix T from B = Im(A) to D_r,
@@ -210,26 +194,24 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
 
     public var imageTransitionMatrix: Matrix<DynamicSize, m, R> {
         assert(result.isDiagonal)
-        return matrixCache.useCacheOrSet(key: "imagetrans") {
-            let (n, r) = (result.size.rows, rank)
-            let size = (rows: r, cols: n)
-            
-            if size.rows == 0 || size.cols == 0 {
-                return DMatrix.zero(size: size)
+        let (n, r) = (result.size.rows, rank)
+        let size = (rows: r, cols: n)
+        
+        if size.rows == 0 || size.cols == 0 {
+            return DMatrix.zero(size: size).as(Matrix.self)
+        }
+        
+        let comps = (0 ..< r).map{ i -> MatrixComponent<R> in (i, i, R.identity) }
+        let T = ColEliminationWorker<R>(size: size, components: comps)
+        for s in rowOps.reversed() {
+            switch s {
+            case let .AddRow(at: i, to: j, mul: a):
+                T.apply(.AddCol(at: j, to: i, mul: a))
+            default:
+                T.apply(s.transposed)
             }
-            
-            let comps = (0 ..< r).map{ i -> MatrixComponent<R> in (i, i, R.identity) }
-            let T = ColEliminationWorker<R>(size: size, components: comps)
-            for s in rowOps.reversed() {
-                switch s {
-                case let .AddRow(at: i, to: j, mul: a):
-                    T.apply(.AddCol(at: j, to: i, mul: a))
-                default:
-                    T.apply(s.transposed)
-                }
-            }
-            return DMatrix(size: size, components: T.components)
-        }.as(Matrix.self)
+        }
+        return T.resultAs(Matrix.self)
     }
     
     // Find a solution x to: Ax = b.
