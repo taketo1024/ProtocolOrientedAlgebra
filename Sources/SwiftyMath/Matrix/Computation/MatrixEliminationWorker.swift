@@ -82,7 +82,7 @@ internal final class RowEliminationWorker<R: EuclideanRing> {
         tracker?.weight(ofRow: i) ?? 0
     }
     
-    func apply(_ s: MatrixEliminator<R>.ElementaryOperation) {
+    func apply(_ s: RowElementaryOperation<R>) {
         switch s {
         case let .AddRow(i, j, r):
             addRow(at: i, to: j, multipliedBy: r)
@@ -90,8 +90,6 @@ internal final class RowEliminationWorker<R: EuclideanRing> {
             multiplyRow(at: i, by: r)
         case let .SwapRows(i, j):
             swapRows(i, j)
-        default:
-            fatalError()
         }
     }
 
@@ -395,13 +393,8 @@ internal final class ColEliminationWorker<R: EuclideanRing> {
         (rowWorker.size.cols, rowWorker.size.rows)
     }
     
-    func apply(_ s: MatrixEliminator<R>.ElementaryOperation) {
-        switch s {
-        case .AddCol, .MulCol, .SwapCols:
-            rowWorker.apply(s.transposed)
-        default:
-            fatalError()
-        }
+    func apply(_ s: ColElementaryOperation<R>) {
+        rowWorker.apply(s.transposed)
     }
     
     var components: [MatrixComponent<R>] {

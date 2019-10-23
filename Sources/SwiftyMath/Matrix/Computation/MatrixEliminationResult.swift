@@ -8,12 +8,12 @@
 public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing> {
     public let form: MatrixEliminator<R>.Form
     public let result: Matrix<n, m, R>
-    let rowOps: [MatrixEliminator<R>.ElementaryOperation]
-    let colOps: [MatrixEliminator<R>.ElementaryOperation]
+    let rowOps: [RowElementaryOperation<R>]
+    let colOps: [ColElementaryOperation<R>]
     
     private let matrixCache: CacheDictionary<String, DMatrix<R>> = .empty
     
-    internal init(form: MatrixEliminator<R>.Form, result: Matrix<n, m, R>, rowOps: [MatrixEliminator<R>.ElementaryOperation], colOps: [MatrixEliminator<R>.ElementaryOperation]) {
+    internal init(form: MatrixEliminator<R>.Form, result: Matrix<n, m, R>, rowOps: [RowElementaryOperation<R>], colOps: [ColElementaryOperation<R>]) {
         self.form = form
         self.result = result
         self.rowOps = rowOps

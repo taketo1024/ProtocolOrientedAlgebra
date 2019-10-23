@@ -84,14 +84,14 @@ public class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         }
     }
     
-    override func apply(_ s: MatrixEliminator<R>.ElementaryOperation) {
+    func apply(_ s: RowElementaryOperation<R>) {
         worker.apply(s)
         
         if debug {
             components = worker.components
         }
         
-        super.apply(s)
+        append(s)
     }
     
     override func finalize() {

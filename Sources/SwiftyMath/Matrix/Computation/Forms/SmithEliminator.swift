@@ -56,7 +56,7 @@ public final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         currentIndex += 1
     }
     
-    override func apply(_ s: MatrixEliminator<R>.ElementaryOperation) {
+    private func apply(_ s: RowElementaryOperation<R>) {
         switch s {
         case let .MulRow(at: i, by: a):
             components[i].value = a * components[i].value
@@ -64,7 +64,7 @@ public final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
             fatalError()
         }
         
-        super.apply(s)
+        append(s)
     }
     
     private func findPivot() -> MatrixComponent<R>? {

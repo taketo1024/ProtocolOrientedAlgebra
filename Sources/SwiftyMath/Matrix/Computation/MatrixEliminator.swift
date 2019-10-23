@@ -18,9 +18,9 @@ public class MatrixEliminator<R: EuclideanRing> : CustomStringConvertible {
     
     var size: (rows: Int, cols: Int)
     var components: [MatrixComponent<R>]
+    var rowOps: [RowElementaryOperation<R>]
+    var colOps: [ColElementaryOperation<R>]
     
-    var rowOps: [ElementaryOperation] = []
-    var colOps: [ElementaryOperation] = []
     var debug: Bool
 
     private var _exit: Bool = false
@@ -46,6 +46,8 @@ public class MatrixEliminator<R: EuclideanRing> : CustomStringConvertible {
     required init(size: (Int, Int), components: [MatrixComponent<R>], debug: Bool) {
         self.size = size
         self.components = components
+        self.rowOps = []
+        self.colOps = []
         self.debug = debug
     }
     
@@ -105,14 +107,14 @@ public class MatrixEliminator<R: EuclideanRing> : CustomStringConvertible {
         // override in subclass
     }
     
-    func apply(_ s: ElementaryOperation) {
-        // override in subclass
-        append(s)
+    final func append(_ s: RowElementaryOperation<R>) {
+        rowOps.append(s)
         log("\(s)")
     }
     
-    func append(_ s: ElementaryOperation) {
-        s.isRowOperation ? rowOps.append(s) : colOps.append(s)
+    final func append(_ s: ColElementaryOperation<R>) {
+        colOps.append(s)
+        log("\(s)")
     }
     
     func finalize() {
@@ -122,72 +124,82 @@ public class MatrixEliminator<R: EuclideanRing> : CustomStringConvertible {
     public var description: String {
         "\(type(of: self))"
     }
+}
+
+enum RowElementaryOperation<R: Ring> {
+    case AddRow(at: Int, to: Int, mul: R)
+    case MulRow(at: Int, by: R)
+    case SwapRows(Int, Int)
     
-    enum ElementaryOperation {
-        case AddRow(at: Int, to: Int, mul: R)
-        case MulRow(at: Int, by: R)
-        case SwapRows(Int, Int)
-        case AddCol(at: Int, to: Int, mul: R)
-        case MulCol(at: Int, by: R)
-        case SwapCols(Int, Int)
-        
-        var isRowOperation: Bool {
-            switch self {
-            case .AddRow, .MulRow, .SwapRows: return true
-            default: return false
-            }
+    var determinant: R {
+        switch self {
+        case .AddRow(_, _, _):
+            return .identity
+        case let .MulRow(at: _, by: r):
+            return r
+        case .SwapRows:
+            return -.identity
         }
-        
-        var isColOperation: Bool {
-            switch self {
-            case .AddCol, .MulCol, .SwapCols: return true
-            default: return false
-            }
+    }
+    
+    var inverse: Self {
+        switch self {
+        case let .AddRow(i, j, r):
+            return .AddRow(at: i, to: j, mul: -r)
+        case let .MulRow(at: i, by: r):
+            return .MulRow(at: i, by: r.inverse!)
+        case .SwapRows:
+            return self
         }
-        
-        var determinant: R {
-            switch self {
-            case .AddRow(_, _, _), .AddCol(_, _, _):
-                return .identity
-            case let .MulRow(at: _, by: r):
-                return r
-            case let .MulCol(at: _, by: r):
-                return r
-            case .SwapRows, .SwapCols:
-                return -.identity
-            }
+    }
+    
+    var transposed: ColElementaryOperation<R> {
+        switch self {
+        case let .AddRow(i, j, r):
+            return .AddCol(at: i, to: j, mul: r)
+        case let .MulRow(at: i, by: r):
+            return .MulCol(at: i, by: r)
+        case let .SwapRows(i, j):
+            return .SwapCols(i, j)
         }
-        
-        var inverse: ElementaryOperation {
-            switch self {
-            case let .AddRow(i, j, r):
-                return .AddRow(at: i, to: j, mul: -r)
-            case let .AddCol(i, j, r):
-                return .AddCol(at: i, to: j, mul: -r)
-            case let .MulRow(at: i, by: r):
-                return .MulRow(at: i, by: r.inverse!)
-            case let .MulCol(at: i, by: r):
-                return .MulCol(at: i, by: r.inverse!)
-            case .SwapRows, .SwapCols:
-                return self
-            }
+    }
+}
+
+enum ColElementaryOperation<R: Ring> {
+    case AddCol(at: Int, to: Int, mul: R)
+    case MulCol(at: Int, by: R)
+    case SwapCols(Int, Int)
+    
+    var determinant: R {
+        switch self {
+        case .AddCol(_, _, _):
+            return .identity
+        case let .MulCol(at: _, by: r):
+            return r
+        case .SwapCols:
+            return -.identity
         }
-        
-        var transposed: ElementaryOperation {
-            switch self {
-            case let .AddRow(i, j, r):
-                return .AddCol(at: i, to: j, mul: r)
-            case let .AddCol(i, j, r):
-                return .AddRow(at: i, to: j, mul: r)
-            case let .MulRow(at: i, by: r):
-                return .MulCol(at: i, by: r)
-            case let .MulCol(at: i, by: r):
-                return .MulRow(at: i, by: r)
-            case let .SwapRows(i, j):
-                return .SwapCols(i, j)
-            case let .SwapCols(i, j):
-                return .SwapRows(i, j)
-            }
+    }
+    
+    var inverse: Self {
+        switch self {
+        case let .AddCol(i, j, r):
+            return .AddCol(at: i, to: j, mul: -r)
+        case let .MulCol(at: i, by: r):
+            return .MulCol(at: i, by: r.inverse!)
+        case .SwapCols:
+            return self
+        }
+    }
+    
+    var transposed: RowElementaryOperation<R> {
+        switch self {
+        case let .AddCol(i, j, r):
+            return .AddRow(at: i, to: j, mul: r)
+        case let .MulCol(at: i, by: r):
+            return .MulRow(at: i, by: r)
+        case let .SwapCols(i, j):
+            return .SwapRows(i, j)
         }
     }
 }
