@@ -252,7 +252,14 @@ internal final class RowEliminationWorker<R: EuclideanRing> {
     }
     
     func resultAs<n, m>(_ type: Matrix<n, m, R>.Type) -> Matrix<n, m, R> {
-        Matrix<n, m, R>(size: size, components: components)
+        Matrix(size: size) { setEntry in
+            for (i, headOpt) in working.enumerated() {
+                guard let head = headOpt else { continue }
+                for (j, a) in head.pointee {
+                    setEntry(i, j, a)
+                }
+            }
+        }
     }
     
     typealias EntityPointer = UnsafeMutablePointer<Entity>
@@ -402,7 +409,7 @@ internal final class ColEliminationWorker<R: EuclideanRing> {
     }
     
     func resultAs<n, m>(_ type: Matrix<n, m, R>.Type) -> Matrix<n, m, R> {
-        Matrix<n, m, R>(size: size, components: components)
+        rowWorker.resultAs(Matrix<m, n, R>.self).transposed
     }
     
     static func identity(size n: Int) -> ColEliminationWorker<R> {
