@@ -161,6 +161,7 @@ internal final class RowEliminationWorker<R: EuclideanRing> {
     @_specialize(where R == 𝐙)
     private func addRow(_ fromHead: Entity, _ toHeadOpt: EntityPointer?, _ r: R) -> (EntityPointer?, Int) {
         var dw = 0
+        let track = (tracker != nil)
         
         let toHead = {() -> EntityPointer in
             if toHeadOpt == nil || fromHead.col < toHeadOpt!.pointee.col {
@@ -209,7 +210,9 @@ internal final class RowEliminationWorker<R: EuclideanRing> {
                     to.pointee.value = a
                 }
                 
-                dw += a.euclideanDegree - a0.euclideanDegree
+                if track {
+                    dw += a.euclideanDegree - a0.euclideanDegree
+                }
                 
             } else {
                 let a = r * from.value
@@ -217,7 +220,9 @@ internal final class RowEliminationWorker<R: EuclideanRing> {
                 to.pointee.insertNext(p)
                 (prev, to) = (to, p)
                 
-                dw += a.euclideanDegree
+                if track {
+                    dw += a.euclideanDegree
+                }
             }
             
             // from: ------------->●--->○-------->
