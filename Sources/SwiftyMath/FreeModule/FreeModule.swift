@@ -117,7 +117,10 @@ extension FreeModule {
         }
     }
     
-    // MEMO: Swift does not support higher kinded types.
+    public func filter(_ f: (Generator) -> Bool) -> Self {
+        .init(elements: elements.filter{ (a, _) in f(a) })
+    }
+    
     public func mapGenerators<A>(_ f: (Generator) -> A) -> LinearCombination<A, BaseRing> {
         mapPairs{ (a, r) in (f(a), r) }
     }
