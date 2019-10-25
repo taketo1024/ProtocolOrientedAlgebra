@@ -105,8 +105,8 @@ public typealias InifiniteVariatePolynomial<_x: PolynomialIndeterminate, R: Ring
 
 // MEMO: Waiting for parameterized extension.
 public func splitPolynomials<xn, A, R>(_ z: LinearCombination<A, MultivariatePolynomial<xn, R>>) -> LinearCombination<TensorGenerator<MultivariatePolynomialGenerator<xn>, A>, R> {
-    return z.decomposed().sum { (a, p) in
-        p.decomposed().sum { (m, r) in
+    return z.elements.sum { (a, p) in
+        p.elements.sum { (m, r) in
             LinearCombination(elements: [ m ⊗ a : r])
         }
     }
@@ -114,7 +114,7 @@ public func splitPolynomials<xn, A, R>(_ z: LinearCombination<A, MultivariatePol
 
 // MEMO: Waiting for parameterized extension.
 public func combineMonomials<xn, A, R>(_ z: LinearCombination<TensorGenerator<MultivariatePolynomialGenerator<xn>, A>, R>) -> LinearCombination<A, MultivariatePolynomial<xn, R>> {
-    return z.decomposed().sum { (x, r) in
+    return z.elements.sum { (x, r) in
         let (m, a) = x.factors
         let p = r * MultivariatePolynomial<xn, R>.wrap(m)
         return LinearCombination(elements: [a : p])

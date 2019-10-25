@@ -69,20 +69,17 @@ extension FreeModule {
         .init(elements: [:])
     }
     
-    internal var degree_FreeModule: Int {
-        isZero ? 0 : elements.map{ (a, r) in a.degree + r.degree }.max()!
+    public var isHomogeneous: Bool {
+        let d = homogeneousDegree
+        return elements.allSatisfy{ (a, r) in a.degree + r.degree == d }
     }
     
-    public var degree: Int {
-        degree_FreeModule
+    public var homogeneousDegree: Int {
+        elements.anyElement.map { (a, r) in a.degree + r.degree } ?? 0
     }
     
     public var generators: Dictionary<Generator, BaseRing>.Keys {
         elements.keys
-    }
-    
-    public func decomposed() -> [(Generator, BaseRing)] {
-        elements.map{ (a, r) in (a, r) }
     }
     
     public static func + (a: Self, b: Self) -> Self {

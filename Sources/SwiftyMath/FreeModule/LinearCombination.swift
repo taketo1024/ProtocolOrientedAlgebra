@@ -20,12 +20,6 @@ public struct LinearCombination<A: FreeModuleGenerator, R: Ring>: FreeModule {
     }
 }
 
-extension LinearCombination: Multiplicative, Monoid, Ring where A: Monoid {
-    public var degree: Int {
-        degree_FreeModule
-    }
-}
-
 extension LinearCombination where R: RealSubset {
     public var asReal: LinearCombination<A, 𝐑> {
         mapCoefficients{ $0.asReal }

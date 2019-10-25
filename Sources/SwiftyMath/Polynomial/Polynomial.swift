@@ -12,10 +12,6 @@ extension PolynomialType {
         self.init(elements: coeffs.mapKeys{ n in Generator(n) } )
     }
     
-    public var degree: Int {
-        degree_FreeModule
-    }
-
     public var normalizingUnit: Self {
         if let a = leadCoeff.inverse {
             return a * .identity
@@ -30,6 +26,14 @@ extension PolynomialType {
     
     public var coeffsTable: [Generator.Exponent : BaseRing] {
         elements.mapKeys { t in t.exponent }
+    }
+    
+    public var degree: Int {
+        if let e = _highestExponent {
+            return Generator(e).degree + coeff(e).degree
+        } else {
+            return 0
+        }
     }
  
     internal var _highestExponent: Generator.Exponent? {
