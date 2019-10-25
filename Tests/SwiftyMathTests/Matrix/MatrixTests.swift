@@ -110,7 +110,7 @@ class MatrixTests: XCTestCase {
     
     func testMapComps() {
         let a = Matrix2(1,2,0,4)
-        XCTAssertEqual(a.mapNonZeroComponents{ $0 * 2 }, Matrix2(2,4,0,8))
+        XCTAssertEqual(a.mapNonZeroComponents{ (_, _, a) in 2 * a }, Matrix2(2,4,0,8))
     }
     
     func testId() {
