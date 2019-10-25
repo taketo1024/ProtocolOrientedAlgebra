@@ -142,7 +142,7 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
     }
     
     public prefix static func -(a: Self) -> Self {
-        a.mapNonZeroComponents(-)
+        a.mapNonZeroComponents{ (_, _, a) in -a }
     }
     
     public static func -(a: Self, b: Self) -> Self {
@@ -150,11 +150,11 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
     }
     
     public static func *(r: R, a: Self) -> Self {
-        a.mapNonZeroComponents{ r * $0 }
+        a.mapNonZeroComponents{ (_, _, a) in r * a }
     }
     
     public static func *(a: Self, r: R) -> Self {
-        a.mapNonZeroComponents{ $0 * r }
+        a.mapNonZeroComponents{ (_, _, a) in a * r }
     }
     
     public static func * <p>(a: Matrix<n, m, R>, b: Matrix<m, p, R>) -> Matrix<n, p, R> {
@@ -198,9 +198,9 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         }
     }
     
-    internal func mapNonZeroComponents(_ f: (R) -> R) -> Self {
+    public func mapNonZeroComponents(_ f: (Int, Int, R) -> R) -> Self {
         .init(size: size) { setEntry in
-            nonZeroComponents.forEach { (i, j, a) in setEntry(i, j, f(a)) }
+            nonZeroComponents.forEach { (i, j, a) in setEntry(i, j, f(i, j, a)) }
         }
     }
 
