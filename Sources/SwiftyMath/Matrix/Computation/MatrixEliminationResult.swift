@@ -73,37 +73,8 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
         return result.diagonalComponents.count{ !$0.isZero }
     }
     
-    // Returns the matrix consisting of the basis vectors of Im(A).
-    // If
-    //
-    //     P * A * Q = [ D_r | O   ]
-    //                 [   O | O_k ]
-    //
-    // then
-    //
-    //     A * Q =  [ P^{-1} [D_r] | O ]
-    //              [        [O  ] | O ]
-    //
-    // so P^{-1} [D_r; O] gives the imageMatrix.
-    
-    public var imageMatrix: Matrix<n, DynamicSize, R> {
-        assert(result.isDiagonal)
-        let n = result.size.rows
-        let r = rank
-        let size = (rows: n, cols: r)
-        
-        if size.rows == 0 || size.cols == 0 {
-            return DMatrix.zero(size: size).as(Matrix.self)
-        }
-        
-        let diag = result.diagonalComponents
-        let comps = (0 ..< r).map{ i -> MatrixComponent<R> in (i, i, diag[i]) }
-        let D = RowEliminationWorker<R>(size: size, components: comps)
-        for s in rowOps.reversed() {
-            D.apply(s.inverse)
-        }
-        
-        return D.resultAs(Matrix.self)
+    public var nullity: Int {
+        return result.size.cols - rank
     }
     
     // Returns the matrix consisting of the basis vectors of Ker(A).
@@ -114,16 +85,12 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     //
     // then for any j in (r <= j < m),
     //
-    //     (A * Q) * e_j = A * (Q * e_j)
-    //                   = A * q_j
-    //                   = o
+    //     0 = (A * Q) * e_j = A * (Q * e_j)
     //
     // so
     //
-    //     Z = [q_r ... q_{m-1}] = Q * [O  ]
-    //                                 [I_k]
-    //
-    // gives the kernelMatrix.
+    //     Ker(A) = Q * [O; I_k]
+    //            = Q[-, r ..< m]
     //
     // Note that Q is multiplied to [O; I_k] from the <left>,
     // so we must consider the corresponding <row> operations.
@@ -152,15 +119,16 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
         return Z.resultAs(Matrix.self)
     }
     
-    // Returns the transition matrix T from Z to I,
+    // Returns the transition matrix T from Z = Ker(A) to I,
     // i.e.
     //
-    //     z_j = q_{r + j} ∈ R^m  --T--> e_j ∈ R^k  (0 <= j < k)
-    //     <=> T * Z = I_k
+    //     T * Z = I_k
+    //     <=> z_j = q_{r + j} ∈ R^m  --T--> e_j ∈ R^k  (0 <= j < k)
     //
-    // Sinze Z = Q * [O; I_k],
+    // Since Z = Q * [O; I_k],
     //
-    //     T = [O | I_k] Q^{-1}
+    //     T = [O, I_k] Q^{-1}
+    //       = Q^{-1}[r ..< n; -]
     //
     // satisfies the desired equation.
     
@@ -182,12 +150,51 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
         return T.resultAs(Matrix.self)
     }
     
+    // Returns the matrix consisting of the basis vectors of Im(A).
+    // If
+    //
+    //     P * A * Q = [ D_r | O   ]
+    //                 [   O | O_k ]
+    //
+    // then
+    //
+    //     A * Q =  [ P^{-1} [D_r] | O ]
+    //              [        [O  ] | O ]
+    //
+    // so
+    //
+    //    Im(A) = P^{-1} [D_r; O]
+    //          = P^{-1}[-, 0 ..< r] * D_r.
+    
+    public var imageMatrix: Matrix<n, DynamicSize, R> {
+        assert(result.isDiagonal)
+        let n = result.size.rows
+        let r = rank
+        let size = (rows: n, cols: r)
+        
+        if size.rows == 0 || size.cols == 0 {
+            return DMatrix.zero(size: size).as(Matrix.self)
+        }
+        
+        let diag = result.diagonalComponents
+        let comps = (0 ..< r).map{ i -> MatrixComponent<R> in (i, i, diag[i]) }
+        let D = RowEliminationWorker<R>(size: size, components: comps)
+        for s in rowOps.reversed() {
+            D.apply(s.inverse)
+        }
+        
+        return D.resultAs(Matrix.self)
+    }
+    
     // Returns the transition matrix T from B = Im(A) to D_r,
     //
     //     B = P^{-1} [D_r; O]
-    //     <=> D_r = [I_r | O] (P * B)
+    //     <=> D_r = [I_r, O] (P * B)
     //
-    // so  T = [I_r | O] * P.
+    // so
+    //
+    //     T = [I_r, O] * P
+    //       = P[0 ..< r, -].
     //
     // Note that P is multiplied to [I_r | O] from the <right>,
     // so we must consider the corresponding <col> operations.
