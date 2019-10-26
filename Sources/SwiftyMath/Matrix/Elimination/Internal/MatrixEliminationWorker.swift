@@ -390,39 +390,6 @@ final class RowEliminationWorker<R: Ring> {
     }
 }
 
-final class ColEliminationWorker<R: EuclideanRing> {
-    private let rowWorker: RowEliminationWorker<R>
-    
-    init<S: Sequence>(size: (Int, Int), components: S, trackRowInfos: Bool = false) where S.Element == MatrixComponent<R> {
-        rowWorker = RowEliminationWorker(size: (size.1, size.0), components: components.map{(i, j, a) in (j, i, a)})
-    }
-    
-    convenience init<n, m>(_ A: Matrix<n, m, R>, trackRowInfos: Bool = false) {
-        self.init(size: A.size, components: A.nonZeroComponents, trackRowInfos: trackRowInfos)
-    }
-    
-    var size: (Int, Int) {
-        (rowWorker.size.cols, rowWorker.size.rows)
-    }
-    
-    func apply(_ s: ColElementaryOperation<R>) {
-        rowWorker.apply(s.transposed)
-    }
-    
-    var components: [MatrixComponent<R>] {
-        rowWorker.components.map{ (i, j, a) in (j, i, a) }
-    }
-    
-    func resultAs<n, m>(_ type: Matrix<n, m, R>.Type) -> Matrix<n, m, R> {
-        rowWorker.resultAs(Matrix<m, n, R>.self).transposed
-    }
-    
-    static func identity(size n: Int) -> ColEliminationWorker<R> {
-        let comps = (0 ..< n).map { i in (i, i, R.identity) }
-        return ColEliminationWorker(size: (n, n), components: comps)
-    }
-}
-
 private extension UnsafeMutablePointer {
     static func new(_ entity: Pointee) -> Self {
         let p = allocate(capacity: 1)

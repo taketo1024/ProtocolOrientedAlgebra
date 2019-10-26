@@ -114,6 +114,42 @@ class MatrixEliminationTests: XCTestCase {
         XCTAssertEqual(E.rightInverse * E.right, M5.identity)
     }
     
+    func testLeftRestriction() {
+        let A = M5(2, -1, -2, -2, -3, 1, 2, -1, 1, -1, 2, -2, -4, -3, -6, 1, 7, 1, 5, 3, 1, -12, -6, -10, -11)
+        let E = MatrixEliminator.eliminate(target: A, form: .Smith)
+        
+        let P = E.left
+        XCTAssertEqual(E.left(restrictedToCols: 2 ..< 4), P.submatrix(colRange: 2 ..< 4))
+        XCTAssertEqual(E.left(restrictedToRows: 2 ..< 4), P.submatrix(rowRange: 2 ..< 4))
+    }
+    
+    func testLeftInverseRestriction() {
+        let A = M5(2, -1, -2, -2, -3, 1, 2, -1, 1, -1, 2, -2, -4, -3, -6, 1, 7, 1, 5, 3, 1, -12, -6, -10, -11)
+        let E = MatrixEliminator.eliminate(target: A, form: .Smith)
+        
+        let P = E.leftInverse
+        XCTAssertEqual(E.leftInverse(restrictedToCols: 2 ..< 4), P.submatrix(colRange: 2 ..< 4))
+        XCTAssertEqual(E.leftInverse(restrictedToRows: 2 ..< 4), P.submatrix(rowRange: 2 ..< 4))
+    }
+    
+    func testRightRestriction() {
+        let A = M5(2, -1, -2, -2, -3, 1, 2, -1, 1, -1, 2, -2, -4, -3, -6, 1, 7, 1, 5, 3, 1, -12, -6, -10, -11)
+        let E = MatrixEliminator.eliminate(target: A, form: .Smith)
+        
+        let Q = E.right
+        XCTAssertEqual(E.right(restrictedToCols: 2 ..< 4), Q.submatrix(colRange: 2 ..< 4))
+        XCTAssertEqual(E.right(restrictedToRows: 2 ..< 4), Q.submatrix(rowRange: 2 ..< 4))
+    }
+    
+    func testRightInverseRestriction() {
+        let A = M5(2, -1, -2, -2, -3, 1, 2, -1, 1, -1, 2, -2, -4, -3, -6, 1, 7, 1, 5, 3, 1, -12, -6, -10, -11)
+        let E = MatrixEliminator.eliminate(target: A, form: .Smith)
+        
+        let Q = E.rightInverse
+        XCTAssertEqual(E.rightInverse(restrictedToCols: 2 ..< 4), Q.submatrix(colRange: 2 ..< 4))
+        XCTAssertEqual(E.rightInverse(restrictedToRows: 2 ..< 4), Q.submatrix(rowRange: 2 ..< 4))
+    }
+    
     func testPAQ() {
         let A = M5(2, -1, -2, -2, -3, 1, 2, -1, 1, -1, 2, -2, -4, -3, -6, 1, 7, 1, 5, 3, 1, -12, -6, -10, -11)
         let E = MatrixEliminator.eliminate(target: A, form: .Smith)
@@ -208,9 +244,11 @@ class MatrixEliminationTests: XCTestCase {
         let E = MatrixEliminator.eliminate(target: A)
         let K = E.kernelMatrix
         
+        XCTAssertTrue(K.size == (15, 10))
         XCTAssertEqual(A * K, DMatrix.zero(size: (6, 10)))
         
         let T = E.kernelTransitionMatrix
+        XCTAssertTrue(T.size == (10, 15))
         XCTAssertEqual(T * K, DMatrix.identity(size: 10))
     }
 
@@ -221,6 +259,10 @@ class MatrixEliminationTests: XCTestCase {
         
         XCTAssertTrue(I.size == (2, 1))
         XCTAssertEqual(I.asArray, [2, 2])
+        
+        let T = E.imageTransitionMatrix
+        XCTAssertTrue(T.size == (1, 2))
+        XCTAssertEqual(T * I, DMatrix(size:(1, 1), grid: [2]))
     }
     
     public func testDet() {
