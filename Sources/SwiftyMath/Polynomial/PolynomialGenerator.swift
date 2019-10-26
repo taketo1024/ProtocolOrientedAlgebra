@@ -39,7 +39,7 @@ extension UnivariatePolynomialGeneratorType {
     }
     
     public var description: String {
-        Format.term(1, Indeterminate.symbol, exponent)
+        Format.power(Indeterminate.symbol, exponent)
     }
 }
 

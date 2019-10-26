@@ -72,14 +72,11 @@ extension MultivariatePolynomialGeneratorType {
 
     
     public var description: String {
-        exponent.enumerated().compactMap { (i, n) -> String? in
-            if n != 0 {
-                let x = Indeterminates.symbol(i)
-                return (n == 1) ? x : "\(x)\(Format.sup(n))"
-            } else {
-                return nil
-            }
-        }.joined()
+        exponent.isEmpty
+            ? "1"
+            : exponent.enumerated().compactMap { (i, n) -> String? in
+                (n > 0) ? Format.power(Indeterminates.symbol(i), n) : nil
+            }.joined()
     }
 }
 

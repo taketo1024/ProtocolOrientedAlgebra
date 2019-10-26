@@ -78,18 +78,7 @@ public struct Complex<Base: Ring>: Ring, Module {
     }
     
     public var description: String {
-        switch (x, y) {
-        case (_, .zero):
-            return "\(x)"
-        case (.zero,  .identity):
-            return "i"
-        case (.zero, -.identity):
-            return "-i"
-        case (.zero, _):
-            return "\(y)i"
-        default:
-            return "\(x) + \(y)i"
-        }
+        Format.linearCombination([("1", x), ("i", y)])
     }
 
     public static var symbol: String {

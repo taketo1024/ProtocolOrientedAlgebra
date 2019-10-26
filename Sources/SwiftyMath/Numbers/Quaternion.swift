@@ -110,14 +110,7 @@ public struct Quaternion<Base: Ring>: Ring, Module {
     }
     
     public var description: String {
-        if isZero {
-            return "0"
-        } else {
-            return [(x, ""), (y, "i"), (z, "j"), (w, "k")]
-                .exclude{ $0.0.isZero }
-                .map{ "\($0.0)\($0.1)" }
-                .joined(separator: " + ")
-        }
+        Format.linearCombination([("1", x), ("i", y), ("j", z), ("k", w)])
     }
     
     public static var symbol: String {

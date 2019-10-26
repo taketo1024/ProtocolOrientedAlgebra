@@ -138,7 +138,7 @@ extension FreeModule {
     }
     
     public var description: String {
-        Format.terms("+", elements.sorted(by: { $0.key }).map { (a, r) in (r, a.description, 1) })
+        Format.linearCombination(elements.sorted{ $0.key < $1.key })
     }
 }
 

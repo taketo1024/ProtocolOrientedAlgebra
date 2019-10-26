@@ -68,26 +68,39 @@ public struct Format {
         "\(x)\(sub(i))"
     }
     
-    public static func term<R: Ring>(_ a: R, _ x: String, _ n: Int = 1, skipZero: Bool = false) -> String {
-        let (o, e) = (R.zero, R.identity)
-        switch (a, n) {
-        case ( o, _): return skipZero ? "" : "0"
-        case ( _, 0): return "\(a)"
-        case ( e, 1): return "\(x)"
-        case (-e, 1): return "-\(x)"
-        case ( _, 1): return "\(a)\(x)"
-        case ( e, _): return "\(x)\(sup(n))"
-        case (-e, _): return "-\(x)\(sup(n))"
-        default:      return "\(a)\(x)\(sup(n))"
-        }
+    public static func power<X: CustomStringConvertible>(_ x: X, _ n: Int) -> String {
+        let xStr = x.description
+        return n == 0 ? "1" : n == 1 ? xStr : "\(xStr)\(sup(n))"
     }
     
-    public static func terms<S: Sequence, R: Ring>(_ op: String, _ terms: S, skipZero: Bool = false) -> String where S.Element == (R, String, Int) {
-        let ts = terms.compactMap{ (a, x, n) -> String? in
-            let t = term(a, x, n, skipZero: skipZero)
-            return (skipZero && t.isEmpty) ? nil : t
-        }.joined(separator: " \(op) ")
-        return ts.isEmpty ? "0" : ts
+    public static func linearCombination<S: Sequence, X: CustomStringConvertible, R: Ring>(_ terms: S) -> String where S.Element == (X, R) {
+        let termsStr = terms.compactMap{ (x, r) -> String? in
+            let xStr = x.description
+            switch (r, xStr) {
+            case (.zero, _):
+                return nil
+            case (_, "1"):
+                return "\(r)"
+            case (.identity, _):
+                return xStr
+            case (-.identity, _):
+                return "-\(xStr)"
+            default:
+                return "\(r)\(xStr)"
+            }
+        }
+        
+        return termsStr.isEmpty
+            ? "0"
+            : termsStr.reduce(into: "") { (str, next) in
+                if str.isEmpty {
+                    str += next
+                } else if next.hasPrefix("-") {
+                    str += " - \(next.substring(1...))"
+                } else {
+                    str += " + \(next)"
+                }
+            }
     }
     
     public static func table<S1: Sequence, S2: Sequence, T>(rows: S1, cols: S2, symbol: String = "", separator s: String = "\t", printHeaders: Bool = true, op: (S1.Element, S2.Element) -> T) -> String {

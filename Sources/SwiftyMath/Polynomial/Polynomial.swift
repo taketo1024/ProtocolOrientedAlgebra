@@ -63,6 +63,10 @@ extension PolynomialType {
     public var constTerm: BaseRing {
         self[.identity]
     }
+    
+    public var description: String {
+        Format.linearCombination(elements.sorted{ $0.key > $1.key })
+    }
 }
 
 extension PolynomialType where BaseRing: Field {

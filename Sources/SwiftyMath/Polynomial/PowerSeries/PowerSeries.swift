@@ -99,7 +99,7 @@ public struct PowerSeries<x: PolynomialIndeterminate, R: Ring>: Ring, Module {
     }
     
     public var description: String {
-        Format.terms("+", (0 ..< 5).map{ n in (coeff(n), "x", n) }) + " ..."
+        Format.linearCombination( (0 ..< 5).map{ n in (Format.power("x", n), coeff(n)) })
     }
     
     public static var symbol: String {
