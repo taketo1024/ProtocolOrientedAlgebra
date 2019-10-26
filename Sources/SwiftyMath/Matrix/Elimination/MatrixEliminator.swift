@@ -85,8 +85,15 @@ public class MatrixEliminator<R: EuclideanRing> : CustomStringConvertible {
     
     final func log(_ msg: @autoclosure () -> String) {
         if debug {
+            print(msg())
+            printCurrentMatrix()
+        }
+    }
+    
+    func printCurrentMatrix() {
+        if size.rows < 100 && size.cols < 100 {
             let A = DMatrix(size: size, components: components)
-            print(msg(), "\n", A.detailDescription, "\n")
+            print("\n", A.detailDescription, "\n")
         }
     }
     
@@ -115,6 +122,11 @@ public class MatrixEliminator<R: EuclideanRing> : CustomStringConvertible {
     final func append(_ s: ColElementaryOperation<R>) {
         colOps.append(s)
         log("\(s)")
+    }
+    
+    final func append(_ s: [RowElementaryOperation<R>]) {
+        rowOps.append(contentsOf: s)
+        log(s.map{ "\($0)"}.joined(separator: "\n"))
     }
     
     func finalize() {

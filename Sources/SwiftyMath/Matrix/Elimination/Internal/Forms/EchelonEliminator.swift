@@ -33,27 +33,37 @@ class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         
         // eliminate target col
         
-        var again = false
-        
-        let targets = elements.compactMap { (i, _, a) -> (Int, R)? in
-            if i == i0 { return nil }
-            let (q, r) = a /% a0
+        if elements.count > 1 {
+            var again = false
             
-            if !r.isZero {
-                again = true
+            let targets = elements.compactMap { (i, _, a) -> (Int, R)? in
+                if i == i0 { return nil }
+                let (q, r) = a /% a0
+                
+                if !r.isZero {
+                    again = true
+                }
+                
+                return (i, -q)
             }
             
-            return (i, -q)
-        }
-        
-        worker.batchAddRow(at: i0, to: targets.map{ $0.0 }, multipliedBy: targets.map{ $0.1 })
-        
-        for (i, r) in targets {
-            append(.AddRow(at: i0, to: i, mul: r))
-        }
-        
-        if again {
-            return
+            worker.batchAddRow(
+                at: i0,
+                to: targets.map{ $0.0 },
+                multipliedBy: targets.map{ $0.1 }
+            )
+            
+            if debug {
+                updateComponents()
+            }
+            
+            append(targets.map{ (i, r) in
+                .AddRow(at: i0, to: i, mul: r)
+            })
+            
+            if again {
+                return
+            }
         }
         
         // final step
@@ -88,14 +98,18 @@ class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         worker.apply(s)
         
         if debug {
-            components = worker.components
+            updateComponents()
         }
         
         append(s)
     }
     
-    override func finalize() {
+    private func updateComponents() {
         components = worker.components
+    }
+    
+    override func finalize() {
+        updateComponents()
     }
 }
 
