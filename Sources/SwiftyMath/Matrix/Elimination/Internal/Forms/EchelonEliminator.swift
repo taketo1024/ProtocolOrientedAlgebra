@@ -6,7 +6,7 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-public class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
+class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     var worker: RowEliminationWorker<R>!
     var currentRow = 0
     var currentCol = 0
@@ -99,7 +99,7 @@ public class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     }
 }
 
-public final class ColEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
+final class ColEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     override func prepare() {
         subrun(RowEchelonEliminator.self, transpose: true)
         exit()

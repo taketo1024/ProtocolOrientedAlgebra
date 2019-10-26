@@ -6,7 +6,7 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-public final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
+final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     var currentIndex = 0
     
     override func prepare() {

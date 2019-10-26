@@ -6,7 +6,7 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-internal final class RowEliminationWorker<R: EuclideanRing> {
+final class RowEliminationWorker<R: EuclideanRing> {
     var size: (rows: Int, cols: Int)
     
     private var working: [EntityPointer?]
@@ -390,7 +390,7 @@ internal final class RowEliminationWorker<R: EuclideanRing> {
     }
 }
 
-internal final class ColEliminationWorker<R: EuclideanRing> {
+final class ColEliminationWorker<R: EuclideanRing> {
     private let rowWorker: RowEliminationWorker<R>
     
     init<S: Sequence>(size: (Int, Int), components: S, trackRowInfos: Bool = false) where S.Element == MatrixComponent<R> {

@@ -6,7 +6,7 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-public final class DiagonalEliminator<R: EuclideanRing>: MatrixEliminator<R> {
+final class DiagonalEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     override func isDone() -> Bool {
         components.allSatisfy { (i, j, a) in
             (i == j) && a.isNormalized

@@ -6,7 +6,7 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-public final class RowHermiteEliminator<R: EuclideanRing>: RowEchelonEliminator<R> {
+final class RowHermiteEliminator<R: EuclideanRing>: RowEchelonEliminator<R> {
     override func iterationFinalStep() {
         super.iterationFinalStep()
         
@@ -24,7 +24,7 @@ public final class RowHermiteEliminator<R: EuclideanRing>: RowEchelonEliminator<
     }
 }
 
-public final class ColHermiteEliminator<R: EuclideanRing>: MatrixEliminator<R> {
+final class ColHermiteEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     override func prepare() {
         subrun(RowHermiteEliminator.self, transpose: true)
         exit()
