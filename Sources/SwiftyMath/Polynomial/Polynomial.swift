@@ -126,7 +126,7 @@ public struct Polynomial<x: PolynomialIndeterminate, R: Ring>: UnivariatePolynom
 
 extension Polynomial: EuclideanRing where R: Field {
     public var euclideanDegree: Int {
-        highestExponent
+        isZero ? 0 : 1 + highestExponent
     }
     
     public static func /%(f: Self, g: Self) -> (q: Self, r: Self) {
@@ -139,14 +139,14 @@ extension Polynomial: EuclideanRing where R: Field {
                 return (.zero, f)
             } else {
                 let a = f.leadCoeff / g.leadCoeff
-                let n = f.euclideanDegree - g.euclideanDegree
+                let n = f.highestExponent - g.highestExponent
                 let q = a * x.pow(n)
                 let r = f - q * g
                 return (q, r)
             }
         }
         
-        return (0 ... max(0, f.euclideanDegree - g.euclideanDegree))
+        return (0 ... max(0, f.highestExponent - g.highestExponent))
             .reversed()
             .reduce( (.zero, f) ) { (result: (Self, Self), degree: Int) in
                 let (q, r) = result
