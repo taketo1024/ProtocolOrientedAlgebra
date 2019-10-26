@@ -25,6 +25,10 @@ public extension EuclideanRing {
         let b = self
         return (a.isZero && b.isZero) || (!a.isZero && (b % a).isZero)
     }
+    
+    var matrixEliminationWeight: Int {
+        euclideanDegree
+    }
 }
 
 public func gcd<R: EuclideanRing>(_ a: R, _ b: R) -> R {

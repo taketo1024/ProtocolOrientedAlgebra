@@ -79,7 +79,7 @@ class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     private func findPivot(in candidates: [MatrixComponent<R>]) -> MatrixComponent<R>? {
         candidates.min { (c1, c2) in
             let (i1, i2) = (c1.row, c2.row)
-            let (d1, d2) = (c1.value.euclideanDegree, c2.value.euclideanDegree)
+            let (d1, d2) = (c1.value.matrixEliminationWeight, c2.value.matrixEliminationWeight)
             return d1 < d2 || (d1 == d2 && worker.weight(ofRow: i1) < worker.weight(ofRow: i2))
         }
     }

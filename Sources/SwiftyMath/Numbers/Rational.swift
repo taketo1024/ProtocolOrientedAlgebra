@@ -66,6 +66,10 @@ public struct RationalNumber: Field, Comparable, Hashable, Codable {
         lhs.p * rhs.q < rhs.p * lhs.q
     }
     
+    public var matrixEliminationWeight: Int {
+        isZero ? 0 : max(p.abs, q)
+    }
+    
     public var description: String {
         switch q {
         case 1:  return "\(p)"

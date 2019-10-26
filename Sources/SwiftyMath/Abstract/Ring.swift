@@ -4,6 +4,7 @@ public protocol Ring: AdditiveGroup, Monoid {
     var normalized: Self { get }
     var isNormalized: Bool { get }
     var degree: Int { get }
+    var matrixEliminationWeight: Int { get }
     static var isField: Bool { get }
 }
 
@@ -30,6 +31,10 @@ public extension Ring {
     
     var degree: Int {
         0
+    }
+    
+    var matrixEliminationWeight: Int {
+        isZero ? 0 : 1
     }
     
     static var isField: Bool {

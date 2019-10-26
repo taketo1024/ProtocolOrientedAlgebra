@@ -70,7 +70,7 @@ final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     private func findPivot() -> MatrixComponent<R>? {
         components
             .filter{ (i, _, _) in i >= currentIndex }
-            .min { (c1, c2) in c1.value.euclideanDegree < c2.value.euclideanDegree }
+            .min { (c1, c2) in c1.value.matrixEliminationWeight < c2.value.matrixEliminationWeight }
     }
     
     private func diagonalGCD(_ d1: (Int, R), _ d2: (Int, R)) {

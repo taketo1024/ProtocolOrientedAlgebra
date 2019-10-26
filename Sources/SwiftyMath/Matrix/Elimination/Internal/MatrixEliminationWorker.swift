@@ -6,7 +6,7 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-final class RowEliminationWorker<R: EuclideanRing> {
+final class RowEliminationWorker<R: Ring> {
     var size: (rows: Int, cols: Int)
     
     private var working: [EntityPointer?]
@@ -211,7 +211,7 @@ final class RowEliminationWorker<R: EuclideanRing> {
                 }
                 
                 if track {
-                    dw += a.euclideanDegree - a0.euclideanDegree
+                    dw += a.matrixEliminationWeight - a0.matrixEliminationWeight
                 }
                 
             } else {
@@ -221,7 +221,7 @@ final class RowEliminationWorker<R: EuclideanRing> {
                 (prev, to) = (to, p)
                 
                 if track {
-                    dw += a.euclideanDegree
+                    dw += a.matrixEliminationWeight
                 }
             }
             
@@ -335,7 +335,7 @@ final class RowEliminationWorker<R: EuclideanRing> {
 
         init(_ size: (Int, Int), _ working: [EntityPointer?]) {
             self.rowWeights = working
-                .map{ l in l?.pointee.sum{ c in c.value.euclideanDegree } ?? 0 }
+                .map{ l in l?.pointee.sum{ c in c.value.matrixEliminationWeight } ?? 0 }
             
             let sets = working
                 .enumerated()
