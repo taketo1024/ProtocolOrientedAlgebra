@@ -92,6 +92,12 @@ extension Array where Element: Hashable {
 }
 
 extension Array {
+    public func parallelForEach(body: @escaping  (Element) -> Void ) {
+        DispatchQueue.concurrentPerform(iterations: count) { i in
+            body(self[i])
+        }
+    }
+    
     public func parallelMap<T>(transform: (Element) -> T) -> [T] {
         var result = ContiguousArray<T?>(repeating: nil, count: count)
         return result.withUnsafeMutableBufferPointer { buffer in
@@ -102,15 +108,15 @@ extension Array {
         }
     }
     
-    public func parallelFlatMap<T>(transform: @escaping ((Element) -> [T])) -> [T] {
+    public func parallelFlatMap<T>(transform: @escaping (Element) -> [T] ) -> [T] {
         parallelMap(transform: transform).flatMap { $0 }
     }
     
-    public func parallelCompactMap<T>(transform: @escaping ((Element) -> T?)) -> [T] {
+    public func parallelCompactMap<T>(transform: @escaping (Element) -> T? ) -> [T] {
         parallelMap(transform: transform).compactMap { $0 }
     }
     
-    public func parallelFilter(predicate: @escaping ((Element) -> Bool)) -> Array {
+    public func parallelFilter(predicate: @escaping  (Element) -> Bool ) -> Self {
         parallelCompactMap { e in predicate(e) ? e : nil }
     }
 }
