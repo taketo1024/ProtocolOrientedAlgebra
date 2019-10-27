@@ -2,79 +2,136 @@
 //  LinkedList.swift
 //  SwiftyMath
 //
-//  Created by Taketo Sano on 2019/06/25.
+//  Created by Taketo Sano on 2019/10/27.
 //
 
-public final class LinkedList<T>: Sequence, CustomStringConvertible {
-    public var value: T
-    public var next: LinkedList<T>?
-    
-    public init(_ value: T, next: LinkedList<T>? = nil) {
-        self.value = value
-        self.next = next
+public final class LinkedList<Element>: Sequence {
+    public typealias NodePointer = UnsafeMutablePointer<Node>
+    public struct Node {
+        public var element: Element
+        public var next: NodePointer? = nil
+        
+        public mutating func insertNext(_ e: Element) {
+            let p = NodePointer.new( Node(element: e, next: self.next) )
+            self.next = p
+        }
+        
+        public mutating func dropNext() {
+            guard let drop = next else {
+                return
+            }
+            self.next = drop.pointee.next
+            drop.delete()
+        }
     }
     
-    public static func generate<S: Sequence>(from seq: S) -> LinkedList<T>? where S.Element == T {
-        seq.reduce(into: (nil, nil)) {
-            (res: inout (head: LinkedList<T>?, prev: LinkedList<T>?), value: T) in
+    private var head: NodePointer? = nil
+    
+    public init<S: Sequence>(_ seq: S) where S.Element == Element {
+        var head: NodePointer?
+        var prev: NodePointer?
+        
+        for e in seq {
+            let p = NodePointer.new( Node(element: e) )
+
+            if head == nil {
+                head = p
+            }
             
-            let curr = LinkedList(value)
-            if res.head == nil {
-                res.head = curr
-            }
-            res.prev?.next = curr
-            res.prev = curr
-        }.head
-    }
-    
-    public func insert(_ c: LinkedList<T>) {
-        let next = self.next
-        self.next = c
-        c.next = next
-    }
-    
-    public func drop(where shouldDrop: (T) -> Bool) -> LinkedList<T>? {
-        var head = self
-        while shouldDrop(head.value) {
-            if let next = head.next {
-                head = next
-            } else {
-                return nil
-            }
+            prev?.pointee.next = p
+            prev = p
         }
         
-        var current = head
-        while let next = current.next {
-            if shouldDrop(next.value) {
-                current.next = next.next
-            } else {
-                current = next
-            }
+        self.head = head
+    }
+    
+    public convenience init() {
+        self.init([])
+    }
+    
+    deinit {
+        var p = head
+        while p != nil {
+            let next = p?.pointee.next
+            
+            p!.delete()
+            p = next
         }
-        
-        return head
     }
     
-    public func makeIterator() -> Iterator {
-        Iterator(self)
+    public var isEmpty: Bool {
+        head == nil
     }
     
-    public struct Iterator: IteratorProtocol {
-        private var current: LinkedList<T>?
-        fileprivate init(_ start: LinkedList<T>) {
+    public var headElement: Element? {
+        head?.pointee.element
+    }
+    
+    public var headPointer: NodePointer? {
+        head
+    }
+    
+    public func insertHead(_ element: Element) {
+        head = NodePointer.new( Node(element: element, next: head) )
+    }
+    
+    public func dropHead() {
+        guard let head = head else {
+            return
+        }
+        defer { head.delete() }
+        self.head = head.pointee.next
+    }
+    
+    public func modifyEach(_ map: (inout Element) -> Void) {
+        var pItr = makePointerIterator()
+        while let p = pItr.next() {
+            map(&(p.pointee.element))
+        }
+    }
+    
+    public func makeIterator() -> ElementIterator {
+        ElementIterator(head?.pointee)
+    }
+    
+    public func makePointerIterator() -> PointerIterator {
+        PointerIterator(head)
+    }
+    
+    public struct ElementIterator: IteratorProtocol {
+        private var current: Node?
+        fileprivate init(_ start: Node?) {
             current = start
         }
         
-        public mutating func next() -> T? {
-            defer {
-                current = current?.next
-            }
-            return current?.value
+        public mutating func next() -> Element? {
+            defer { current = current?.next?.pointee }
+            return current?.element
         }
     }
     
-    public var description: String {
-        "[\(value) \(next == nil ? "(end)" : "->")]"
+    public struct PointerIterator: IteratorProtocol {
+        private var current: NodePointer?
+        fileprivate init(_ start: NodePointer?) {
+            current = start
+        }
+        
+        public mutating func next() -> NodePointer? {
+            defer { current = current?.pointee.next }
+            return current
+        }
     }
 }
 
+private extension UnsafeMutablePointer {
+    static func new(_ entity: Pointee) -> Self {
+        let p = allocate(capacity: 1)
+        p.initialize(to: entity)
+        return p
+    }
+    
+    func delete() {
+        self.deinitialize(count: 1)
+        self.deallocate()
+    }
+}

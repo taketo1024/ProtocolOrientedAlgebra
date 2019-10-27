@@ -7,35 +7,35 @@
 //
 
 final class RowEliminationWorker<R: Ring> {
-    var size: (rows: Int, cols: Int)
+    typealias RowElement = (col: Int, value: R)
+    typealias Row = LinkedList<RowElement>
     
-    private var rowHeadPtrs: [EntityPointer?]
+    var size: (rows: Int, cols: Int)
+    private var rows: [Row]
     private var tracker: Tracker?
     
     init<S: Sequence>(size: (Int, Int), components: S, trackRowInfos: Bool = false) where S.Element == MatrixComponent<R> {
         self.size = size
         
-        let group = components
-            .group{ c in c.row }
-            .mapValues { l in Entity.generateList(from: l) }
-        
-        self.rowHeadPtrs = (0 ..< size.0).map { i in group[i] }
-        self.tracker = trackRowInfos ? Tracker(size, rowHeadPtrs) : nil
+        let group = components.group{ c in c.row }
+        self.rows = (0 ..< size.0).map { i in
+            if let list = group[i] {
+                let sorted = list.map{ c in RowElement(c.col, c.value) }.sorted{ $0.col }
+                return Row(sorted)
+            } else {
+                return Row()
+            }
+        }
+        self.tracker = trackRowInfos ? Tracker(size, rows) : nil
     }
     
     convenience init<n, m>(_ A: Matrix<n, m, R>, trackRowInfos: Bool = false) {
         self.init(size: A.size, components: A.nonZeroComponents, trackRowInfos: trackRowInfos)
     }
     
-    deinit {
-        for p in rowHeadPtrs where p != nil {
-            Entity.deleteList(startingFrom: p!)
-        }
-    }
-    
     @inlinable
-    func rowHead(_ i: Int) -> Entity? {
-        rowHeadPtrs[i]?.pointee
+    func row(_ i: Int) -> Row {
+        rows[i]
     }
     
     @inlinable
@@ -45,16 +45,13 @@ final class RowEliminationWorker<R: Ring> {
     
     var components: [MatrixComponent<R>] {
         (0 ..< size.rows).flatMap { i in
-            rowHead(i)?.sequence.map{ (j, a) in (i, j, a) } ?? []
+            rows[i].map{ (j, a) in (i, j, a) }
         }
     }
     
     func components(inCol j0: Int, withinRows rowRange: CountableRange<Int>) -> [MatrixComponent<R>] {
         rowRange.compactMap { i -> MatrixComponent<R>? in
-            guard let seq = rowHead(i)?.sequence else {
-                return nil
-            }
-            for (j, a) in seq {
+            for (j, a) in rows[i] {
                 if j == j0 {
                     return (i, j, a)
                 } else if j > j0 {
@@ -66,11 +63,11 @@ final class RowEliminationWorker<R: Ring> {
     }
     
     func headComponent(ofRow i: Int) -> MatrixComponent<R>? {
-        rowHead(i).map{ e in (i, e.col, e.value) }
+        rows[i].headElement.map{ e in (i, e.col, e.value) }
     }
     
     func headComponents(inCol j: Int) -> [MatrixComponent<R>] {
-        tracker?.rows(inCol: j).map{ i in (i, j, rowHead(i)!.value) } ?? []
+        tracker?.rows(inCol: j).map{ i in (i, j, rows[i].headElement!.value) } ?? []
     }
     
     func apply(_ s: RowElementaryOperation<R>) {
@@ -86,10 +83,7 @@ final class RowEliminationWorker<R: Ring> {
 
     @_specialize(where R == 𝐙)
     func multiplyRow(at i: Int, by r: R) {
-        guard let headPtr = rowHeadPtrs[i] else {
-            return
-        }
-        Entity.modifyList(startingFrom: headPtr) { e in
+        rows[i].modifyEach { e in
             e.value = r * e.value
         }
     }
@@ -99,259 +93,142 @@ final class RowEliminationWorker<R: Ring> {
             (i, headComponent(ofRow: i)?.col),
             (j, headComponent(ofRow: j)?.col)
         )
-        rowHeadPtrs.swapAt(i, j)
+        rows.swapAt(i, j)
     }
     
     func addRow(at i1: Int, to i2: Int, multipliedBy r: R) {
-        guard let fromHead = rowHead(i1) else {
+        let (from, to) = (rows[i1], rows[i2])
+        if from.isEmpty {
             return
         }
         
-        let oldToHeadPtr = rowHeadPtrs[i2]
-        let oldCol = oldToHeadPtr?.pointee.col
+        let oldToCol = to.headElement?.col
+        let dw = addRow(from, to, r)
         
-        let (toHeadPtr, weightDiff) = addRow(fromHead, oldToHeadPtr, r)
-        
-        if toHeadPtr != oldToHeadPtr {
-            rowHeadPtrs[i2] = toHeadPtr
-        }
-        
-        tracker?.addRowWeight(weightDiff, to: i2)
-        tracker?.updateRowHead(i2, oldCol, rowHead(i2)?.col)
+        tracker?.addRowWeight(dw, to: i2)
+        tracker?.updateRowHead(i2, oldToCol, rows[i2].headElement?.col)
     }
     
-    func batchAddRow(at i1: Int, to rows: [Int], multipliedBy rs: [R]) {
-        guard let fromHead = rowHead(i1) else {
+    func batchAddRow(at i1: Int, to rowIndices: [Int], multipliedBy rs: [R]) {
+        let from = rows[i1]
+        if from.isEmpty {
             return
         }
         
-        let oldCols = rows.map{ i in rowHead(i)?.col }
-        let toHeadPtrs = zip(rows, rs)
-            .map{ (i, r) in (rowHeadPtrs[i], r) }
-            .parallelMap { (toHeadPtr, r) in addRow(fromHead, toHeadPtr, r) }
+        let oldCols = rowIndices.map{ i in rows[i].headElement?.col }
+        let results = zip(rowIndices, rs)
+            .map{ (i, r) in (rows[i], r) }
+            .parallelMap { (to, r) in addRow(from, to, r) }
         
-        for (i, res) in zip(rows, toHeadPtrs) {
-            let (toHeadPtr, dw) = res
-            
-            rowHeadPtrs[i] = toHeadPtr
+        for (i, dw) in zip(rowIndices, results) {
             tracker?.addRowWeight(dw, to: i)
         }
         
-        for (i, oldCol) in zip(rows, oldCols) {
-            tracker?.updateRowHead(i, oldCol, rowHead(i)?.col)
+        for (i, oldCol) in zip(rowIndices, oldCols) {
+            tracker?.updateRowHead(i, oldCol, rows[i].headElement?.col)
         }
     }
     
     @_specialize(where R == 𝐙)
-    private func addRow(_ fromHead: Entity, _ initialToHeadPtr: EntityPointer?, _ r: R) -> (EntityPointer?, Int) {
+    private func addRow(_ from: Row, _ to: Row, _ r: R) -> Int {
+        if from.isEmpty {
+            return 0
+        }
+
         var dw = 0
         let track = (tracker != nil)
         
-        let toHeadPtr = {() -> EntityPointer in
-            if initialToHeadPtr == nil || fromHead.col < initialToHeadPtr!.pointee.col {
-                
-                // from: ●-->○-->○----->○-------->
-                //   to:            ●------->○--->
-                //
-                //   ↓
-                //
-                // from: ●-->○-->○----->○-------->
-                //   to: ●--------->○------->○--->
-                
-                return EntityPointer.new(Entity(col: fromHead.col, value: .zero, next: initialToHeadPtr))
-                
-            } else {
-                return initialToHeadPtr!
-            }
-        }()
+        let fromHeadCol = from.headElement!.col
+        if to.isEmpty || fromHeadCol < to.headElement!.col {
+            
+            // from: ●-->○-->○----->○-------->
+            //   to:            ●------->○--->
+            //
+            //   ↓
+            //
+            // from: ●-->○-->○----->○-------->
+            //   to: ●--------->○------->○--->
+            
+            to.insertHead( (fromHeadCol, .zero) )
+        }
         
-        var (from, toPtr) = (fromHead, toHeadPtr)
-        var prev = toPtr
+        var fromItr = from.makeIterator()
+        var toPtr = to.headPointer!
+        var toPrevPtr = toPtr
         
-        while true {
+        while let (j1, a1) = fromItr.next() {
             // At this point, it is assured that
             // `from.value.col >= to.value.col`
             
             // from: ------------->●--->○-------->
             //   to: -->●----->○------------>○--->
             
-            while let next = toPtr.pointee.next, next.pointee.col <= from.col {
-                (prev, toPtr) = (toPtr, next)
+            while let next = toPtr.pointee.next, next.pointee.element.col <= j1 {
+                (toPrevPtr, toPtr) = (toPtr, next)
             }
+            
+            let (j2, a2) = toPtr.pointee.element
             
             // from: ------------->●--->○-------->
             //   to: -->○----->●------------>○--->
 
-            if from.col == toPtr.pointee.col {
-                let a0 = toPtr.pointee.value
-                let a = a0 + r * from.value
+            if j1 == j2 {
+                let b2 = a2 + r * a1
                 
-                if a.isZero && toPtr != prev {
-                    toPtr = prev
-                    let drop = toPtr.pointee.dropNext()!
-                    drop.delete()
+                if b2.isZero && toPtr != toPrevPtr {
+                    toPtr = toPrevPtr
+                    toPtr.pointee.dropNext()
                 } else {
-                    toPtr.pointee.value = a
+                    toPtr.pointee.element.value = b2
                 }
                 
                 if track {
-                    dw += a.matrixEliminationWeight - a0.matrixEliminationWeight
+                    dw += b2.matrixEliminationWeight - a2.matrixEliminationWeight
                 }
                 
             } else {
-                let a = r * from.value
-                let p = EntityPointer.new( Entity(col: from.col, value: a) )
-                toPtr.pointee.insertNext(p)
-                (prev, toPtr) = (toPtr, p)
+                let a2 = r * a1
+                toPtr.pointee.insertNext( RowElement(j1, a2) )
+                (toPrevPtr, toPtr) = (toPtr, toPtr.pointee.next!)
                 
                 if track {
-                    dw += a.matrixEliminationWeight
+                    dw += a2.matrixEliminationWeight
                 }
-            }
-            
-            // from: ------------->●--->○-------->
-            //   to: -->○----->○-->●-------->○--->
-
-            if let next = from.next?.pointee {
-                from = next
-                
-                // from: ------------->○--->●-------->
-                //   to: -->○----->○---●-------->○--->
-                
-            } else {
-                break
             }
         }
         
-        if toHeadPtr.pointee.value.isZero {
-            defer { toHeadPtr.delete() }
-            if let next = toHeadPtr.pointee.next {
-                return (next, dw)
-            } else {
-                return (nil, dw)
-            }
-        } else {
-            return (toHeadPtr, dw)
+        if to.headElement!.value.isZero {
+            to.dropHead()
         }
+        
+        return dw
     }
     
     func resultAs<n, m>(_ type: Matrix<n, m, R>.Type) -> Matrix<n, m, R> {
         Matrix(size: size) { setEntry in
             for i in (0 ..< size.rows) {
-                guard let seq = rowHead(i)?.sequence else {
-                    continue
-                }
-                for (j, a) in seq {
+                for (j, a) in rows[i] {
                     setEntry(i, j, a)
                 }
             }
         }
     }
-    
-    typealias EntityPointer = UnsafeMutablePointer<Entity>
-    
-    struct Entity: Equatable {
-        let col: Int
-        var value: R
-        var next: EntityPointer? = nil
         
-        mutating func insertNext(_ p: EntityPointer) {
-            assert(p.pointee.next?.pointee != self)
-            p.pointee.next = next
-            next = p
-        }
-        
-        mutating func dropNext() -> EntityPointer? {
-            guard let drop = next else {
-                return nil
-            }
-            self.next = drop.pointee.next
-            return drop
-        }
-        
-        static func generateList<S: Sequence>(from seq: S) -> EntityPointer where S.Element == MatrixComponent<R> {
-            let sorted = seq.sorted { c in c.col }
-
-            var head: EntityPointer?
-            var prev: EntityPointer?
-            
-            for (_, j, a) in sorted {
-                let p = EntityPointer.new( Entity(col: j, value: a) )
-
-                if head == nil {
-                    head = p
-                }
-                
-                prev?.pointee.next = p
-                prev = p
-            }
-            
-            return head!
-        }
-        
-        static func deleteList(startingFrom headPtr: EntityPointer) {
-            var p = headPtr
-            while true {
-                let next = p.pointee.next
-                
-                p.delete()
-                
-                if let next = next {
-                    p = next
-                } else {
-                    break
-                }
-            }
-        }
-        
-        static func modifyList(startingFrom headPtr: EntityPointer, _ map: (inout Entity) -> Void) {
-            var p = headPtr
-            while true {
-                map(&(p.pointee))
-                if let next = p.pointee.next {
-                    p = next
-                } else {
-                    break
-                }
-            }
-        }
-        
-        var sequence: IteratorSequence<Iterator> {
-            IteratorSequence(Iterator(self))
-        }
-        
-        struct Iterator: IteratorProtocol {
-            private var current: Entity?
-            fileprivate init(_ start: Entity) {
-                current = start
-            }
-            
-            public mutating func next() -> (col: Int, value: R)? {
-                if let e = current {
-                    current = e.next?.pointee
-                    return (e.col, e.value)
-                } else {
-                    return nil
-                }
-            }
-        }
-    }
-    
     private final class Tracker {
         private var rowWeights: [Int]
         private var col2rowHead: [Set<Int>] // [col : { rows having head at col }]
 
-        init(_ size: (Int, Int), _ working: [EntityPointer?]) {
-            self.rowWeights = working
-                .map{ l in l?.pointee.sequence.sum{ c in c.value.matrixEliminationWeight } ?? 0 }
+        init(_ size: (Int, Int), _ rows: [Row]) {
+            self.rowWeights = rows
+                .map{ l in l.sum{ c in c.value.matrixEliminationWeight } }
             
-            let sets = working
-                .enumerated()
-                .compactMap{ (i, head) in head == nil ? nil : (i, head!.pointee.col) }
-                .group{ (_, j) in j }
-                .mapValues{ l in Set( l.map{ (i, _) in i } ) }
+            self.col2rowHead = Array(repeating: Set<Int>(), count: size.1)
             
-            self.col2rowHead = (0 ..< size.1).map { j in sets[j] ?? [] }
+            for (i, list) in rows.enumerated() {
+                if let j = list.headElement?.col {
+                    col2rowHead[j].insert(i)
+                }
+            }
         }
         
         func rowWeight(_ i: Int) -> Int {
@@ -395,18 +272,5 @@ final class RowEliminationWorker<R: Ring> {
                 col2rowHead[j1].insert(i)
             }
         }
-    }
-}
-
-private extension UnsafeMutablePointer {
-    static func new(_ entity: Pointee) -> Self {
-        let p = allocate(capacity: 1)
-        p.initialize(to: entity)
-        return p
-    }
-    
-    func delete() {
-        self.deinitialize(count: 1)
-        self.deallocate()
     }
 }
