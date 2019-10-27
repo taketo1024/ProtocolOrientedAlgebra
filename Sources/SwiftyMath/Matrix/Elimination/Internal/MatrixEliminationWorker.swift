@@ -9,7 +9,7 @@
 final class RowEliminationWorker<R: Ring> {
     var size: (rows: Int, cols: Int)
     
-    private var working: [EntityPointer?]
+    private var rowHeadPtrs: [EntityPointer?]
     private var tracker: Tracker?
     
     init<S: Sequence>(size: (Int, Int), components: S, trackRowInfos: Bool = false) where S.Element == MatrixComponent<R> {
@@ -17,10 +17,10 @@ final class RowEliminationWorker<R: Ring> {
         
         let group = components
             .group{ c in c.row }
-            .mapValues { l in Entity.generatePointers(from: l) }
+            .mapValues { l in Entity.generateList(from: l) }
         
-        self.working = (0 ..< size.0).map { i in group[i] }
-        self.tracker = trackRowInfos ? Tracker(size, working) : nil
+        self.rowHeadPtrs = (0 ..< size.0).map { i in group[i] }
+        self.tracker = trackRowInfos ? Tracker(size, rowHeadPtrs) : nil
     }
     
     convenience init<n, m>(_ A: Matrix<n, m, R>, trackRowInfos: Bool = false) {
@@ -28,42 +28,33 @@ final class RowEliminationWorker<R: Ring> {
     }
     
     deinit {
-        for head in working where head != nil {
-            var p = head!
-            while true {
-                let next = p.pointee.next
-                
-                p.delete()
-                
-                if let next = next {
-                    p = next
-                } else {
-                    break
-                }
-            }
+        for p in rowHeadPtrs where p != nil {
+            Entity.deleteList(startingFrom: p!)
         }
+    }
+    
+    @inlinable
+    func rowHead(_ i: Int) -> Entity? {
+        rowHeadPtrs[i]?.pointee
+    }
+    
+    @inlinable
+    func rowWeight(_ i: Int) -> Int {
+        tracker?.rowWeight(i) ?? 0
     }
     
     var components: [MatrixComponent<R>] {
-        working.enumerated().flatMap { (i, head) in
-            head?.pointee.map{ (j, a) in (i, j, a) } ?? []
-        }
-    }
-    
-    func headComponent(ofRow i: Int) -> MatrixComponent<R>? {
-        if let e = working[i]?.pointee {
-            return (i, e.col, e.value)
-        } else {
-            return nil
+        (0 ..< size.rows).flatMap { i in
+            rowHead(i)?.sequence.map{ (j, a) in (i, j, a) } ?? []
         }
     }
     
     func components(inCol j0: Int, withinRows rowRange: CountableRange<Int>) -> [MatrixComponent<R>] {
         rowRange.compactMap { i -> MatrixComponent<R>? in
-            guard let list = working[i]?.pointee else {
+            guard let seq = rowHead(i)?.sequence else {
                 return nil
             }
-            for (j, a) in list {
+            for (j, a) in seq {
                 if j == j0 {
                     return (i, j, a)
                 } else if j > j0 {
@@ -74,12 +65,12 @@ final class RowEliminationWorker<R: Ring> {
         }
     }
     
-    func headComponents(inCol j: Int) -> [MatrixComponent<R>] {
-        tracker?.rows(inCol: j).map{ i in (i, j, working[i]!.pointee.value) } ?? []
+    func headComponent(ofRow i: Int) -> MatrixComponent<R>? {
+        rowHead(i).map{ e in (i, e.col, e.value) }
     }
     
-    func weight(ofRow i: Int) -> Int {
-        tracker?.weight(ofRow: i) ?? 0
+    func headComponents(inCol j: Int) -> [MatrixComponent<R>] {
+        tracker?.rows(inCol: j).map{ i in (i, j, rowHead(i)!.value) } ?? []
     }
     
     func apply(_ s: RowElementaryOperation<R>) {
@@ -95,18 +86,11 @@ final class RowEliminationWorker<R: Ring> {
 
     @_specialize(where R == 𝐙)
     func multiplyRow(at i: Int, by r: R) {
-        guard let head = working[i] else {
+        guard let headPtr = rowHeadPtrs[i] else {
             return
         }
-        
-        var p = head
-        while true {
-            p.pointee.value = r * p.pointee.value
-            if let next = p.pointee.next {
-                p = next
-            } else {
-                break
-            }
+        Entity.modifyList(startingFrom: headPtr) { e in
+            e.value = r * e.value
         }
     }
     
@@ -115,56 +99,56 @@ final class RowEliminationWorker<R: Ring> {
             (i, headComponent(ofRow: i)?.col),
             (j, headComponent(ofRow: j)?.col)
         )
-        working.swapAt(i, j)
+        rowHeadPtrs.swapAt(i, j)
     }
     
     func addRow(at i1: Int, to i2: Int, multipliedBy r: R) {
-        guard let fromHead = working[i1]?.pointee else {
+        guard let fromHead = rowHead(i1) else {
             return
         }
         
-        let oldToHead = working[i2]
-        let oldCol = oldToHead?.pointee.col
+        let oldToHeadPtr = rowHeadPtrs[i2]
+        let oldCol = oldToHeadPtr?.pointee.col
         
-        let (toHead, weightDiff) = addRow(fromHead, oldToHead, r)
+        let (toHeadPtr, weightDiff) = addRow(fromHead, oldToHeadPtr, r)
         
-        if toHead != oldToHead {
-            working[i2] = toHead
+        if toHeadPtr != oldToHeadPtr {
+            rowHeadPtrs[i2] = toHeadPtr
         }
         
         tracker?.addRowWeight(weightDiff, to: i2)
-        tracker?.updateRowHead(i2, oldCol, toHead?.pointee.col)
+        tracker?.updateRowHead(i2, oldCol, rowHead(i2)?.col)
     }
     
     func batchAddRow(at i1: Int, to rows: [Int], multipliedBy rs: [R]) {
-        guard let fromHead = working[i1]?.pointee else {
+        guard let fromHead = rowHead(i1) else {
             return
         }
         
-        let oldCols = rows.map{ i in working[i]?.pointee.col }
-        let toHeads = zip(rows, rs)
-            .map{ (i, r) in (working[i], r) }
-            .parallelMap { (toHead, r) in addRow(fromHead, toHead, r) }
+        let oldCols = rows.map{ i in rowHead(i)?.col }
+        let toHeadPtrs = zip(rows, rs)
+            .map{ (i, r) in (rowHeadPtrs[i], r) }
+            .parallelMap { (toHeadPtr, r) in addRow(fromHead, toHeadPtr, r) }
         
-        for (i, res) in zip(rows, toHeads) {
-            let (toHead, dw) = res
+        for (i, res) in zip(rows, toHeadPtrs) {
+            let (toHeadPtr, dw) = res
             
-            working[i] = toHead
+            rowHeadPtrs[i] = toHeadPtr
             tracker?.addRowWeight(dw, to: i)
         }
         
         for (i, oldCol) in zip(rows, oldCols) {
-            tracker?.updateRowHead(i, oldCol, working[i]?.pointee.col)
+            tracker?.updateRowHead(i, oldCol, rowHead(i)?.col)
         }
     }
     
     @_specialize(where R == 𝐙)
-    private func addRow(_ fromHead: Entity, _ toHeadOpt: EntityPointer?, _ r: R) -> (EntityPointer?, Int) {
+    private func addRow(_ fromHead: Entity, _ initialToHeadPtr: EntityPointer?, _ r: R) -> (EntityPointer?, Int) {
         var dw = 0
         let track = (tracker != nil)
         
-        let toHead = {() -> EntityPointer in
-            if toHeadOpt == nil || fromHead.col < toHeadOpt!.pointee.col {
+        let toHeadPtr = {() -> EntityPointer in
+            if initialToHeadPtr == nil || fromHead.col < initialToHeadPtr!.pointee.col {
                 
                 // from: ●-->○-->○----->○-------->
                 //   to:            ●------->○--->
@@ -174,15 +158,15 @@ final class RowEliminationWorker<R: Ring> {
                 // from: ●-->○-->○----->○-------->
                 //   to: ●--------->○------->○--->
                 
-                return EntityPointer.new(Entity(col: fromHead.col, value: .zero, next: toHeadOpt))
+                return EntityPointer.new(Entity(col: fromHead.col, value: .zero, next: initialToHeadPtr))
                 
             } else {
-                return toHeadOpt!
+                return initialToHeadPtr!
             }
         }()
         
-        var (from, to) = (fromHead, toHead)
-        var prev = to
+        var (from, toPtr) = (fromHead, toHeadPtr)
+        var prev = toPtr
         
         while true {
             // At this point, it is assured that
@@ -191,23 +175,23 @@ final class RowEliminationWorker<R: Ring> {
             // from: ------------->●--->○-------->
             //   to: -->●----->○------------>○--->
             
-            while let next = to.pointee.next, next.pointee.col <= from.col {
-                (prev, to) = (to, next)
+            while let next = toPtr.pointee.next, next.pointee.col <= from.col {
+                (prev, toPtr) = (toPtr, next)
             }
             
             // from: ------------->●--->○-------->
             //   to: -->○----->●------------>○--->
 
-            if from.col == to.pointee.col {
-                let a0 = to.pointee.value
+            if from.col == toPtr.pointee.col {
+                let a0 = toPtr.pointee.value
                 let a = a0 + r * from.value
                 
-                if a.isZero && to != prev {
-                    to = prev
-                    let drop = to.pointee.dropNext()!
+                if a.isZero && toPtr != prev {
+                    toPtr = prev
+                    let drop = toPtr.pointee.dropNext()!
                     drop.delete()
                 } else {
-                    to.pointee.value = a
+                    toPtr.pointee.value = a
                 }
                 
                 if track {
@@ -217,8 +201,8 @@ final class RowEliminationWorker<R: Ring> {
             } else {
                 let a = r * from.value
                 let p = EntityPointer.new( Entity(col: from.col, value: a) )
-                to.pointee.insertNext(p)
-                (prev, to) = (to, p)
+                toPtr.pointee.insertNext(p)
+                (prev, toPtr) = (toPtr, p)
                 
                 if track {
                     dw += a.matrixEliminationWeight
@@ -239,28 +223,25 @@ final class RowEliminationWorker<R: Ring> {
             }
         }
         
-        if toHead.pointee.value.isZero {
-            defer { toHead.delete() }
-            if let next = toHead.pointee.next {
+        if toHeadPtr.pointee.value.isZero {
+            defer { toHeadPtr.delete() }
+            if let next = toHeadPtr.pointee.next {
                 return (next, dw)
             } else {
                 return (nil, dw)
             }
         } else {
-            return (toHead, dw)
+            return (toHeadPtr, dw)
         }
-    }
-    
-    static func identity(size n: Int) -> RowEliminationWorker<R> {
-        let comps = (0 ..< n).map { i in (i, i, R.identity) }
-        return RowEliminationWorker(size: (n, n), components: comps)
     }
     
     func resultAs<n, m>(_ type: Matrix<n, m, R>.Type) -> Matrix<n, m, R> {
         Matrix(size: size) { setEntry in
-            for (i, headOpt) in working.enumerated() {
-                guard let head = headOpt else { continue }
-                for (j, a) in head.pointee {
+            for i in (0 ..< size.rows) {
+                guard let seq = rowHead(i)?.sequence else {
+                    continue
+                }
+                for (j, a) in seq {
                     setEntry(i, j, a)
                 }
             }
@@ -269,7 +250,7 @@ final class RowEliminationWorker<R: Ring> {
     
     typealias EntityPointer = UnsafeMutablePointer<Entity>
     
-    struct Entity: Sequence, Equatable {
+    struct Entity: Equatable {
         let col: Int
         var value: R
         var next: EntityPointer? = nil
@@ -288,7 +269,7 @@ final class RowEliminationWorker<R: Ring> {
             return drop
         }
         
-        static func generatePointers<S: Sequence>(from seq: S) -> EntityPointer where S.Element == MatrixComponent<R> {
+        static func generateList<S: Sequence>(from seq: S) -> EntityPointer where S.Element == MatrixComponent<R> {
             let sorted = seq.sorted { c in c.col }
 
             var head: EntityPointer?
@@ -308,8 +289,35 @@ final class RowEliminationWorker<R: Ring> {
             return head!
         }
         
-        func makeIterator() -> Iterator {
-            Iterator(self)
+        static func deleteList(startingFrom headPtr: EntityPointer) {
+            var p = headPtr
+            while true {
+                let next = p.pointee.next
+                
+                p.delete()
+                
+                if let next = next {
+                    p = next
+                } else {
+                    break
+                }
+            }
+        }
+        
+        static func modifyList(startingFrom headPtr: EntityPointer, _ map: (inout Entity) -> Void) {
+            var p = headPtr
+            while true {
+                map(&(p.pointee))
+                if let next = p.pointee.next {
+                    p = next
+                } else {
+                    break
+                }
+            }
+        }
+        
+        var sequence: IteratorSequence<Iterator> {
+            IteratorSequence(Iterator(self))
         }
         
         struct Iterator: IteratorProtocol {
@@ -335,7 +343,7 @@ final class RowEliminationWorker<R: Ring> {
 
         init(_ size: (Int, Int), _ working: [EntityPointer?]) {
             self.rowWeights = working
-                .map{ l in l?.pointee.sum{ c in c.value.matrixEliminationWeight } ?? 0 }
+                .map{ l in l?.pointee.sequence.sum{ c in c.value.matrixEliminationWeight } ?? 0 }
             
             let sets = working
                 .enumerated()
@@ -346,7 +354,7 @@ final class RowEliminationWorker<R: Ring> {
             self.col2rowHead = (0 ..< size.1).map { j in sets[j] ?? [] }
         }
         
-        func weight(ofRow i: Int) -> Int {
+        func rowWeight(_ i: Int) -> Int {
             rowWeights[i]
         }
         
