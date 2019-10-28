@@ -104,23 +104,21 @@ public final class MatrixPivotFinder<R: Ring> {
         let atomic = DispatchQueue(label: "atomic", qos: .userInteractive)
         
         rows.parallelForEach { row in
-            var retry = 0
-            while true {
+            var found = false
+            while !found {
                 let pivotsLocal = atomic.sync { self.pivots }
                 let nPivLocal = pivotsLocal.count
                 
-                if let pivot = self.findCycleFreePivot(inRow: row, pivots: pivotsLocal) {
-                    let nPiv = atomic.sync { self.pivotRows.count }
-                    if nPiv == nPivLocal {
-                        atomic.sync { self.setPivot(pivot) }
-                        break
-                    } else {
-                        retry += 1
-                        // pivots have been updated, retry
-                        continue
-                    }
-                } else {
+                guard let pivot = self.findCycleFreePivot(inRow: row, pivots: pivotsLocal) else {
                     break
+                }
+                
+                atomic.sync {
+                    let nPiv = self.pivots.count
+                    if nPiv == nPivLocal {
+                        self.setPivot(pivot)
+                        found = true
+                    }
                 }
             }
         }
