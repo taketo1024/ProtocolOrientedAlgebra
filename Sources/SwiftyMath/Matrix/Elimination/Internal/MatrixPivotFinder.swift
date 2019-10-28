@@ -43,6 +43,12 @@ public final class MatrixPivotFinder<R: Ring> {
         return sortPivots()
     }
     
+    public func asPermutation(_ order: [Int], _ n: Int) -> DPermutation {
+        let remain = Set(0 ..< n).subtracting(order)
+        return DPermutation(order + remain.sorted()).inverse!
+    }
+
+    
     // Faugère-Lachartre pivot search
     private func findFLPivots() {
         let n = size.rows
