@@ -19,14 +19,17 @@ final class RowHermiteEliminator<R: EuclideanRing>: RowEchelonEliminator<R> {
         }
     }
     
-    override func finalize() {
-        components = worker.components
+    override func updateComponents() {
+        setComponents(worker.components)
     }
 }
 
 final class ColHermiteEliminator<R: EuclideanRing>: MatrixEliminator<R> {
-    override func prepare() {
+    override func iteration() {
         subrun(RowHermiteEliminator.self, transpose: true)
-        exit()
+    }
+
+    override func isDone() -> Bool {
+        true
     }
 }

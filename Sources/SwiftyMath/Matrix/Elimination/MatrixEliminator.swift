@@ -16,14 +16,14 @@ public class MatrixEliminator<R: EuclideanRing> : CustomStringConvertible {
         case Smith
     }
     
-    var size: (rows: Int, cols: Int)
-    var components: [MatrixComponent<R>]
-    var rowOps: [RowElementaryOperation<R>]
-    var colOps: [ColElementaryOperation<R>]
+    let size: (rows: Int, cols: Int)
+    private(set) var components: AnySequence<MatrixComponent<R>>
+    private var rowOps: [RowElementaryOperation<R>]
+    private var colOps: [ColElementaryOperation<R>]
     
     var debug: Bool
 
-    private var _exit: Bool = false
+    private var aborted: Bool = false
     
     public static func eliminate<n, m>(target: Matrix<n, m, R>, form: MatrixEliminator<R>.Form = .Diagonal, debug: Bool = false) -> MatrixEliminationResult<n, m, R> {
         let eClass: MatrixEliminator<R>.Type = {
@@ -37,15 +37,16 @@ public class MatrixEliminator<R: EuclideanRing> : CustomStringConvertible {
             }
         }()
         
-        let e = eClass.init(size: target.size, components: Array(target.nonZeroComponents), debug: debug)
+        let e = eClass.init(size: target.size, components: target.nonZeroComponents, debug: debug)
+        
         e.run()
         
         return MatrixEliminationResult<n, m, R>(form: form, result: Matrix<n, m, R>(size: target.size, components: e.components), rowOps: e.rowOps, colOps: e.colOps)
     }
     
-    required init(size: (Int, Int), components: [MatrixComponent<R>], debug: Bool) {
+    required init<S: Sequence>(size: (Int, Int), components: S, debug: Bool) where S.Element == MatrixComponent<R> {
         self.size = size
-        self.components = components
+        self.components = (components as? AnySequence<MatrixComponent<R>>) ?? AnySequence(components)
         self.rowOps = []
         self.colOps = []
         self.debug = debug
@@ -56,13 +57,28 @@ public class MatrixEliminator<R: EuclideanRing> : CustomStringConvertible {
         
         prepare()
         
-        while !_exit && !isDone() {
+        var itr = 0
+        while !aborted && !isDone() {
+            log("\(self) iteration: \(itr)")
+            
+            if debug {
+                updateComponents()
+                printCurrentMatrix()
+            }
+            
             iteration()
+            
+            log("")
+            itr += 1
         }
         
         finalize()
         
         log("Done:  \(self), \(rowOps.count + colOps.count) steps")
+        
+        if debug {
+            printCurrentMatrix()
+        }
     }
     
     final func subrun(_ eClass: MatrixEliminator.Type, transpose: Bool = false) {
@@ -73,32 +89,18 @@ public class MatrixEliminator<R: EuclideanRing> : CustomStringConvertible {
         e.run()
         
         if !transpose {
-            components = e.components
+            setComponents(e.components)
             rowOps += e.rowOps
             colOps += e.colOps
         } else {
-            components = e.components.map{ (j, i, a) in (i, j, a) }
+            setComponents(e.components.lazy.map{ (j, i, a) in (i, j, a) })
             rowOps += e.colOps.map{ s in s.transposed }
             colOps += e.rowOps.map{ s in s.transposed }
         }
     }
     
-    final func log(_ msg: @autoclosure () -> String) {
-        if debug {
-            print(msg())
-            printCurrentMatrix()
-        }
-    }
-    
-    func printCurrentMatrix() {
-        if size.rows < 100 && size.cols < 100 {
-            let A = DMatrix(size: size, components: components)
-            print("\n", A.detailDescription, "\n")
-        }
-    }
-    
-    final func exit() {
-        _exit = true
+    final func abort() {
+        aborted = true
     }
     
     func prepare() {
@@ -112,6 +114,22 @@ public class MatrixEliminator<R: EuclideanRing> : CustomStringConvertible {
     
     func iteration() {
         // override in subclass
+    }
+    
+    func finalize() {
+        updateComponents()
+    }
+    
+    func updateComponents() {
+        // override in subclass
+    }
+    
+    final func setComponents<S: Sequence>(_ components: S) where S.Element == MatrixComponent<R> {
+        if let anySeq = components as? AnySequence<MatrixComponent<R>> {
+            self.components = anySeq
+        } else {
+            self.components = AnySequence(components)
+        }
     }
     
     final func append(_ s: RowElementaryOperation<R>) {
@@ -129,8 +147,19 @@ public class MatrixEliminator<R: EuclideanRing> : CustomStringConvertible {
         log(s.map{ "\($0)"}.joined(separator: "\n"))
     }
     
-    func finalize() {
-        // override in subclass
+    final func log(_ msg: @autoclosure () -> String) {
+        if debug {
+            print(msg())
+        }
+    }
+    
+    final func printCurrentMatrix() {
+        if size.rows > 100 || size.cols > 100 {
+            return
+        }
+        
+        let A = DMatrix(size: size, components: components)
+        print("\n", A.detailDescription, "\n")
     }
     
     public var description: String {

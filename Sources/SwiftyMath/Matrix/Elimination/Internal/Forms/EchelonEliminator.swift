@@ -53,10 +53,6 @@ class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
                 multipliedBy: targets.map{ $0.1 }
             )
             
-            if debug {
-                updateComponents()
-            }
-            
             append(targets.map{ (i, r) in
                 .AddRow(at: i0, to: i, mul: r)
             })
@@ -96,26 +92,20 @@ class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     
     func apply(_ s: RowElementaryOperation<R>) {
         worker.apply(s)
-        
-        if debug {
-            updateComponents()
-        }
-        
         append(s)
     }
     
-    private func updateComponents() {
-        components = worker.components
-    }
-    
-    override func finalize() {
-        updateComponents()
+    override func updateComponents() {
+        setComponents(worker.components)
     }
 }
 
 final class ColEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     override func prepare() {
         subrun(RowEchelonEliminator.self, transpose: true)
-        exit()
+    }
+    
+    override func isDone() -> Bool {
+        true
     }
 }
