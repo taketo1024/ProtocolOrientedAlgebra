@@ -8,16 +8,12 @@
 
 public typealias DPermutation = Permutation<DynamicSize>
 
-public struct Permutation<n: SizeType>: Group, MapType, Hashable { // SymmetricGroup<n>
-    public typealias Domain = Int
-    public typealias Codomain = Int
-    
+public struct Permutation<n: SizeType>: Group, Hashable {
     internal var elements: [Int : Int]
     
-    public init(_ f: @escaping (Int) -> Int) {
-        assert(!n.isDynamic)
-        let elements = (0 ... n.intValue).map{ i in (i, f(i)) }
-        self.init(Dictionary(pairs: elements))
+    public init(_ elements: [Int : Int]) {
+        assert(Set(elements.keys) == Set(elements.values))
+        self.elements = elements.filter{ (k, v) in k != v }
     }
     
     public init<S: Sequence>(_ sequence: S) where S.Element == Int {
@@ -25,22 +21,21 @@ public struct Permutation<n: SizeType>: Group, MapType, Hashable { // SymmetricG
         self.init(dict)
     }
     
-    public init(_ elements: [Int: Int]) {
-        assert(Set(elements.keys) == Set(elements.values))
-        self.elements = elements.filter{ (k, v) in k != v }
+    public init(_ sequence: Int...)  {
+        self.init(sequence)
     }
     
-    public static func cyclic(_ elements: [Int]) -> Self {
+    public init(cyclic elements: [Int]) {
         var d = [Int : Int]()
         let l = elements.count
         for (i, a) in elements.enumerated() {
             d[a] = elements[(i + 1) % l]
         }
-        return .init(d)
+        self.init(d)
     }
     
-    public static func cyclic(_ elements: Int...) -> Self {
-        cyclic(elements)
+    public init(cyclic elements: Int...) {
+        self.init(cyclic: elements)
     }
     
     public static func transposition(_ i: Int, _ j: Int) -> Self {
@@ -58,18 +53,6 @@ public struct Permutation<n: SizeType>: Group, MapType, Hashable { // SymmetricG
     
     public subscript(i: Int) -> Int {
         elements[i] ?? i
-    }
-    
-    public var function: (Int) -> Int {
-        { i in self[i] } 
-    }
-    
-    public func applied(to i: Int) -> Int {
-        self[i]
-    }
-    
-    public func applied(to I: [Int]) -> [Int] {
-        I.map{ applied(to: $0) }
     }
     
     // memo: the number of transpositions in it's decomposition.
@@ -94,7 +77,7 @@ public struct Permutation<n: SizeType>: Group, MapType, Hashable { // SymmetricG
             }
             
             if c.count > 1 {
-                let p = Self.cyclic(c)
+                let p = Self(cyclic: c)
                 result.append(p)
             }
         }
@@ -114,6 +97,10 @@ public struct Permutation<n: SizeType>: Group, MapType, Hashable { // SymmetricG
         a.elements == b.elements
     }
     
+    public var asMap: Map<Int, Int> {
+        Map{ i in self[i] }
+    }
+    
     public var description: String {
         elements.isEmpty
             ? "id"
@@ -126,6 +113,17 @@ public struct Permutation<n: SizeType>: Group, MapType, Hashable { // SymmetricG
 }
 
 extension Permutation: FiniteSetType where n: StaticSizeType {
+    public var asMatrix: Matrix<n, n, 𝐙> {
+        asMatrix(over: 𝐙.self)
+    }
+
+    public func asMatrix<R>(over: R.Type) -> Matrix<n, n, R> {
+        let n = Self.size
+        return Matrix(size: (n, n)) { setEntry in
+            (0 ..< n).forEach { i in setEntry(self[i], i, .identity) }
+        }
+    }
+    
     public static var size: Int {
         n.intValue
     }
@@ -144,6 +142,16 @@ extension Permutation: FiniteSetType where n: StaticSizeType {
 }
 
 extension Permutation where n == DynamicSize {
+    public func asMatrix(size n: Int) -> DMatrix<𝐙> {
+        asMatrix(size: n, over: 𝐙.self)
+    }
+
+    public func asMatrix<R>(size n: Int, over: R.Type) -> DMatrix<R> {
+        Matrix(size: (n, n)) { setEntry in
+            (0 ..< n).forEach { i in setEntry(self[i], i, .identity) }
+        }
+    }
+    
     public static func allPermutations(length n: Int) -> [Self] {
         (0 ..< n).permutations.map{ .init($0) }
     }
