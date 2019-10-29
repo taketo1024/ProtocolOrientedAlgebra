@@ -143,6 +143,62 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         }
     }
     
+    public func splitIntoRowVectors() -> [RowVector<m, R>] {
+        let rows = nonZeroComponents.group { $0.row }
+        return (0 ..< size.rows).map { i in
+            RowVector(size: (1, size.cols)) { setEntry in
+                rows[i]?.forEach { (_, j, a) in setEntry(0, j, a) }
+            }
+        }
+    }
+    
+    public func splitIntoColVectors() -> [ColVector<m, R>] {
+        let cols = nonZeroComponents.group { $0.col }
+        return (0 ..< size.cols).map { j in
+            ColVector(size: (size.rows, 1)) { setEntry in
+                cols[j]?.forEach { (i, _, a) in setEntry(i, 0, a) }
+            }
+        }
+    }
+    
+    public func splitHorizontally(at j0: Int) -> (Matrix<n, DynamicSize, R>, Matrix<n, DynamicSize, R>) {
+        let (Ac, Bc) = nonZeroComponents.split { $0.col < j0 }
+        let A = Matrix<n, DynamicSize, R>(size: (size.rows, j0)) { setEntry in
+            Ac.forEach { (i, j, a) in setEntry(i, j, a) }
+        }
+        let B = Matrix<n, DynamicSize, R>(size: (size.rows, size.cols - j0)) { setEntry in
+            Bc.forEach { (i, j, a) in setEntry(i, j - j0, a) }
+        }
+        return (A, B)
+    }
+    
+    public func splitVertically(at i0: Int) -> (Matrix<DynamicSize, m, R>, Matrix<DynamicSize, m, R>) {
+        let (Ac, Bc) = nonZeroComponents.split { $0.row < i0 }
+        let A = Matrix<DynamicSize, m, R>(size: (i0, size.cols)) { setEntry in
+            Ac.forEach { (i, j, a) in setEntry(i, j, a) }
+        }
+        let B = Matrix<DynamicSize, m, R>(size: (size.rows - i0, size.cols)) { setEntry in
+            Bc.forEach { (i, j, a) in setEntry(i - i0, j, a) }
+        }
+        return (A, B)
+    }
+    
+    public func permuteRows(by σ: Permutation<n>) -> Self {
+        .init(size: size) { setEntry in
+            nonZeroComponents.forEach{ (i, j, a) in
+                setEntry(σ[i], j, a)
+            }
+        }
+    }
+    
+    public func permuteCols(by σ: Permutation<n>) -> Self {
+        .init(size: size) { setEntry in
+            nonZeroComponents.forEach{ (i, j, a) in
+                setEntry(i, σ[j], a)
+            }
+        }
+    }
+    
     public static func ==(a: Self, b: Self) -> Bool {
         a.impl == b.impl
     }
@@ -183,7 +239,7 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
 
     public func concatHorizontally<m1>(_ B: Matrix<n, m1, R>) -> Matrix<n, DynamicSize, R> {
         let A = self
-        assert(A.size.cols == B.size.cols)
+        assert(A.size.rows == B.size.rows)
         
         return .init(size: (A.size.rows, A.size.cols + B.size.cols)) { setEntry in
             A.nonZeroComponents.forEach { (i, j, a) in setEntry(i, j, a) }

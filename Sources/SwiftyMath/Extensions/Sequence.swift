@@ -41,6 +41,19 @@ public extension Sequence {
         Dictionary(grouping: self, by: keyGenerator)
     }
     
+    func split(by predicate: (Element) -> Bool) -> ([Element], [Element]) {
+        var T: [Element] = []
+        var F: [Element] = []
+        for e in self {
+            if predicate(e) {
+                T.append(e)
+            } else {
+                F.append(e)
+            }
+        }
+        return (T, F)
+    }
+    
     static func *<S: Sequence>(s1: Self, s2: S) -> AnySequence<(Self.Element, S.Element)> {
         typealias X = Self.Element
         typealias Y = S.Element
