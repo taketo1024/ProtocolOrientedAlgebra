@@ -46,9 +46,7 @@ extension LinearSolver where R: Field {
         let r1 = E.result.numberOfRows
         let r2 = b2.numberOfRows
         
-        assert(r1 <= r2)
-        
-        return r1 == r2
+        return r1 >= r2
     }
 }
 
