@@ -31,3 +31,29 @@ public final class LinearSolver<R: Ring> {
         return x
     }
 }
+
+extension LinearSolver where R: Field {
+    public static func hasSolution<n, m>(_ A: Matrix<n, m, R>, _ b: ColVector<n, R>) -> Bool {
+        let m = A.size.cols
+        let pivots = MatrixPivotFinder.findPivots(of: A.asDynamicMatrix)
+        let r = pivots.pivots.count
+        
+        let Ab = A.concatHorizontally(b).asDynamicMatrix
+        let (_, _, Sb) = MatrixPivotFinder.computeLUS(of: Ab, with: pivots)
+        let (S, b2) = Sb.splitHorizontally(at: m - r)
+        
+        let E = MatrixEliminator.eliminate(target: S, form: .RowEchelon)
+        let r1 = E.result.numberOfRows
+        let r2 = b2.numberOfRows
+        
+        assert(r1 <= r2)
+        
+        return r1 == r2
+    }
+}
+
+private extension Matrix {
+    var numberOfRows: Int {
+        Set(nonZeroComponents.lazy.map { $0.row } ).count
+    }
+}
