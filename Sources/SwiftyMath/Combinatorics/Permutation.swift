@@ -97,6 +97,16 @@ public struct Permutation<n: SizeType>: Group, Hashable {
         a.elements == b.elements
     }
     
+    public func asMatrix(size n: Int) -> Matrix<n, n, 𝐙> {
+        asMatrix(size: n, over: 𝐙.self)
+    }
+
+    public func asMatrix<R>(size n: Int, over: R.Type) -> Matrix<n, n, R> {
+        Matrix(size: (n, n)) { setEntry in
+            (0 ..< n).forEach { i in setEntry(self[i], i, .identity) }
+        }
+    }
+    
     public var asMap: Map<Int, Int> {
         Map{ i in self[i] }
     }
@@ -142,16 +152,6 @@ extension Permutation: FiniteSetType where n: StaticSizeType {
 }
 
 extension Permutation where n == DynamicSize {
-    public func asMatrix(size n: Int) -> DMatrix<𝐙> {
-        asMatrix(size: n, over: 𝐙.self)
-    }
-
-    public func asMatrix<R>(size n: Int, over: R.Type) -> DMatrix<R> {
-        Matrix(size: (n, n)) { setEntry in
-            (0 ..< n).forEach { i in setEntry(self[i], i, .identity) }
-        }
-    }
-    
     public static func allPermutations(length n: Int) -> [Self] {
         (0 ..< n).permutations.map{ .init($0) }
     }

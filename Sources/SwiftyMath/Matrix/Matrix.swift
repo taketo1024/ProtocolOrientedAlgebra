@@ -94,11 +94,21 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         impl.diagonalComponents
     }
     
-    fileprivate static func _identity(size n: Int) -> Self {
+    public static func zero(size: (Int, Int)) -> Self {
+        .init(size: size) { _ in () }
+    }
+    
+    public static func identity(size n: Int) -> Self {
         .init(size: (n, n)) { setEntry in
             for i in 0 ..< n {
                 setEntry(i, i, .identity)
             }
+        }
+    }
+    
+    public static func unit(size: (Int, Int), coord: (Int, Int)) -> Self {
+        .init(size: size) { setEntry in
+            setEntry(coord.0, coord.1, .identity)
         }
     }
     
@@ -328,22 +338,6 @@ extension Matrix where n == m, n == _1 {
 }
 
 extension Matrix where n == DynamicSize, m == DynamicSize {
-    public static func zero(size: (Int, Int)) -> Self {
-        .init(size: size) { _ in () }
-    }
-    
-    public static func identity(size n: Int) -> Self {
-        .init(size: (n, n)) { setEntry in
-            (0 ..< n).forEach { i in setEntry(i, i, .identity) }
-        }
-    }
-    
-    public static func unit(size: (Int, Int), coord: (Int, Int)) -> Self {
-        .init(size: size) { setEntry in
-            setEntry(coord.0, coord.1, .identity)
-        }
-    }
-    
     public var inverse: Self? {
         assert(isSquare)
         return impl.inverse.map{ .init(impl: $0) }

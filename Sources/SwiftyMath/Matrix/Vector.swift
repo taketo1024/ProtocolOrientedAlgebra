@@ -29,6 +29,10 @@ public extension Matrix where m == _1 { // (D)ColVector
             self[index, 0] = newValue
         }
     }
+    
+    static func zero(size: Int) -> Self {
+        .init(size: (size, 1), grid: [])
+    }
 }
 
 public extension Matrix where n == _1 { // (D)RowVector
@@ -42,6 +46,10 @@ public extension Matrix where n == _1 { // (D)RowVector
             self[0, index] = newValue
         }
     }
+    
+    static func zero(size: Int) -> Self {
+        .init(size: (1, size), grid: [])
+    }
 }
 
 public extension Matrix where n == DynamicSize, m == _1 { // DColVector
@@ -52,10 +60,6 @@ public extension Matrix where n == DynamicSize, m == _1 { // DColVector
     init(_ grid: R...) {
         self.init(grid)
     }
-    
-    static func zero(size: Int) -> Self {
-        .init(size: (size, 1), grid: [])
-    }
 }
 
 public extension Matrix where n == _1, m == DynamicSize { // DRowVector
@@ -65,9 +69,5 @@ public extension Matrix where n == _1, m == DynamicSize { // DRowVector
     
     init(_ grid: R...) {
         self.init(grid)
-    }
-    
-    static func zero(size: Int) -> Self {
-        .init(size: (1, size), grid: [])
     }
 }
