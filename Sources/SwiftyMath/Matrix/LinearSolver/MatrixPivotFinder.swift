@@ -17,7 +17,7 @@
 
 import Dispatch
 
-public final class MatrixPivotFinder<R: Ring> {
+public final class MatrixPivotFinder<n: SizeType, m: SizeType, R: Ring> {
     typealias RowEntity = RowEliminationWorker<R>.RowElement
     
     public let size: (rows: Int, cols: Int)
@@ -28,26 +28,30 @@ public final class MatrixPivotFinder<R: Ring> {
 
     private var debug: Bool
     
-    public init<S: Sequence>(size: (rows: Int, cols: Int), components: S, debug: Bool = false) where S.Element == MatrixComponent<R> {
-        self.size = size
-        self.worker = RowEliminationWorker(size: size, components: components, trackRowInfos: true)
+    public init(_ A: Matrix<n, m, R>, debug: Bool = false) {
+        self.size = A.size
+        self.worker = RowEliminationWorker(
+            size: A.size,
+            components: A.nonZeroComponents,
+            trackRowInfos: true
+        )
         self.pivots = [:]
         self.pivotRows = []
         self.debug = debug
     }
     
-    public func start() -> [(Int, Int)] {
+    public func start() -> (pivots: [(Int, Int)], rowPermutation: Permutation<n>, colPermutation: Permutation<m>) {
+        
         findFLPivots()
         findFLColumnPivots()
         findCycleFreePivots()
-        return sortPivots()
+        
+        let pivots = sortPivots()
+        let rowP: Permutation<n> = asPermutation(pivots.map{ $0.0 }, size.rows)
+        let colP: Permutation<m> = asPermutation(pivots.map{ $0.1 }, size.cols)
+        
+        return (pivots, rowP, colP)
     }
-    
-    public func asPermutation(_ order: [Int], _ n: Int) -> DPermutation {
-        let remain = Set(0 ..< n).subtracting(order)
-        return DPermutation(order + remain.sorted()).inverse!
-    }
-
     
     // Faugère-Lachartre pivot search
     private func findFLPivots() {
@@ -186,6 +190,11 @@ public final class MatrixPivotFinder<R: Ring> {
         }
         let sorted = try! topologicalSort(tree.keys.toArray(), successors: { j in tree[j] ?? [] })
         return sorted.map{ j in (pivots[j]!, j) }
+    }
+    
+    private func asPermutation<n>(_ order: [Int], _ n: Int) -> Permutation<n> {
+        let remain = Set(0 ..< n).subtracting(order)
+        return Permutation(order + remain.sorted()).inverse!
     }
     
     // for debug
