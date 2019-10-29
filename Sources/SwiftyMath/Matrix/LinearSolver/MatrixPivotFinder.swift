@@ -17,7 +17,7 @@
 
 import Dispatch
 
-public final class MatrixPivotFinder<n: SizeType, m: SizeType, R: Ring> {
+public final class MatrixPivotFinder<R: Ring> {
     typealias RowEntity = RowEliminationWorker<R>.RowElement
     
     public let size: (rows: Int, cols: Int)
@@ -25,10 +25,29 @@ public final class MatrixPivotFinder<n: SizeType, m: SizeType, R: Ring> {
     
     private var pivots: [Int : Int] // column -> pivot row
     private var pivotRows: Set<Int>
-
     private var debug: Bool
     
-    public init(_ A: Matrix<n, m, R>, debug: Bool = false) {
+    public static func findPivots<n, m>(of A: Matrix<n, m, R>, debug: Bool = false) -> Result<n, m, R> {
+        let size = A.size
+        let pf = MatrixPivotFinder(A, debug: debug)
+        let pivots = pf.run()
+        
+        func asPermutation<n>(_ order: [Int], _ n: Int) -> Permutation<n> {
+            let remain = Set(0 ..< n).subtracting(order)
+            return Permutation(order + remain.sorted()).inverse!
+        }
+        
+        let rowP: Permutation<n> = asPermutation(pivots.map{ $0.0 }, size.rows)
+        let colP: Permutation<m> = asPermutation(pivots.map{ $0.1 }, size.cols)
+        
+        return Result(
+            pivots: pivots,
+            rowPermutation: rowP,
+            colPermutation: colP
+        )
+    }
+    
+    private init<n, m>(_ A: Matrix<n, m, R>, debug: Bool = false) {
         self.size = A.size
         self.worker = RowEliminationWorker(
             size: A.size,
@@ -40,17 +59,11 @@ public final class MatrixPivotFinder<n: SizeType, m: SizeType, R: Ring> {
         self.debug = debug
     }
     
-    public func start() -> (pivots: [(Int, Int)], rowPermutation: Permutation<n>, colPermutation: Permutation<m>) {
-        
+    private func run() -> [(Int, Int)] {
         findFLPivots()
         findFLColumnPivots()
         findCycleFreePivots()
-        
-        let pivots = sortPivots()
-        let rowP: Permutation<n> = asPermutation(pivots.map{ $0.0 }, size.rows)
-        let colP: Permutation<m> = asPermutation(pivots.map{ $0.1 }, size.cols)
-        
-        return (pivots, rowP, colP)
+        return sortPivots()
     }
     
     // Faugère-Lachartre pivot search
@@ -192,11 +205,6 @@ public final class MatrixPivotFinder<n: SizeType, m: SizeType, R: Ring> {
         return sorted.map{ j in (pivots[j]!, j) }
     }
     
-    private func asPermutation<n>(_ order: [Int], _ n: Int) -> Permutation<n> {
-        let remain = Set(0 ..< n).subtracting(order)
-        return Permutation(order + remain.sorted()).inverse!
-    }
-    
     // for debug
     private func currentPivots() -> [(Int, Int)] {
         pivots.map{ (j, i) in (i, j) }.sorted{ $0.0 }
@@ -233,5 +241,74 @@ public final class MatrixPivotFinder<n: SizeType, m: SizeType, R: Ring> {
         if debug {
             print(msg())
         }
+    }
+    
+    public struct Result<n: SizeType, m: SizeType, R: Ring> {
+        public let pivots: [(Int, Int)]
+        public let rowPermutation: Permutation<n>
+        public let colPermutation: Permutation<m>
+    }
+}
+
+
+extension MatrixPivotFinder {
+    // Computes (L, U, S) of
+    //
+    //   PAQ = L * U + |0, 0|
+    //                 |0, S|
+    //
+    // where L is lower triangle, U is upper triangle.
+
+    public static func computeLUS<n, m>(of A: Matrix<n, m, R>, with result: Result<n, m, R>) ->
+        (L: Matrix<n, DynamicSize, R>, U: Matrix<DynamicSize, m, R>, S: DMatrix<R>)
+    {
+        // We have
+        //
+        //   PAQ = [U, B]
+        //         [C, D]
+        //
+        //       = [I] * [U, B] + [O, O]
+        //         [L]            [O, S]
+        //
+        // where
+        //
+        //   L = C * U^{-1},
+        //   S = D - C * U^{-1} * B.
+        //
+        
+        let (n, m) = A.size
+        let r = result.pivots.count
+        let (P, Q) = (result.rowPermutation, result.colPermutation)
+        
+        let pA = Matrix<n, m, R>(size: A.size) { setEntry in
+            A.nonZeroComponents.forEach{ (i, j, a) in
+                setEntry(P[i], Q[j], a)
+            }
+        }
+        
+        let UB = pA.submatrix(rowRange: 0 ..< r) // size (r, m)
+        let CD = pA.submatrix(rowRange: r ..< n) // size (n - r, m)
+        let U = UB.submatrix(colRange: 0 ..< r)  // size (r, r)
+        let B = UB.submatrix(colRange: r ..< m)  // size (r, m - r)
+        let C = CD.submatrix(colRange: 0 ..< r)  // size (n - r, r)
+        let D = CD.submatrix(colRange: r ..< m)  // size (n - r, m - r)
+        
+        let L = DMatrix<R>(size: (n - r, r), concurrentIterations: n - r) { (i, setEntry) in
+            let li = LinearSolver.forwardSolve(U, C.rowVector(i))
+            li.nonZeroComponents.forEach{ (_, j, a) in
+                setEntry(i, j, a)
+            }
+        } // size (n - r, r)
+        
+        let IL = DMatrix<R>.identity(size: r).concatVertically(L).as(Matrix<n, DynamicSize, R>.self)
+        let S = D - L * B
+        
+        assert({
+            let O = DMatrix<R>.zero(size: (r, r))
+            let S2 = (O ⊕ S).as(Matrix<n, m, R>.self)
+            return (pA == IL * UB + S2)
+        }())
+        
+        return (IL, UB, S)
     }
 }
