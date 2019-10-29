@@ -276,7 +276,7 @@ extension MatrixPivotFinder {
         //   S = D - C * U^{-1} * B.
         //
         
-        let (n, m) = A.size
+        let n = A.size.rows
         let r = result.pivots.count
         let (P, Q) = (result.rowPermutation, result.colPermutation)
         
@@ -286,15 +286,13 @@ extension MatrixPivotFinder {
             }
         }
         
-        let UB = pA.submatrix(rowRange: 0 ..< r) // size (r, m)
-        let CD = pA.submatrix(rowRange: r ..< n) // size (n - r, m)
-        let U = UB.submatrix(colRange: 0 ..< r)  // size (r, r)
-        let B = UB.submatrix(colRange: r ..< m)  // size (r, m - r)
-        let C = CD.submatrix(colRange: 0 ..< r)  // size (n - r, r)
-        let D = CD.submatrix(colRange: r ..< m)  // size (n - r, m - r)
+        let (UB, CD) = pA.splitVertically(at: r)
+        let (U, B) = UB.splitHorizontally(at: r)
+        let (C, D) = CD.splitHorizontally(at: r)
         
+        let c = C.splitIntoRowVectors()
         let L = DMatrix<R>(size: (n - r, r), concurrentIterations: n - r) { (i, setEntry) in
-            let li = LinearSolver.forwardSolve(U, C.rowVector(i))
+            let li = LinearSolver.forwardSolve(U, c[i])
             li.nonZeroComponents.forEach{ (_, j, a) in
                 setEntry(i, j, a)
             }

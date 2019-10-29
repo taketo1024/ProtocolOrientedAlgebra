@@ -11,14 +11,23 @@ public final class LinearSolver<R: Ring> {
         assert(U.isSquare && U.size.rows == b.size.cols)
         assert(U.diagonalComponents.allSatisfy{ $0.isInvertible })
         
+        let U_ = U.splitIntoColVectors()
         let r = U.size.rows
         var x = RowVector<r, R>.zero(size: r)
+        
         for i in 0 ..< r {
             // x_1 U_1i + ... + x_i U_ii = b_i
-            let U_i = U.colVector(i)
-            let x_i = U_i[i].inverse! * ( b[i] - (x * U_i).asScalar )
-            x[i] = x_i
+            // <==> x_i = U_ii^{-1} ( b_i - x * U_i )
+            
+            let U_i = U_[i]
+            let s = b[i] - (x * U_i).asScalar
+            
+            if !s.isZero {
+                let u = U_i[i].inverse!
+                x[i] = u * s
+            }
         }
+        
         return x
     }
 }
