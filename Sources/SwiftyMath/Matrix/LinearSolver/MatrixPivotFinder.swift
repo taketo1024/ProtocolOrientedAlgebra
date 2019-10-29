@@ -262,21 +262,29 @@ extension MatrixPivotFinder {
     public static func computeLUS<n, m>(of A: Matrix<n, m, R>, with result: Result<n, m, R>) ->
         (L: Matrix<n, DynamicSize, R>, U: Matrix<DynamicSize, m, R>, S: DMatrix<R>)
     {
-        // We have
+        // Let
         //
         //   PAQ = [U, B]
-        //         [C, D]
+        //         [C, D] ,
         //
-        //       = [I] * [U, B] + [O, O]
-        //         [L]            [O, S]
+        // and
         //
-        // where
+        //   S = D - C * U^{-1} * B,
         //
-        //   L = C * U^{-1},
-        //   S = D - C * U^{-1} * B.
+        // the Schur complement of U.
+        // Then
         //
+        //   PAQ = [I] * [U, B] + [0, 0]
+        //         [L]            [0, S] .
+        //
+        // From
+        //
+        //   [L, S] * [U, B] = [C, D] ,
+        //            [O, I]
+        //
+        // L, S can be obtained by solving an upper-triangle linear system.
         
-        let n = A.size.rows
+        let (n, m) = A.size
         let r = result.pivots.count
         let (P, Q) = (result.rowPermutation, result.colPermutation)
         
@@ -287,19 +295,21 @@ extension MatrixPivotFinder {
         }
         
         let (UB, CD) = pA.splitVertically(at: r)
-        let (U, B) = UB.splitHorizontally(at: r)
-        let (C, D) = CD.splitHorizontally(at: r)
+        let OI = Matrix<DynamicSize, m, R>(size: (m - r, m)) { setEntry in
+            (0 ..< m - r).forEach { i in setEntry(i, r + i, .identity) }
+        }
+        let UBOI = UB.concatVertically(OI).as(Matrix<m, m, R>.self)
         
-        let c = C.splitIntoRowVectors()
-        let L = DMatrix<R>(size: (n - r, r), concurrentIterations: n - r) { (i, setEntry) in
-            let li = LinearSolver.forwardSolve(U, c[i])
+        let cd = CD.splitIntoRowVectors()
+        let LS = DMatrix<R>(size: (n - r, m), concurrentIterations: n - r) { (i, setEntry) in
+            let li = LinearSolver.forwardSolve(UBOI, cd[i])
             li.nonZeroComponents.forEach{ (_, j, a) in
                 setEntry(i, j, a)
             }
-        } // size (n - r, r)
-        
-        let IL = DMatrix<R>.identity(size: r).concatVertically(L).as(Matrix<n, DynamicSize, R>.self)
-        let S = D - L * B
+        }
+        let (L, S) = LS.splitHorizontally(at: r)
+        let I = DMatrix<R>.identity(size: r)
+        let IL = I.concatVertically(L).as(Matrix<n, DynamicSize, R>.self)
         
         assert({
             let O = DMatrix<R>.zero(size: (r, r))
