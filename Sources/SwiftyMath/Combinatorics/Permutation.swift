@@ -97,6 +97,10 @@ public struct Permutation<n: SizeType>: Group, Hashable {
         a.elements == b.elements
     }
     
+    public func `as`<m>(_ type: Permutation<m>.Type) {
+        Permutation<m>(self.elements)
+    }
+    
     public func asMatrix(size n: Int) -> Matrix<n, n, 𝐙> {
         asMatrix(size: n, over: 𝐙.self)
     }
