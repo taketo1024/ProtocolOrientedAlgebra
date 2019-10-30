@@ -34,16 +34,14 @@ public final class LinearSolver<R: Ring> {
 
 extension LinearSolver where R: Field {
     public static func hasSolution<n, m>(_ A: Matrix<n, m, R>, _ b: ColVector<n, R>) -> Bool {
-        let m = A.size.cols
         let pivots = MatrixPivotFinder.findPivots(of: A.asDynamicMatrix)
-        let r = pivots.pivots.count
-        
         let Ab = A.concatHorizontally(b).asDynamicMatrix
         let (_, _, Sb) = MatrixPivotFinder.computeLUS(of: Ab, with: pivots)
-        let (S, b2) = Sb.splitHorizontally(at: m - r)
         
-        let E = MatrixEliminator.eliminate(target: S, form: .RowEchelon)
-        let r1 = E.result.numberOfRows
+        let E = MatrixEliminator.eliminate(target: Sb, form: .RowEchelon)
+        let (B, b2) = E.result.splitHorizontally(at: A.size.cols)
+        
+        let r1 =  B.numberOfRows
         let r2 = b2.numberOfRows
         
         return r1 >= r2
