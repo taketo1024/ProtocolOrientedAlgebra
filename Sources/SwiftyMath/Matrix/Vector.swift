@@ -71,3 +71,7 @@ public extension Matrix where n == _1, m == DynamicSize { // DRowVector
         self.init(grid)
     }
 }
+
+public func •<n, R>(_ left: RowVector<n, R>, _ right: ColVector<n, R>) -> R {
+    left.nonZeroComponents.sum{ (_, i, a) in a * right[i] }
+}

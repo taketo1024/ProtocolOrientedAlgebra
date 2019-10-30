@@ -22,3 +22,4 @@ infix operator ⊕: MultiplicationPrecedence
 infix operator ⊗: MultiplicationPrecedence
 infix operator ∧: MultiplicationPrecedence
 infix operator ∨: MultiplicationPrecedence
+infix operator •: MultiplicationPrecedence
