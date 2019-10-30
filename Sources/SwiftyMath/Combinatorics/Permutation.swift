@@ -97,7 +97,7 @@ public struct Permutation<n: SizeType>: Group, Hashable {
         a.elements == b.elements
     }
     
-    public func `as`<m>(_ type: Permutation<m>.Type) {
+    public func `as`<m>(_ type: Permutation<m>.Type) -> Permutation<m> {
         Permutation<m>(self.elements)
     }
     
