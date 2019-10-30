@@ -20,7 +20,7 @@ public final class LinearSolver<R: Ring> {
             // <==> x_i = U_ii^{-1} ( b_i - x * U_i )
             
             let U_i = U_[i]
-            let s = b[i] - (x * U_i).asScalar
+            let s = b[i] - (x • U_i)
             
             if !s.isZero {
                 let u = U_i[i].inverse!
