@@ -8,28 +8,15 @@
 public protocol MatrixImpl {
     associatedtype BaseRing: Ring
     
-    init(size: (Int, Int), initializer: ( (Int, Int, R) -> Void ) -> Void)
+    init(size: (Int, Int), initializer: ( (Int, Int, BaseRing) -> Void ) -> Void)
     
-    subscript(i: Int, j: Int) -> R { get set }
+    subscript(i: Int, j: Int) -> BaseRing { get set }
     var size: (rows: Int, cols: Int) { get }
-    
-    var diagonalComponents: [R] { get }
     var nonZeroComponents: AnySequence<MatrixComponent<BaseRing>> { get }
-    
-    var transposed: Self { get }
-    
-    var determinant: BaseRing { get }
-    var isInvertible: Bool { get }
-    var inverse: Self? { get }
     
     static func ==(a: Self, b: Self) -> Bool
     static func +(a: Self, b: Self) -> Self
     static func *(a: Self, b: Self) -> Self
-}
-
-extension MatrixImpl {
-    public typealias R = BaseRing
-    
 }
 
 public struct DefaultMatrixImpl<R: Ring>: MatrixImpl {
@@ -65,50 +52,8 @@ public struct DefaultMatrixImpl<R: Ring>: MatrixImpl {
         }
     }
     
-    public var diagonalComponents: [R] {
-        let r = Swift.min(size.rows, size.cols)
-        return (0 ..< r).map{ i in self[i, i] }
-    }
-    
     public var nonZeroComponents: AnySequence<(row: Int, col: Int, value: R)> {
         AnySequence( data.lazy.map{ (c, a) -> MatrixComponent<R> in (c.row, c.col, a) } )
-    }
-    
-    public var transposed: Self {
-        .init(size: (size.cols, size.rows), data: data.mapKeys{ c in Coord(c.col, c.row) } )
-    }
-    
-    fileprivate var isSquare: Bool {
-        size.rows == size.cols
-    }
-    
-    public var determinant: R {
-        assert(isSquare)
-        if size.rows == 0 {
-            return .identity
-        } else {
-            return nonZeroComponents
-                .filter{ (i, j, a) in i == 0 }
-                .sum { (_, j, a) in a * cofactor(0, j) }
-        }
-    }
-
-    public var isInvertible: Bool {
-        determinant.isInvertible
-    }
-
-    public var inverse: Self? {
-        assert(isSquare)
-        if let dInv = determinant.inverse {
-            return .init(size: size) { setEntry in
-                ((0 ..< size.rows) * (0 ..< size.cols)).forEach { (i, j) in
-                    let a = dInv * cofactor(j, i)
-                    setEntry(i, j, a)
-                }
-            }
-        } else {
-            return nil
-        }
     }
     
     public static func ==(a: Self, b: Self) -> Bool {
@@ -153,23 +98,6 @@ public struct DefaultMatrixImpl<R: Ring>: MatrixImpl {
         }
         
         return .init(size: (a.size.rows, b.size.cols), data: cData.exclude{ $0.value.isZero })
-    }
-    
-    private func cofactor(_ i: Int, _ j: Int) -> R {
-        assert(isSquare)
-
-        let ε = (-R.identity).pow(i + j)
-        let subdata = self.data
-            .exclude { (c, _) in c.row == i || c.col == j }
-            .mapKeys { c -> Coord in
-                let (i1, j1) = c.tuple
-                return Coord(
-                    i1 < i ? i1 : i1 - 1,
-                    j1 < j ? j1 : j1 - 1
-                )
-            }
-        let A = Self(size: (size.rows - 1, size.cols - 1), data: subdata)
-        return ε * A.determinant
     }
 }
 

@@ -91,7 +91,8 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
     }
     
     public var diagonalComponents: [R] {
-        impl.diagonalComponents
+        let r = Swift.min(size.rows, size.cols)
+        return (0 ..< r).map{ i in self[i, i] }
     }
     
     public static func zero(size: (Int, Int)) -> Self {
@@ -113,7 +114,9 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
     }
     
     public var transposed: Matrix<m, n, R> {
-        .init(impl: impl.transposed)
+        .init(size: (size.cols, size.rows)) { setEntry in
+            nonZeroComponents.forEach { (i, j, a) in setEntry(j, i, a) }
+        }
     }
     
     public func rowVector(_ i: Int) -> RowVector<m, R> {
@@ -330,6 +333,48 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
     }
 }
 
+fileprivate extension Matrix {
+    var _determinant: R {
+        assert(isSquare)
+        if size.rows == 0 {
+            return .identity
+        } else {
+            return nonZeroComponents
+                .filter{ (i, j, a) in i == 0 }
+                .sum { (_, j, a) in a * cofactor(0, j) }
+        }
+    }
+    
+    var _inverse: Self? {
+        assert(isSquare)
+        if let dInv = _determinant.inverse {
+            return .init(size: size) { setEntry in
+                ((0 ..< size.rows) * (0 ..< size.cols)).forEach { (i, j) in
+                    let a = dInv * cofactor(j, i)
+                    setEntry(i, j, a)
+                }
+            }
+        } else {
+            return nil
+        }
+    }
+    
+    func cofactor(_ i0: Int, _ j0: Int) -> R {
+        assert(isSquare && size.rows > 0)
+
+        let ε = (-R.identity).pow(i0 + j0)
+        let minor = DMatrix<R>(size: (size.rows - 1, size.cols - 1)) { setEntry in
+            nonZeroComponents.forEach { (i, j, a) in
+                if i == i0 || j == j0 { return }
+                let i1 = i < i0 ? i : i - 1
+                let j1 = j < j0 ? j : j - 1
+                setEntry(i1, j1, a)
+            }
+        }
+        return ε * minor._determinant
+    }
+}
+
 extension Matrix: AdditiveGroup, Module where n: StaticSizeType, m: StaticSizeType {
     public init(initializer: ( (Int, Int, R) -> Void ) -> Void) {
         let size = (n.intValue, m.intValue)
@@ -370,20 +415,20 @@ extension Matrix: Multiplicative, Monoid, Ring where n == m, n: StaticSizeType {
         }
     }
     
+    public var determinant: R {
+        _determinant
+    }
+
     public var isInvertible: Bool {
-        impl.isInvertible
+        _determinant.isInvertible
     }
     
     public var inverse: Self? {
-        impl.inverse.map{ .init(impl: $0) }
+        _inverse
     }
     
     public var trace: R {
         diagonalComponents.sumAll()
-    }
-    
-    public var determinant: R {
-        impl.determinant
     }
 }
 
@@ -394,19 +439,23 @@ extension Matrix where n == m, n == _1 {
 }
 
 extension Matrix where n == DynamicSize, m == DynamicSize {
+    public var determinant: R {
+        assert(isSquare)
+        return _determinant
+    }
+
+    public var isInvertible: Bool {
+        isSquare && _determinant.isInvertible
+    }
+    
     public var inverse: Self? {
         assert(isSquare)
-        return impl.inverse.map{ .init(impl: $0) }
+        return _inverse
     }
     
     public var trace: R {
         assert(isSquare)
         return diagonalComponents.sumAll()
-    }
-    
-    public var determinant: R {
-        assert(isSquare)
-        return impl.determinant
     }
     
     public func pow(_ p: 𝐙) -> Self {
