@@ -28,7 +28,7 @@ public final class LUFactorizer<R: EuclideanRing> {
     //
     // where L is lower triangle, U is upper triangle.
 
-    public static func prefactorize<n, m>(_ A: Matrix<n, m, R>, with result: MatrixPivotFinder<R>.Result<n, m, R>) ->
+    public static func prefactorize<n, m>(_ A: Matrix<n, m, R>, with pivots: MatrixPivotFinder<R>.Result<n, m, R>) ->
         (L: Matrix<n, DynamicSize, R>, U: Matrix<DynamicSize, m, R>, S: DMatrix<R>)
     {
         // Let
@@ -54,8 +54,8 @@ public final class LUFactorizer<R: EuclideanRing> {
         // L, S can be obtained by solving an upper-triangle linear system.
         
         let (n, m) = A.size
-        let r = result.pivots.count
-        let (P, Q) = (result.rowPermutation, result.colPermutation)
+        let r = pivots.numberOfPivots
+        let (P, Q) = (pivots.rowPermutation, pivots.colPermutation)
         
         let pA = Matrix<n, m, R>(size: A.size) { setEntry in
             A.nonZeroComponents.forEach{ (i, j, a) in
@@ -72,7 +72,7 @@ public final class LUFactorizer<R: EuclideanRing> {
         
         let cd = CD.splitIntoRowVectors()
         let LS = DMatrix<R>(size: (n - r, m), concurrentIterations: n - r) { (i, setEntry) in
-            let li = LinearSolver.forwardSolve(UBOI, cd[i])
+            let li = LinearSolver.solveRegularLeft(UBOI, cd[i])
             li.nonZeroComponents.forEach{ (_, j, a) in
                 setEntry(i, j, a)
             }

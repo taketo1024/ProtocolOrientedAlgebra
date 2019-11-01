@@ -17,7 +17,7 @@ final class RowEliminationWorker<R: Ring> {
     
     init<S: Sequence>(size: (Int, Int), components: S, trackRowInfos: Bool = true) where S.Element == MatrixComponent<R> {
         self.size = size
-        self.rows = Self.generateRows(size, components)
+        self.rows = Self.generateRows(size.0, components)
         self.tracker = trackRowInfos ? Tracker(size, rows) : nil
     }
     
@@ -63,12 +63,12 @@ final class RowEliminationWorker<R: Ring> {
     }
     
     func transpose() {
-        let tSize = (size.1, size.0)
-        let tRows = Self.generateRows(tSize, components.map { (i, j, a) in (j, i, a) })
+        let tSize = (size.cols, size.rows)
+        let tRows = Self.generateRows(size.cols, components.map { (i, j, a) in (j, i, a) })
         
         self.size = tSize
         self.rows = tRows
-        self.tracker = tracker.map{ _ in Tracker(size, tRows) }
+        self.tracker = tracker.map{ _ in Tracker(tSize, tRows) }
     }
     
     func apply(_ s: RowElementaryOperation<R>) {
@@ -104,7 +104,7 @@ final class RowEliminationWorker<R: Ring> {
         }
         
         let oldToCol = to.headElement?.col
-        let dw = addRow(from, to, r)
+        let dw = Self.addRow(from, to, r)
         
         tracker?.addRowWeight(dw, to: i2)
         tracker?.updateRowHead(i2, oldToCol, rows[i2].headElement?.col)
@@ -119,7 +119,7 @@ final class RowEliminationWorker<R: Ring> {
         let oldCols = rowIndices.map{ i in rows[i].headElement?.col }
         let results = zip(rowIndices, rs)
             .map{ (i, r) in (rows[i], r) }
-            .parallelMap { (to, r) in addRow(from, to, r) }
+            .parallelMap { (to, r) in Self.addRow(from, to, r) }
         
         for (i, dw) in zip(rowIndices, results) {
             tracker?.addRowWeight(dw, to: i)
@@ -130,14 +130,14 @@ final class RowEliminationWorker<R: Ring> {
         }
     }
     
+    @discardableResult
     @_specialize(where R == 𝐙)
-    private func addRow(_ from: Row, _ to: Row, _ r: R) -> Int {
+    static func addRow(_ from: Row, _ to: Row, _ r: R, trackWeightDifference: Bool = true) -> Int {
         if from.isEmpty {
             return 0
         }
 
         var dw = 0
-        let track = (tracker != nil)
         
         let fromHeadCol = from.headElement!.col
         if to.isEmpty || fromHeadCol < to.headElement!.col {
@@ -183,7 +183,7 @@ final class RowEliminationWorker<R: Ring> {
                     toPtr.pointee.element.value = b2
                 }
                 
-                if track {
+                if trackWeightDifference {
                     dw += b2.matrixEliminationWeight - a2.matrixEliminationWeight
                 }
                 
@@ -192,7 +192,7 @@ final class RowEliminationWorker<R: Ring> {
                 toPtr.pointee.insertNext( RowElement(j1, a2) )
                 (toPrevPtr, toPtr) = (toPtr, toPtr.pointee.next!)
                 
-                if track {
+                if trackWeightDifference {
                     dw += a2.matrixEliminationWeight
                 }
             }
@@ -215,9 +215,9 @@ final class RowEliminationWorker<R: Ring> {
         }
     }
     
-    static func generateRows<S: Sequence>(_ size: (Int, Int), _ components: S) -> [Row] where S.Element == MatrixComponent<R> {
+    static func generateRows<S: Sequence>(_ n: Int, _ components: S) -> [Row] where S.Element == MatrixComponent<R> {
         let group = components.group{ c in c.row }
-        return (0 ..< size.0).map { i in
+        return (0 ..< n).map { i in
             if let list = group[i] {
                 let sorted = list.map{ c in RowElement(c.col, c.value) }.sorted{ $0.col }
                 return Row(sorted)

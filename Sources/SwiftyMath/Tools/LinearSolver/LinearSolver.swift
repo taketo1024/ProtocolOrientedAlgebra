@@ -5,30 +5,18 @@
 //  Created by Taketo Sano on 2019/10/29.
 //
 
-public final class LinearSolver<R: Ring> {
-    // forward-solve x * U = b
-    public static func forwardSolve<r>(_ U: Matrix<r, r, R>, _ b: RowVector<r, R>) -> RowVector<r, R> {
-        assert(U.isSquare && U.size.rows == b.size.cols)
-        assert(U.diagonalComponents.allSatisfy{ $0.isInvertible })
+public final class LinearSolver<R: EuclideanRing> {
+    
+    // solve: x * A = b
+    public static func solveRegularLeft<r>(_ A: Matrix<r, r, R>, _ b: RowVector<r, R>) -> RowVector<r, R> {
+        assert(A.isSquare && A.size.rows == b.size.cols)
+        assert(A.diagonalComponents.allSatisfy{ $0.isInvertible })
         
-        let U_ = U.splitIntoColVectors()
-        let r = U.size.rows
-        var x = RowVector<r, R>.zero(size: r)
+        let e = MatrixEliminator.eliminate(target: A, form: .ColEchelon)
         
-        for i in 0 ..< r {
-            // x_1 U_1i + ... + x_i U_ii = b_i
-            // <==> x_i = U_ii^{-1} ( b_i - x * U_i )
-            
-            let U_i = U_[i]
-            let s = b[i] - (x • U_i)
-            
-            if !s.isZero {
-                let u = U_i[i].inverse!
-                x[i] = u * s
-            }
-        }
+        assert(e.result.isIdentity)
         
-        return x
+        return b.applyColOperations(e.colOps)
     }
 }
 
@@ -41,7 +29,7 @@ extension LinearSolver where R: Field {
         let m = A.size.cols
         
         let pivots = MatrixPivotFinder.findPivots(of: A.asDynamicMatrix)
-        let r = pivots.pivots.count
+        let r = pivots.numberOfPivots
         
         let Ab = A.concatHorizontally(b).asDynamicMatrix
         let (_, _, Sb) = LUFactorizer.prefactorize(Ab, with: pivots)

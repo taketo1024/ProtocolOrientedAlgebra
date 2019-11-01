@@ -8,8 +8,8 @@
 public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing> {
     public let form: MatrixEliminator<R>.Form
     public let result: Matrix<n, m, R>
-    let rowOps: [RowElementaryOperation<R>]
-    let colOps: [ColElementaryOperation<R>]
+    public let rowOps: [RowElementaryOperation<R>]
+    public let colOps: [ColElementaryOperation<R>]
     
     internal init(form: MatrixEliminator<R>.Form, result: Matrix<n, m, R>, rowOps: [RowElementaryOperation<R>], colOps: [ColElementaryOperation<R>]) {
         self.form = form

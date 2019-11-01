@@ -245,5 +245,6 @@ public final class MatrixPivotFinder<R: Ring> {
         public let pivots: [(Int, Int)]
         public let rowPermutation: Permutation<n>
         public let colPermutation: Permutation<m>
+        public var numberOfPivots: Int { pivots.count }
     }
 }
