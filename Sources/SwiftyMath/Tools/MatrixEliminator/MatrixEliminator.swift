@@ -6,7 +6,7 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-public class MatrixEliminator<R: EuclideanRing> : CustomStringConvertible {
+public class MatrixEliminator<R: EuclideanRing> {
     public enum Form {
         case RowEchelon
         case ColEchelon
@@ -26,25 +26,29 @@ public class MatrixEliminator<R: EuclideanRing> : CustomStringConvertible {
     
     public static func eliminate<n, m>(target: Matrix<n, m, R>, form: MatrixEliminator<R>.Form = .Diagonal, debug: Bool = false) -> MatrixEliminationResult<n, m, R> {
         let worker = RowEliminationWorker(target)
-        let eClass: MatrixEliminator<R>.Type = {
+        let e: MatrixEliminator<R> = {
             switch form {
-            case .RowEchelon: return RowEchelonEliminator.self
-            case .ColEchelon: return ColEchelonEliminator.self
-            case .RowHermite: return RowHermiteEliminator.self
-            case .ColHermite: return ColHermiteEliminator.self
-            case .Smith:      return SmithEliminator.self
-            default:          return DiagonalEliminator.self
+            case .RowEchelon:
+                return RowEchelonEliminator(worker: worker, debug: debug)
+            case .ColEchelon:
+                return ColEchelonEliminator(worker: worker, debug: debug)
+            case .RowHermite:
+                return RowEchelonEliminator(worker: worker, reduced: true, debug: debug)
+            case .ColHermite:
+                return ColEchelonEliminator(worker: worker, reduced: true, debug: debug)
+            case .Smith:
+                return SmithEliminator(worker: worker, debug: debug)
+            default:
+                return DiagonalEliminator(worker: worker, debug: debug)
             }
         }()
         
-        let e = eClass.init(worker: worker, debug: debug)
-        
         e.run()
         
-        return .init(form: form, result: e.worker.resultAs(Matrix.self), rowOps: e.rowOps, colOps: e.colOps)
+        return .init(form: form, result: worker.resultAs(Matrix.self), rowOps: e.rowOps, colOps: e.colOps)
     }
     
-    required init(worker: RowEliminationWorker<R>, debug: Bool) {
+    init(worker: RowEliminationWorker<R>, debug: Bool) {
         self.worker = worker
         self.rowOps = []
         self.colOps = []
@@ -83,12 +87,10 @@ public class MatrixEliminator<R: EuclideanRing> : CustomStringConvertible {
         }
     }
     
-    final func subrun(_ eClass: MatrixEliminator.Type, transpose: Bool = false) {
+    final func subrun(_ e: MatrixEliminator<R>, transpose: Bool = false) {
         if transpose {
-            worker.transpose()
+            e.worker.transpose()
         }
-        
-        let e = eClass.init(worker: worker, debug: debug)
         
         e.run()
         
@@ -96,7 +98,7 @@ public class MatrixEliminator<R: EuclideanRing> : CustomStringConvertible {
             rowOps += e.rowOps
             colOps += e.colOps
         } else {
-            worker.transpose()
+            e.worker.transpose()
             rowOps += e.colOps.map{ s in s.transposed }
             colOps += e.rowOps.map{ s in s.transposed }
         }

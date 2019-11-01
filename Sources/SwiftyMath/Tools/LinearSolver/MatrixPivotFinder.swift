@@ -20,9 +20,7 @@ import Dispatch
 public final class MatrixPivotFinder<R: Ring> {
     typealias RowEntity = RowEliminationWorker<R>.RowElement
     
-    public let size: (rows: Int, cols: Int)
     private let worker: RowEliminationWorker<R>
-    
     private var pivots: [Int : Int] // column -> pivot row
     private var pivotRows: Set<Int>
     private var debug: Bool
@@ -48,7 +46,6 @@ public final class MatrixPivotFinder<R: Ring> {
     }
     
     private init<n, m>(_ A: Matrix<n, m, R>, debug: Bool = false) {
-        self.size = A.size
         self.worker = RowEliminationWorker(
             size: A.size,
             components: A.nonZeroComponents
@@ -56,6 +53,10 @@ public final class MatrixPivotFinder<R: Ring> {
         self.pivots = [:]
         self.pivotRows = []
         self.debug = debug
+    }
+    
+    private var size: (rows: Int, cols: Int) {
+        worker.size
     }
     
     private func run() -> [(Int, Int)] {
@@ -97,10 +98,8 @@ public final class MatrixPivotFinder<R: Ring> {
         })
         
         for i in 0 ..< n {
-            let row = worker.row(i)
             var isPivotRow = pivotRows.contains(i)
-            
-            for (j, a) in row where !reservedCols.contains(j) {
+            for (j, a) in row(i) where !reservedCols.contains(j) {
                 reservedCols.insert(j)
                 
                 if !isPivotRow && a.isInvertible {

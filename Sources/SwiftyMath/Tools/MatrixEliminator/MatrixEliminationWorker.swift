@@ -11,8 +11,8 @@ final class RowEliminationWorker<R: Ring> {
     typealias Row = LinkedList<RowElement>
     
     var size: (rows: Int, cols: Int)
-    var rows: [Row]
     
+    private var rows: [Row]
     private var tracker: Tracker?
     
     init<S: Sequence>(size: (Int, Int), components: S, trackRowInfos: Bool = true) where S.Element == MatrixComponent<R> {
@@ -35,19 +35,19 @@ final class RowEliminationWorker<R: Ring> {
         tracker?.rowWeight(i) ?? 0
     }
     
-    func headComponent(ofRow i: Int) -> MatrixComponent<R>? {
-        rows[i].headElement.map{ e in (i, e.col, e.value) }
+    func headElement(ofRow i: Int) -> RowElement? {
+        rows[i].headElement
     }
     
-    func headComponents(inCol j: Int) -> [MatrixComponent<R>] {
-        tracker?.rows(inCol: j).map{ i in (i, j, rows[i].headElement!.value) } ?? []
+    func headElements(inCol j: Int) -> [(row: Int, value: R)] {
+        tracker?.rows(inCol: j).map{ i in (i, rows[i].headElement!.value) } ?? []
     }
     
-    func components(inCol j0: Int, withinRows rowRange: CountableRange<Int>) -> [MatrixComponent<R>] {
-        rowRange.compactMap { i -> MatrixComponent<R>? in
+    func elements(inCol j0: Int, aboveRow i0: Int) -> [(row: Int, value: R)] {
+        (0 ..< i0).compactMap { i -> (row: Int, value: R)? in
             for (j, a) in rows[i] {
                 if j == j0 {
-                    return (i, j, a)
+                    return (i, a)
                 } else if j > j0 {
                     return nil
                 }
@@ -91,8 +91,8 @@ final class RowEliminationWorker<R: Ring> {
     
     func swapRows(_ i: Int, _ j: Int) {
         tracker?.swap(
-            (i, headComponent(ofRow: i)?.col),
-            (j, headComponent(ofRow: j)?.col)
+            (i, headElement(ofRow: i)?.col),
+            (j, headElement(ofRow: j)?.col)
         )
         rows.swapAt(i, j)
     }
