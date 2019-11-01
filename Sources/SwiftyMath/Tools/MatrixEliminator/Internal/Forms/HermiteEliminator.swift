@@ -18,10 +18,6 @@ final class RowHermiteEliminator<R: EuclideanRing>: RowEchelonEliminator<R> {
             }
         }
     }
-    
-    override func updateComponents() {
-        setComponents(worker.components)
-    }
 }
 
 final class ColHermiteEliminator<R: EuclideanRing>: MatrixEliminator<R> {

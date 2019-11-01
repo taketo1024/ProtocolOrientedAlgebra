@@ -12,7 +12,7 @@ final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     
     override func prepare() {
         subrun(DiagonalEliminator.self)
-        diagonals = components.sorted { $0.row }.map { $0.value }
+        diagonals = worker.components.sorted { $0.row }.map { $0.value }
     }
     
     override func isDone() -> Bool {
@@ -26,7 +26,7 @@ final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         }
         
         if !a0.isIdentity {
-            for i in (currentIndex ..< components.count) where i != i0 {
+            for i in (currentIndex ..< diagonals.count) where i != i0 {
                 let a = diagonals[i]
                 if !a.isDivible(by: a0) {
                     diagonalGCD((i0, a0), (i, a))
@@ -46,15 +46,14 @@ final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         currentIndex += 1
     }
     
-    private func apply(_ s: RowElementaryOperation<R>) {
+    override func apply(_ s: RowElementaryOperation<R>) {
         switch s {
         case let .MulRow(at: i, by: a):
             diagonals[i] = a * diagonals[i]
+            super.apply(s)
         default:
             fatalError()
         }
-        
-        append(s)
     }
     
     private func findPivot() -> (Int, R)? {
@@ -68,16 +67,16 @@ final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         let (i, a) = d1
         let (j, b) = d2
         
+        log("DiagonalGCD:  (\(i), \(i)), (\(j), \(j))")
+        
         // d = gcd(a, b) = pa + qb
         // m = lcm(a, b) = -a * b / d
         
         let (p, q, d) = extendedGcd(a, b)
         let m = -(a * b) / d
         
-        diagonals[i] = d
-        diagonals[j] = m
-        
-        log("DiagonalGCD:  (\(i), \(i)), (\(j), \(j))")
+        set(i, d)
+        set(j, m)
         
         append(.AddRow(at: i, to: j, mul: p))     // [a, 0; pa, b]
         append(.AddCol(at: j, to: i, mul: q))     // [a, 0;  d, b]
@@ -87,17 +86,19 @@ final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     }
     
     private func swapDiagonal(_ i: Int, _ j: Int) {
-        diagonals.swapAt(i, j)
-
         log("SwapDiagonal: (\(i), \(i)), (\(j), \(j))")
         
+        let (a, b) = (diagonals[i], diagonals[j])
+        
+        set(i, b)
+        set(j, a)
+
         append(.SwapRows(i, j))
         append(.SwapCols(i, j))
     }
     
-    override func updateComponents() {
-        setComponents(diagonals.enumerated().compactMap { (i, a) in
-            a.isZero ? nil : MatrixComponent(i, i, a)
-        })
+    private func set(_ i: Int, _ r: R) {
+        worker.row(i).headPointer!.pointee.element.value = r
+        diagonals[i] = r
     }
 }

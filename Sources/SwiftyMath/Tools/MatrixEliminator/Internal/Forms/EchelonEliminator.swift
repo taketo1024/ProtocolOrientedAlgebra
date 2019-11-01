@@ -7,13 +7,8 @@
 //
 
 class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
-    var worker: RowEliminationWorker<R>!
     var currentRow = 0
     var currentCol = 0
-    
-    override func prepare() {
-        worker = RowEliminationWorker(size: size, components: components, trackRowInfos: true)
-    }
     
     override func isDone() -> Bool {
         currentRow >= size.rows || currentCol >= size.cols
@@ -88,15 +83,6 @@ class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
             let (d1, d2) = (c1.value.euclideanDegree, c2.value.euclideanDegree)
             return d1 < d2 || (d1 == d2 && worker.rowWeight(i1) < worker.rowWeight(i2))
         }
-    }
-    
-    func apply(_ s: RowElementaryOperation<R>) {
-        worker.apply(s)
-        append(s)
-    }
-    
-    override func updateComponents() {
-        setComponents(worker.components)
     }
 }
 

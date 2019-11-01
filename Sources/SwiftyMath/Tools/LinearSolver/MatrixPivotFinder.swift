@@ -51,8 +51,7 @@ public final class MatrixPivotFinder<R: Ring> {
         self.size = A.size
         self.worker = RowEliminationWorker(
             size: A.size,
-            components: A.nonZeroComponents,
-            trackRowInfos: true
+            components: A.nonZeroComponents
         )
         self.pivots = [:]
         self.pivotRows = []

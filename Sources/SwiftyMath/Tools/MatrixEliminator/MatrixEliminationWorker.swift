@@ -11,25 +11,17 @@ final class RowEliminationWorker<R: Ring> {
     typealias Row = LinkedList<RowElement>
     
     var size: (rows: Int, cols: Int)
-    private var rows: [Row]
+    var rows: [Row]
+    
     private var tracker: Tracker?
     
-    init<S: Sequence>(size: (Int, Int), components: S, trackRowInfos: Bool = false) where S.Element == MatrixComponent<R> {
+    init<S: Sequence>(size: (Int, Int), components: S, trackRowInfos: Bool = true) where S.Element == MatrixComponent<R> {
         self.size = size
-        
-        let group = components.group{ c in c.row }
-        self.rows = (0 ..< size.0).map { i in
-            if let list = group[i] {
-                let sorted = list.map{ c in RowElement(c.col, c.value) }.sorted{ $0.col }
-                return Row(sorted)
-            } else {
-                return Row()
-            }
-        }
+        self.rows = Self.generateRows(size, components)
         self.tracker = trackRowInfos ? Tracker(size, rows) : nil
     }
     
-    convenience init<n, m>(_ A: Matrix<n, m, R>, trackRowInfos: Bool = false) {
+    convenience init<n, m>(_ A: Matrix<n, m, R>, trackRowInfos: Bool = true) {
         self.init(size: A.size, components: A.nonZeroComponents, trackRowInfos: trackRowInfos)
     }
     
@@ -43,10 +35,12 @@ final class RowEliminationWorker<R: Ring> {
         tracker?.rowWeight(i) ?? 0
     }
     
-    var components: [MatrixComponent<R>] {
-        (0 ..< size.rows).flatMap { i in
-            rows[i].map{ (j, a) in (i, j, a) }
-        }
+    func headComponent(ofRow i: Int) -> MatrixComponent<R>? {
+        rows[i].headElement.map{ e in (i, e.col, e.value) }
+    }
+    
+    func headComponents(inCol j: Int) -> [MatrixComponent<R>] {
+        tracker?.rows(inCol: j).map{ i in (i, j, rows[i].headElement!.value) } ?? []
     }
     
     func components(inCol j0: Int, withinRows rowRange: CountableRange<Int>) -> [MatrixComponent<R>] {
@@ -62,12 +56,19 @@ final class RowEliminationWorker<R: Ring> {
         }
     }
     
-    func headComponent(ofRow i: Int) -> MatrixComponent<R>? {
-        rows[i].headElement.map{ e in (i, e.col, e.value) }
+    var components: AnySequence<MatrixComponent<R>> {
+        AnySequence((0 ..< size.rows).lazy.flatMap { i in
+            self.rows[i].map{ (j, a) in (i, j, a) }
+        })
     }
     
-    func headComponents(inCol j: Int) -> [MatrixComponent<R>] {
-        tracker?.rows(inCol: j).map{ i in (i, j, rows[i].headElement!.value) } ?? []
+    func transpose() {
+        let tSize = (size.1, size.0)
+        let tRows = Self.generateRows(tSize, components.map { (i, j, a) in (j, i, a) })
+        
+        self.size = tSize
+        self.rows = tRows
+        self.tracker = tracker.map{ _ in Tracker(size, tRows) }
     }
     
     func apply(_ s: RowElementaryOperation<R>) {
@@ -210,6 +211,18 @@ final class RowEliminationWorker<R: Ring> {
                 for (j, a) in rows[i] {
                     setEntry(i, j, a)
                 }
+            }
+        }
+    }
+    
+    static func generateRows<S: Sequence>(_ size: (Int, Int), _ components: S) -> [Row] where S.Element == MatrixComponent<R> {
+        let group = components.group{ c in c.row }
+        return (0 ..< size.0).map { i in
+            if let list = group[i] {
+                let sorted = list.map{ c in RowElement(c.col, c.value) }.sorted{ $0.col }
+                return Row(sorted)
+            } else {
+                return Row()
             }
         }
     }
