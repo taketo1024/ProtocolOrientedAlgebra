@@ -34,57 +34,65 @@ public final class LUFactorizer<R: EuclideanRing> {
         // Let
         //
         //   PAQ = [U, B]
-        //         [C, D] ,
+        //         [C, D]
         //
-        // and
+        //     L = C * U^{-1}
         //
-        //   S = D - C * U^{-1} * B,
+        // and S be the Schur complement of U:
         //
-        // the Schur complement of U.
+        //   S = D - C * U^{-1} * B.
+        //
         // Then
         //
-        //   PAQ = [I] * [U, B] + [0, 0]
+        //   PAQ = [I, 0] * [U, B]
+        //         [L, S]   [0, I]
+        //
+        //       = [I, 0] * [U, B]
+        //         [L, I]   [0, S]
+        //
+        //       = [I] * [U, B] + [0, 0]
         //         [L]            [0, S] .
         //
-        // From
-        //
-        //   [L, S] * [U, B] = [C, D] ,
-        //            [O, I]
-        //
-        // L, S can be obtained by solving an upper-triangle linear system.
+        // Both L, S can be obtained by solving an upper-triangle linear system.
         
         let (n, m) = A.size
         let r = pivots.numberOfPivots
         let (P, Q) = (pivots.rowPermutation, pivots.colPermutation)
         
-        let pA = Matrix<n, m, R>(size: A.size) { setEntry in
-            A.nonZeroComponents.forEach{ (i, j, a) in
-                setEntry(P[i], Q[j], a)
-            }
-        }
+        let pA = RowAlignedMatrixData(size: A.size, components: A.nonZeroComponents.lazy.map{ (i, j, a) in
+            (P[i], Q[j], a)
+        })
+
+        let (U1, CD) = (pA.sub(0 ..< r), pA.sub(r ..< n))
+        let UB = U1.as(Matrix<DynamicSize, m, R>.self)
         
-        let (UB, CD) = pA.splitVertically(at: r)
+        let OI = RowAlignedMatrixData(size: (m - r, m), components:
+            (0 ..< m - r).map { i in (i, r + i, R.identity) }
+        )
         
-        let O = DMatrix<R>.zero(size: (m - r, r))
-        let I = DMatrix<R>.identity(size: (m - r))
-        let OI = O.concatHorizontally(I).as(Matrix<DynamicSize, m, R>.self)
-        let UBOI = UB.concatVertically(OI).as(Matrix<m, m, R>.self)
+        U1.concat(OI)
         
-        let cd = CD.splitIntoRowVectors()
         let LS = DMatrix<R>(size: (n - r, m), concurrentIterations: n - r) { (i, setEntry) in
-            let li = LinearSolver.solveRegularLeft(UBOI, cd[i])
-            li.nonZeroComponents.forEach{ (_, j, a) in
+            LinearSolver.solveLeftUpperTriangular(U1, descructing: CD.rows[i]).forEach { (j, a) in
                 setEntry(i, j, a)
             }
         }
+        
+        // CD should be 0.
+        
         let (L, S) = LS.splitHorizontally(at: r)
         let Ir = DMatrix<R>.identity(size: r)
         let IL = Ir.concatVertically(L).as(Matrix<n, DynamicSize, R>.self)
         
         assert({
+            let pA = Matrix<n, m, R>(size: A.size) { setEntry in
+                A.nonZeroComponents.forEach{ (i, j, a) in
+                    setEntry(P[i], Q[j], a)
+                }
+            }
             let O = DMatrix<R>.zero(size: (r, r))
             let S2 = (O ⊕ S).as(Matrix<n, m, R>.self)
-            return (pA == IL * UB + S2)
+            return (pA.as(Matrix<n, m, R>.self) == IL * UB + S2)
         }())
         
         return (IL, UB, S)

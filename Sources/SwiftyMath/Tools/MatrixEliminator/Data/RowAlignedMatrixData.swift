@@ -12,9 +12,17 @@ final class RowAlignedMatrixData<R: Ring> {
     var size: (rows: Int, cols: Int)
     var rows: [Row]
     
-    init<n, m>(_ A: Matrix<n, m, R>) {
-        self.size = A.size
-        self.rows = Self.generateRows(A.size.rows, A.nonZeroComponents)
+    init(size: (rows: Int, cols: Int), rows: [Row]) {
+        self.size = size
+        self.rows = rows
+    }
+    
+    convenience init<S: Sequence>(size: (rows: Int, cols: Int), components: S) where S.Element == MatrixComponent<R> {
+        self.init(size: size, rows: Self.generateRows(size.rows, components))
+    }
+    
+    convenience init<n, m>(_ A: Matrix<n, m, R>) {
+        self.init(size: A.size, components: A.nonZeroComponents)
     }
 
     func find(_ i: Int, _ j: Int) -> (prev: Row.NodePointer?, hit: Row.NodePointer?) {
@@ -39,10 +47,22 @@ final class RowAlignedMatrixData<R: Ring> {
         rows[i]
     }
     
-    var components: AnySequence<MatrixComponent<R>> {
-        AnySequence((0 ..< size.rows).lazy.flatMap { i in
-            self.row(i).map{ (j, a) in MatrixComponent(i, j, a) }
-        })
+    func sub(_ rowRange: Range<Int>) -> RowAlignedMatrixData<R> {
+        .init(
+            size: (rowRange.upperBound - rowRange.lowerBound, size.cols),
+            rows: Array(rows[rowRange.lowerBound ..< rowRange.upperBound])
+        )
+    }
+    
+    func append(_ row: Row) {
+        size = (size.rows + 1, size.cols)
+        rows.append(row)
+    }
+    
+    func concat(_ data: RowAlignedMatrixData<R>) {
+        assert(size.cols == data.size.cols)
+        size = (size.rows + data.size.rows, size.cols)
+        rows.append(contentsOf: data.rows)
     }
     
     func transpose() {
@@ -98,24 +118,18 @@ final class RowAlignedMatrixData<R: Ring> {
         }
     }
     
+    var components: AnySequence<MatrixComponent<R>> {
+        AnySequence((0 ..< size.rows).lazy.flatMap { i in
+            self.row(i).map{ (j, a) in MatrixComponent(i, j, a) }
+        })
+    }
+    
     func `as`<n, m>(_ type: Matrix<n, m, R>.Type) -> Matrix<n, m, R> {
         Matrix(size: size) { setEntry in
             for i in (0 ..< size.rows) {
                 for (j, a) in row(i) {
                     setEntry(i, j, a)
                 }
-            }
-        }
-    }
-    
-    static func generateRows<S: Sequence>(_ n: Int, _ components: S) -> [Row] where S.Element == MatrixComponent<R> {
-        let group = components.group{ c in c.row }
-        return (0 ..< n).map { i in
-            if let list = group[i] {
-                let sorted = list.map{ c in RowElement(c.col, c.value) }.sorted{ $0.col }
-                return Row(sorted)
-            } else {
-                return Row()
             }
         }
     }
@@ -192,6 +206,18 @@ final class RowAlignedMatrixData<R: Ring> {
         }
         
         return dw
+    }
+    
+    private static func generateRows<S: Sequence>(_ n: Int, _ components: S) -> [Row] where S.Element == MatrixComponent<R> {
+        let group = components.group{ c in c.row }
+        return (0 ..< n).map { i in
+            if let list = group[i] {
+                let sorted = list.map{ c in RowElement(c.col, c.value) }.sorted{ $0.col }
+                return Row(sorted)
+            } else {
+                return Row()
+            }
+        }
     }
 }
 

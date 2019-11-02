@@ -8,7 +8,7 @@
 public final class LinearSolver<R: EuclideanRing> {
     
     // solve: x * A = b
-    public static func solveRegularLeft<r>(_ A: Matrix<r, r, R>, _ b: RowVector<r, R>) -> RowVector<r, R> {
+    public static func solveLeftRegular<r>(_ A: Matrix<r, r, R>, _ b: RowVector<r, R>) -> RowVector<r, R> {
         assert(A.isSquare && A.size.rows == b.size.cols)
         assert(A.diagonalComponents.allSatisfy{ $0.isInvertible })
         
@@ -18,6 +18,38 @@ public final class LinearSolver<R: EuclideanRing> {
         
         return b.applyColOperations(e.colOps)
     }
+    
+    public static func solveLeftUpperTriangular<r>(_ U: Matrix<r, r, R>, _ b: RowVector<r, R>) -> RowVector<r, R> {
+        assert(U.isSquare && U.size.rows == b.size.cols)
+        assert(U.diagonalComponents.allSatisfy{ $0.isInvertible })
+        
+        let r = U.size.rows
+        let x = solveLeftUpperTriangular(
+            RowAlignedMatrixData(U), descructing: RowAlignedMatrixData(b).row(0)
+        )
+        
+        return RowVector(size: (0, r)) { setEntry in x.forEach{ (j, a) in setEntry(0, j, a) } }
+    }
+
+    static func solveLeftUpperTriangular(_ U: RowAlignedMatrixData<R>, descructing b: RowAlignedMatrixData<R>.Row) -> RowAlignedMatrixData<R>.Row {
+        let r = U.size.rows
+        var x: [Int : R] = [:]
+        
+        for i in 0 ..< r {
+            guard case (i, let bi)? = b.headElement else {
+                continue
+            }
+            
+            let ui = U.row(i).headElement!.value
+            let xi = ui.inverse! * bi
+            
+            x[i] = xi
+            RowAlignedMatrixData.addRow(U.row(i), into: b, multipliedBy: -xi)
+        }
+        
+        return .init( x.map{ (i, a) in (i, a) } )
+    }
+
 }
 
 extension LinearSolver where R: Field {
