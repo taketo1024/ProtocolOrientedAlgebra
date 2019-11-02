@@ -85,25 +85,25 @@ public enum ColElementaryOperation<R: Ring> {
 
 extension Matrix {
     public func applyRowOperations<S: Sequence>(_ ops: S) -> Self where S.Element == RowElementaryOperation<R> {
-        let worker = RowEliminationWorker(self, trackRowInfos: false)
+        let data = RowAlignedMatrixData(self)
         
         // TODO batch addRows
         for op in ops {
-            worker.apply(op)
+            data.apply(op)
         }
         
-        return worker.resultAs(Self.self)
+        return data.as(Self.self)
     }
 
     public func applyColOperations<S: Sequence>(_ ops: S) -> Self where S.Element == ColElementaryOperation<R> {
         // TODO transpose in place to reduce overhead
-        let worker = RowEliminationWorker(self.transposed, trackRowInfos: false)
+        let data = RowAlignedMatrixData(self.transposed)
         
         // TODO batch addRows
         for op in ops {
-            worker.apply(op.transposed)
+            data.apply(op.transposed)
         }
         
-        return worker.resultAs(DMatrix<R>.self).transposed.as(Self.self)
+        return data.as(Matrix<m, n, R>.self).transposed
     }
 }

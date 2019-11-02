@@ -11,9 +11,9 @@ class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     var currentRow = 0
     var currentCol = 0
     
-    init(worker: RowEliminationWorker<R>, reduced: Bool = false, debug: Bool = false) {
+    init(data: RowEliminationData<R>, reduced: Bool = false, debug: Bool = false) {
         self.reduced = reduced
-        super.init(worker: worker, debug: debug)
+        super.init(data: data, debug: debug)
     }
 
     override func isDone() -> Bool {
@@ -24,7 +24,7 @@ class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     override func iteration() {
         
         // find pivot point
-        let elements = worker.headElements(inCol: currentCol)
+        let elements = data.headElements(inCol: currentCol)
         guard let (i0, a0) = findPivot(in: elements) else {
             currentCol += 1
             return
@@ -76,8 +76,8 @@ class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     }
     
     private func reduceCurrentCol() {
-        let a0 = worker.row(currentRow).headElement!.value
-        let targets = worker
+        let a0 = data.row(currentRow).headElement!.value
+        let targets = data
             .elements(inCol: currentCol, aboveRow: currentRow)
             .compactMap { (i, a) -> (Int, R)? in
                 let q = a / a0
@@ -88,7 +88,7 @@ class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     }
     
     private func batchAddRow(at i0: Int, targets: [(Int, R)]) {
-        worker.batchAddRow(
+        data.batchAddRow(
             at: i0,
             to: targets.map{ $0.0 },
             multipliedBy: targets.map{ $0.1 }
@@ -104,7 +104,7 @@ class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         candidates.min { (c1, c2) in
             let (i1, i2) = (c1.row, c2.row)
             let (d1, d2) = (c1.value.euclideanDegree, c2.value.euclideanDegree)
-            return d1 < d2 || (d1 == d2 && worker.rowWeight(i1) < worker.rowWeight(i2))
+            return d1 < d2 || (d1 == d2 && data.rowWeight(i1) < data.rowWeight(i2))
         }
     }
 }
@@ -112,13 +112,13 @@ class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
 final class ColEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     let reduced: Bool
     
-    init(worker: RowEliminationWorker<R>, reduced: Bool = false, debug: Bool = false) {
+    init(data: RowEliminationData<R>, reduced: Bool = false, debug: Bool = false) {
         self.reduced = reduced
-        super.init(worker: worker, debug: debug)
+        super.init(data: data, debug: debug)
     }
 
     override func prepare() {
-        let sub = RowEchelonEliminator(worker: worker, reduced: reduced, debug: debug)
+        let sub = RowEchelonEliminator(data: data, reduced: reduced, debug: debug)
         subrun(sub, transpose: true)
     }
     

@@ -8,18 +8,18 @@
 
 final class DiagonalEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     override func isDone() -> Bool {
-        worker.components.allSatisfy { (i, j, a) in
+        data.components.allSatisfy { (i, j, a) in
             (i == j) && a.isNormalized
         }
     }
     
     override func iteration() {
-        subrun(RowEchelonEliminator(worker: worker, debug: debug))
+        subrun(RowEchelonEliminator(data: data, debug: debug))
         
         if isDone() {
             return
         }
         
-        subrun(ColEchelonEliminator(worker: worker, debug: debug))
+        subrun(ColEchelonEliminator(data: data, debug: debug))
     }
 }

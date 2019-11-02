@@ -18,9 +18,11 @@
 import Dispatch
 
 public final class MatrixPivotFinder<R: Ring> {
-    typealias RowEntity = RowEliminationWorker<R>.RowElement
+    typealias RowEntity = RowAlignedMatrixData<R>.RowElement
     
-    private let worker: RowEliminationWorker<R>
+    private let data: RowAlignedMatrixData<R>
+    private let rowWeights: [Int]
+    
     private var pivots: [Int : Int] // column -> pivot row
     private var pivotRows: Set<Int>
     private var debug: Bool
@@ -46,17 +48,15 @@ public final class MatrixPivotFinder<R: Ring> {
     }
     
     private init<n, m>(_ A: Matrix<n, m, R>, debug: Bool = false) {
-        self.worker = RowEliminationWorker(
-            size: A.size,
-            components: A.nonZeroComponents
-        )
+        self.data = RowAlignedMatrixData(A)
+        self.rowWeights = data.rows.map{ $0.sum{ $0.value.matrixEliminationWeight } }
         self.pivots = [:]
         self.pivotRows = []
         self.debug = debug
     }
     
     private var size: (rows: Int, cols: Int) {
-        worker.size
+        data.size
     }
     
     private func run() -> [(Int, Int)] {
@@ -228,11 +228,11 @@ public final class MatrixPivotFinder<R: Ring> {
     }
     
     private func row(_ i: Int) -> LinkedList<RowEntity> {
-        worker.row(i)
+        data.row(i)
     }
     
     private func rowWeight(_ i: Int) -> Int {
-        worker.rowWeight(i)
+        rowWeights[i]
     }
     
     private func log(_ msg: @autoclosure () -> String) {
