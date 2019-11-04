@@ -87,11 +87,11 @@ class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         batchAddRow(at: currentRow, targets: targets)
     }
     
-    private func batchAddRow(at i0: Int, targets: [(Int, R)]) {
+    private func batchAddRow(at i0: Int, targets: [ColComponent<R>]) {
         data.batchAddRow(
             at: i0,
-            to: targets.map{ $0.0 },
-            multipliedBy: targets.map{ $0.1 }
+            to: targets.map{ $0.row },
+            multipliedBy: targets.map{ $0.value }
         )
         
         append(targets.map{ (i, r) in
@@ -100,7 +100,7 @@ class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     }
     
     @_specialize(where R == 𝐙)
-    private func findPivot(in candidates: [(row: Int, value: R)]) -> (row: Int, value: R)? {
+    private func findPivot(in candidates: [ColComponent<R>]) -> ColComponent<R>? {
         candidates.min { (c1, c2) in
             let (i1, i2) = (c1.row, c2.row)
             let (d1, d2) = (c1.value.euclideanDegree, c2.value.euclideanDegree)

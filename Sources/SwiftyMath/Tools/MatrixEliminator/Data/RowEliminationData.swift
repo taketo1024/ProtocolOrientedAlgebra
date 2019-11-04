@@ -7,7 +7,6 @@
 //
 
 final class RowEliminationData<R: Ring> {
-    typealias RowElement = RowAlignedMatrixData<R>.RowElement
     typealias Row = RowAlignedMatrixData<R>.Row
 
     private var data: RowAlignedMatrixData<R>
@@ -36,12 +35,12 @@ final class RowEliminationData<R: Ring> {
         tracker.rowWeight(i)
     }
     
-    func headElements(inCol j: Int) -> [(row: Int, value: R)] {
+    func headElements(inCol j: Int) -> [ColComponent<R>] {
         tracker.rows(inCol: j).map{ i in (i, row(i).headElement!.value) }
     }
     
-    func elements(inCol j0: Int, aboveRow i0: Int) -> [(row: Int, value: R)] {
-        (0 ..< i0).compactMap { i -> (row: Int, value: R)? in
+    func elements(inCol j0: Int, aboveRow i0: Int) -> [ColComponent<R>] {
+        (0 ..< i0).compactMap { i -> ColComponent<R>? in
             if let a = data.find(i, j0).hit?.pointee.element.value {
                 return (i, a)
             } else {

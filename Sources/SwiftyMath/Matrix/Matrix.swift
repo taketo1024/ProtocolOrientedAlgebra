@@ -1,5 +1,9 @@
 import Dispatch
 
+public typealias MatrixComponent<R: Ring> = (row: Int, col: Int, value: R)
+public typealias RowComponent<R: Ring> = (col: Int, value: R)
+public typealias ColComponent<R: Ring> = (row: Int, value: R)
+
 public typealias SquareMatrix<n: StaticSizeType, R: Ring> = Matrix<n, n, R>
 
 public typealias Matrix1<R: Ring> = SquareMatrix<_1, R>
@@ -512,5 +516,3 @@ extension Matrix: Codable where R: Codable {
         try c.encode(asArray, forKey: .grid)
     }
 }
-
-public typealias MatrixComponent<R: Ring> = (row: Int, col: Int, value: R)

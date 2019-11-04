@@ -6,8 +6,7 @@
 //
 
 final class RowAlignedMatrixData<R: Ring> {
-    typealias RowElement = (col: Int, value: R)
-    typealias Row = LinkedList<RowElement>
+    typealias Row = LinkedList<RowComponent<R>>
     
     var size: (rows: Int, cols: Int)
     var rows: [Row]
@@ -181,7 +180,7 @@ final class RowAlignedMatrixData<R: Ring> {
                 
             } else {
                 let a2 = r * a1
-                toPtr.pointee.insertNext( RowElement(j1, a2) )
+                toPtr.pointee.insertNext( RowComponent(j1, a2) )
                 (toPrevPtr, toPtr) = (toPtr, toPtr.pointee.next!)
                 
                 dw += a2.matrixEliminationWeight
@@ -199,7 +198,7 @@ final class RowAlignedMatrixData<R: Ring> {
         let group = components.group{ c in c.row }
         return (0 ..< n).map { i in
             if let list = group[i] {
-                let sorted = list.map{ c in RowElement(c.col, c.value) }.sorted{ $0.col }
+                let sorted = list.map{ c in RowComponent(c.col, c.value) }.sorted{ $0.col }
                 return Row(sorted)
             } else {
                 return Row()
