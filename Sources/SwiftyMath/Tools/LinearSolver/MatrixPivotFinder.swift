@@ -18,19 +18,19 @@
 import Dispatch
 
 public final class MatrixPivotFinder<R: Ring> {
-    typealias RowEntity = RowAlignedMatrixData<R>.RowElement
+    typealias Row = RowEliminationData<R>.Row
     
     private let data: RowAlignedMatrixData<R>
     private let rowWeights: [Int]
     
-    private var pivots: [Int : Int] // column -> pivot row
+    private var pivots: [Int : ColComponent<R>] // column -> (row, value)
     private var pivotRows: Set<Int>
     private var debug: Bool
     
     public static func findPivots<n, m>(of A: Matrix<n, m, R>, debug: Bool = false) -> Result<n, m, R> {
         let size = A.size
         let pf = MatrixPivotFinder(A, debug: debug)
-        let pivots = pf.run()
+        let pivots = pf.findPivots()
         
         func asPermutation<n>(_ order: [Int], _ n: Int) -> Permutation<n> {
             let remain = Set(0 ..< n).subtracting(order)
@@ -59,7 +59,7 @@ public final class MatrixPivotFinder<R: Ring> {
         data.size
     }
     
-    private func run() -> [(Int, Int)] {
+    private func findPivots() -> [MatrixComponent<R>] {
         findFLPivots()
         findFLColumnPivots()
         findCycleFreePivots()
@@ -69,7 +69,7 @@ public final class MatrixPivotFinder<R: Ring> {
     // Faugère-Lachartre pivot search
     private func findFLPivots() {
         let n = size.rows
-        var pivots: [Int : Int] = [:] // col -> row
+        var pivots: [Int : ColComponent<R>] = [:] // col -> row
         
         for i in 0 ..< n {
             let row = self.row(i)
@@ -82,12 +82,16 @@ public final class MatrixPivotFinder<R: Ring> {
                 continue
             }
             
-            if pivots[j] == nil || isBetter(i, than: pivots[j]!) {
-                pivots[j] = i
+            if pivots[j] == nil || isBetter(i, than: pivots[j]!.0) {
+                pivots[j] = (i, a)
             }
         }
         
-        pivots.forEach{ (j, i) in setPivot(i, j) }
+        pivots.forEach{ (j, c) in
+            let (i, a) = c
+            setPivot(i, j, a)
+        }
+        
         log("FL-pivots: \(pivots.count)")
     }
     
@@ -103,7 +107,7 @@ public final class MatrixPivotFinder<R: Ring> {
                 reservedCols.insert(j)
                 
                 if !isPivotRow && a.isInvertible {
-                    setPivot(i, j)
+                    setPivot(i, j, a)
                     isPivotRow = true
                 }
             }
@@ -114,7 +118,7 @@ public final class MatrixPivotFinder<R: Ring> {
     
     private func findCycleFreePivots() {
         let n = size.rows
-        let rows = (0 ..< n).compactMap { i -> (Int, LinkedList<RowEntity>)? in
+        let rows = (0 ..< n).compactMap { i -> (Int, Row)? in
             if pivotRows.contains(i) {
                 return nil
             }
@@ -127,7 +131,9 @@ public final class MatrixPivotFinder<R: Ring> {
         rows.parallelForEach { row in
             var found = false
             while !found {
-                let pivotsLocal = atomic.sync { self.pivots }
+                let pivotsLocal = atomic.sync {
+                    self.pivots.mapValues{ (i, _) in i }
+                }
                 let nPivLocal = pivotsLocal.count
                 
                 guard let pivot = self.findCycleFreePivot(inRow: row, pivots: pivotsLocal) else {
@@ -147,11 +153,12 @@ public final class MatrixPivotFinder<R: Ring> {
         log("cycle-free-pivots: \(pivots.count)")
     }
     
-    private func findCycleFreePivot(inRow row: (Int, LinkedList<RowEntity>), pivots: [Int : Int]) -> (Int, Int)? {
+    private func findCycleFreePivot(inRow row: (Int, Row), pivots: [Int : Int]) -> (Int, Int, R)? {
         let (i, list) = row
         
         var queue: [Int] = []
         var candidates: Set<Int> = []
+        var values: [Int : R] = [:]
         var visited: Set<Int> = []
         
         // initialize
@@ -160,6 +167,7 @@ public final class MatrixPivotFinder<R: Ring> {
                 queue.append(j)
             } else if a.isInvertible {
                 candidates.insert(j)
+                values[j] = a
             }
         }
         
@@ -181,16 +189,16 @@ public final class MatrixPivotFinder<R: Ring> {
         }
         
         // TODO take the one with min weight
-        if let j = candidates.anyElement {
-            return (i, j)
+        if let j = candidates.anyElement, let a = values[j] {
+            return (i, j, a)
         } else {
             return nil
         }
     }
     
-    private func sortPivots() -> [(Int, Int)] {
+    private func sortPivots() -> [MatrixComponent<R>] {
         let tree = Dictionary(keys: pivots.keys) { j -> [Int] in
-            let i = pivots[j]!
+            let (i, _) = pivots[j]!
             return self.row(i).compactMap { (k, _) -> Int? in
                 if k != j && pivots[k] != nil {
                     return k
@@ -200,20 +208,19 @@ public final class MatrixPivotFinder<R: Ring> {
             }
         }
         let sorted = try! topologicalSort(tree.keys.toArray(), successors: { j in tree[j] ?? [] })
-        return sorted.map{ j in (pivots[j]!, j) }
+        return sorted.map{ j in
+            let (i, a) = pivots[j]!
+            return (i, j, a)
+        }
     }
     
-    // for debug
-    private func currentPivots() -> [(Int, Int)] {
-        pivots.map{ (j, i) in (i, j) }.sorted{ $0.0 }
-    }
-    
-    private func setPivot(_ p: (Int, Int)) {
-        setPivot(p.0, p.1)
+    private func setPivot(_ c: MatrixComponent<R>) {
+        let (i, j, a) = c
+        setPivot(i, j, a)
     }
         
-    private func setPivot(_ i: Int, _ j: Int) {
-        pivots[j] = i
+    private func setPivot(_ i: Int, _ j: Int, _ a: R) {
+        pivots[j] = (i, a)
         pivotRows.insert(i)
     }
     
@@ -227,7 +234,7 @@ public final class MatrixPivotFinder<R: Ring> {
         return w1 < w2 || w1 == w2 && rowWeight(i1) < rowWeight(i2)
     }
     
-    private func row(_ i: Int) -> LinkedList<RowEntity> {
+    private func row(_ i: Int) -> Row {
         data.row(i)
     }
     
@@ -242,7 +249,7 @@ public final class MatrixPivotFinder<R: Ring> {
     }
     
     public struct Result<n: SizeType, m: SizeType, R: Ring> {
-        public let pivots: [(Int, Int)]
+        public let pivots: [MatrixComponent<R>]
         public let rowPermutation: Permutation<n>
         public let colPermutation: Permutation<m>
         public var numberOfPivots: Int { pivots.count }
