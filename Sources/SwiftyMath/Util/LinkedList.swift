@@ -50,13 +50,7 @@ public final class LinkedList<Element>: Sequence {
     }
     
     deinit {
-        var p = head
-        while p != nil {
-            let next = p?.pointee.next
-            
-            p!.delete()
-            p = next
-        }
+        removeAll()
     }
     
     public var isEmpty: Bool {
@@ -81,6 +75,17 @@ public final class LinkedList<Element>: Sequence {
         }
         defer { head.delete() }
         self.head = head.pointee.next
+    }
+    
+    public func removeAll() {
+        var p = head
+        while p != nil {
+            let next = p?.pointee.next
+            
+            p!.delete()
+            p = next
+        }
+        head = nil
     }
     
     public func modifyEach(_ map: (inout Element) -> Void) {
