@@ -90,6 +90,24 @@ public final class LinkedList<Element>: Sequence {
         }
     }
     
+    public func find(_ predicate1: (Element) -> Bool, while predicate2: (Element) -> Bool) -> (hit: NodePointer?, prev: NodePointer?) {
+        var pItr = makePointerIterator()
+        var prev: NodePointer? = nil
+        
+        while let p = pItr.next() {
+            let e = p.pointee.element
+            if !predicate2(e) {
+                break
+            }
+            if predicate1(e) {
+                return (p, prev)
+            }
+            prev = p
+        }
+        
+        return (nil, prev)
+    }
+    
     public func makeIterator() -> ElementIterator {
         ElementIterator(head?.pointee)
     }

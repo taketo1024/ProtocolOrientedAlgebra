@@ -25,21 +25,8 @@ final class RowAlignedMatrixData<R: Ring> {
         self.init(size: A.size, components: A.nonZeroComponents)
     }
 
-    func find(_ i: Int, _ j: Int) -> (prev: Row.NodePointer?, hit: Row.NodePointer?) {
-        var pItr = rows[i].makePointerIterator()
-        var prev: Row.NodePointer? = nil
-        
-        while let p = pItr.next() {
-            let s = p.pointee.element.col
-            if s == j {
-                return (prev, p)
-            } else if j < s {
-                return (prev, nil)
-            }
-            prev = p
-        }
-        
-        return (prev, nil)
+    func find(_ i: Int, _ j: Int) -> (hit: Row.NodePointer?, prev: Row.NodePointer?) {
+        rows[i].find({ e in e.col == j}, while: { e in e.col <= j})
     }
     
     @inlinable
