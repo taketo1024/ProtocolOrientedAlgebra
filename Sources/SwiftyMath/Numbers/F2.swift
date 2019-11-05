@@ -64,6 +64,6 @@ public struct 𝐅₂: Field, FiniteSetType, Hashable {
 
 extension 𝐅₂: ExpressibleByIntegerLiteral {
     public init(integerLiteral value: UInt8) {
-        self.init(value)
+        self.init((value % 2 == 0) ? 0 : 1)
     }
 }
