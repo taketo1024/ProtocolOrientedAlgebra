@@ -5,7 +5,7 @@
 //  Created by Taketo Sano on 2019/10/30.
 //
 
-public struct 𝐅₂: Field, FiniteSetType, Hashable, ExpressibleByIntegerLiteral {
+public struct 𝐅₂: Field, FiniteSetType, Hashable {
     public let representative: UInt8
     
     private init(_ a: UInt8) {
@@ -19,10 +19,6 @@ public struct 𝐅₂: Field, FiniteSetType, Hashable, ExpressibleByIntegerLiter
     
     public init(from a: 𝐙) {
         self.init(a)
-    }
-    
-    public init(integerLiteral value: Int) {
-        self.init(value)
     }
     
     public var inverse: Self? {
@@ -63,5 +59,11 @@ public struct 𝐅₂: Field, FiniteSetType, Hashable, ExpressibleByIntegerLiter
     
     public static var symbol: String {
         "𝐅₂"
+    }
+}
+
+extension 𝐅₂: ExpressibleByIntegerLiteral {
+    public init(integerLiteral value: UInt8) {
+        self.init(value)
     }
 }

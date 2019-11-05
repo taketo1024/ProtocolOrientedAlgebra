@@ -53,4 +53,10 @@ public struct IntegerQuotientRing<n: StaticSizeType>: QuotientRingType, FiniteSe
     }
 }
 
+extension IntegerQuotientRing: ExpressibleByIntegerLiteral {
+    public init(integerLiteral value: Int) {
+        self.init(value)
+    }
+}
+
 extension IntegerQuotientRing: EuclideanRing, Field where n: PrimeSizeType {}

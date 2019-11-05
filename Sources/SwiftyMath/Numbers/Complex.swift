@@ -88,7 +88,7 @@ public struct Complex<Base: Ring>: Ring, Module {
 
 extension Complex: EuclideanRing, Field where Base: Field {}
 
-extension Complex where Base == 𝐑 {
+extension Complex: ExpressibleByIntegerLiteral, ExpressibleByFloatLiteral where Base == 𝐑 {
     public init(integerLiteral n: Base.IntegerLiteralType) {
         self.init(Base(integerLiteral: n))
     }

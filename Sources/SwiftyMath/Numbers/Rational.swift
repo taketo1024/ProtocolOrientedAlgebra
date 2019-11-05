@@ -82,6 +82,12 @@ public struct RationalNumber: Field, Comparable, Hashable, Codable {
     }
 }
 
+extension 𝐐: ExpressibleByIntegerLiteral {
+    public init(integerLiteral value: Int) {
+        self.init(value)
+    }
+}
+
 extension 𝐐: Randomable {
     private static func random(_ x0: 𝐐, _ x1: 𝐐, closed: Bool) -> 𝐐 {
         let slice = 10
