@@ -470,32 +470,6 @@ extension Matrix where n == DynamicSize, m == DynamicSize {
     }
 }
 
-//extension Matrix where R: RealSubset {
-//    public var asReal: Matrix<n, m, 𝐑> {
-//        mapNonZeroComponents { $0.asReal }
-//    }
-//}
-//
-//extension Matrix where R: ComplexSubset {
-//    public var asComplex: Matrix<n, m, 𝐂> {
-//        mapNonZeroComponents { $0.asComplex }
-//    }
-//}
-//
-//extension Matrix where R == 𝐂 {
-//    public var realPart: Matrix<n, m, 𝐑> {
-//        mapNonZeroComponents { $0.realPart }
-//    }
-//
-//    public var imaginaryPart: Matrix<n, m, 𝐑> {
-//        mapNonZeroComponents { $0.imaginaryPart }
-//    }
-//
-//    public var adjoint: Matrix<m, n, R> {
-//        transposed.mapNonZeroComponents { $0.conjugate }
-//    }
-//}
-
 extension Matrix: Codable where R: Codable {
     enum CodingKeys: String, CodingKey {
         case rows, cols, grid
