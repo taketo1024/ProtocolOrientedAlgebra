@@ -6,7 +6,6 @@ The aim of this project is to understand Mathematics by realizing abstract conce
 
 # Submodules
 
-* [SwiftyLinearAlgebra](https://github.com/taketo1024/SwiftyMath-linalg)
 * [SwiftyHomology](https://github.com/taketo1024/SwiftyMath-homology)
 * [SwiftyTopology](https://github.com/taketo1024/SwiftyMath-topology)
 * [SwiftyKnots](https://github.com/taketo1024/SwiftyMath-knots)
@@ -30,7 +29,7 @@ $ swift package init --type executable
 ### 2. Edit `Package.swift`
 
 ```diff
- // swift-tools-version:4.0
+ // swift-tools-version:5.1
  // The swift-tools-version declares the minimum version of Swift required to build this package.
  
  import PackageDescription
@@ -184,10 +183,5 @@ let a = Polynomial<𝐐>(0, 1).asQuotient(in: K.self) // a = x mod I
 a * a == 2                                         // true!
 ```
 
-## References
-
-1. [Swift で代数学入門](http://qiita.com/taketo1024/items/bd356c59dc0559ee9a0b)
-2. [Swift で数学のススメ](https://www.slideshare.net/taketo1024/swift-79828803)
-
 ## License
-**Swifty Math** is licensed under [CC0 1.0 Universal](LICENSE).
+**Swifty Math** is released under [MIT license](LICENSE).
