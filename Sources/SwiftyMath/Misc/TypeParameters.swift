@@ -20,6 +20,13 @@ public struct _8 : StaticSizeType { public static let intValue = 8 }
 public struct _9 : StaticSizeType { public static let intValue = 9 }
 // add more if necessary
 
+public protocol PrimeSizeType: StaticSizeType {}
+extension _2: PrimeSizeType {}
+extension _3: PrimeSizeType {}
+extension _5: PrimeSizeType {}
+extension _7: PrimeSizeType {}
+// add more if necessary
+
 public struct DynamicSize : SizeType {
     public static var intValue: Int { fatalError() }
     public static var isDynamic: Bool { return true }

@@ -6,13 +6,6 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
-public protocol PrimeSizeType: SizeType {}
-extension _2: PrimeSizeType {}
-extension _3: PrimeSizeType {}
-extension _5: PrimeSizeType {}
-extension _7: PrimeSizeType {}
-// add more if necessary
-
 public typealias 𝐙₂ = IntegerQuotientRing<_2>
 // add more if necessary
 

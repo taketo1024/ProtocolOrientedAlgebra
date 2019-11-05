@@ -6,8 +6,6 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
-public typealias DPermutation = Permutation<DynamicSize>
-
 public struct Permutation<n: SizeType>: Group, Hashable {
     internal var elements: [Int : Int]
     
@@ -154,6 +152,8 @@ extension Permutation: FiniteSetType where n: StaticSizeType {
         n.intValue.factorial
     }
 }
+
+public typealias DPermutation = Permutation<DynamicSize>
 
 extension Permutation where n == DynamicSize {
     public static func allPermutations(length n: Int) -> [Self] {
