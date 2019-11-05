@@ -147,6 +147,6 @@ class ModuleTests: XCTestCase {
              1, 0,
              0, 3,
             -1, 2)
-        XCTAssertEqual(v * X, [A(-2), A(12)])
+        XCTAssertEqual( A.combine(basis: v, matrix: X), [A(-2), A(12)] )
     }
 }
