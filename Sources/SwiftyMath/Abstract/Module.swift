@@ -119,3 +119,138 @@ public func pair<M: Module>(f: Dual<M>, x: M) -> M.BaseRing {
     f.applied(to: x).value
 }
 
+public protocol BilinearMapType: MapType, Module
+    where Domain: ProductSetType,
+    Domain.Left: Module,
+    Domain.Right: Module,
+    Codomain: Module,
+    BaseRing == Domain.Left.BaseRing,
+    BaseRing == Domain.Right.BaseRing,
+    BaseRing == Codomain.BaseRing {
+    
+    init(_ f: @escaping (Domain.Left, Domain.Right) -> Codomain)
+    func applied(to: (Domain.Left, Domain.Right)) -> Codomain
+}
+
+public extension BilinearMapType {
+    init(_ f: @escaping (Domain.Left, Domain.Right) -> Codomain) {
+        self.init { (v: Domain) in f(v.left, v.right) }
+    }
+    
+    func applied(to v: (Domain.Left, Domain.Right)) -> Codomain {
+        return applied(to: Domain(v.0, v.1))
+    }
+    
+    static var zero: Self {
+        return Self{ v in .zero }
+    }
+    
+    static func +(f: Self, g: Self) -> Self {
+        return Self { v in f.applied(to: v) + g.applied(to: v) }
+    }
+    
+    static prefix func -(f: Self) -> Self {
+        return Self { v in -f.applied(to: v) }
+    }
+    
+    static func *(r: BaseRing, f: Self) -> Self {
+        return Self { v in r * f.applied(to: v) }
+    }
+    
+    static func *(f: Self, r: BaseRing) -> Self {
+        return Self { v in f.applied(to: v) * r }
+    }
+}
+
+public struct BilinearMap<V1: Module, V2: Module, W: Module>: BilinearMapType where V1.BaseRing == V2.BaseRing, V1.BaseRing == W.BaseRing {
+    public typealias BaseRing = V1.BaseRing
+    public typealias Domain = ProductModule<V1, V2>
+    public typealias Codomain = W
+    
+    public let function: (ProductModule<V1, V2>) -> W
+    public init(_ fnc: @escaping (ProductModule<V1, V2>) -> W) {
+        self.function = fnc
+    }
+    
+    public func applied(to v: ProductModule<V1, V2>) -> W {
+        return function(v)
+    }
+}
+
+public protocol BilinearFormType: MapType, Module
+    where Domain: ProductSetType,
+    Domain.Left: Module,
+    Domain.Right: Module,
+    Codomain == BaseRing,
+    BaseRing == Domain.Left.BaseRing,
+    BaseRing == Domain.Right.BaseRing
+{
+    
+    init(_ f: @escaping (Domain.Left, Domain.Right) -> Codomain)
+    func applied(to: (Domain.Left, Domain.Right)) -> Codomain
+}
+
+public extension BilinearFormType {
+    init(_ f: @escaping (Domain.Left, Domain.Right) -> Codomain) {
+        self.init { (v: Domain) in f(v.left, v.right) }
+    }
+    
+    func applied(to v: (Domain.Left, Domain.Right)) -> Codomain {
+        return applied(to: Domain(v.0, v.1))
+    }
+    
+    static var zero: Self {
+        return Self{ v in .zero }
+    }
+    
+    static func +(f: Self, g: Self) -> Self {
+        return Self { v in f.applied(to: v) + g.applied(to: v) }
+    }
+    
+    static prefix func -(f: Self) -> Self {
+        return Self { v in -f.applied(to: v) }
+    }
+    
+    static func *(r: BaseRing, f: Self) -> Self {
+        return Self { v in r * f.applied(to: v) }
+    }
+    
+    static func *(f: Self, r: BaseRing) -> Self {
+        return Self { v in f.applied(to: v) * r }
+    }
+}
+
+public extension BilinearFormType where Domain.Left: FiniteDimVectorSpace, Domain.Right: FiniteDimVectorSpace {
+    var asMatrix: DMatrix<BaseRing> {
+        typealias V = Domain.Left
+        typealias W = Domain.Right
+        
+        let (n, m) = (V.dim, W.dim)
+        let (Vbasis, Wbasis) = (V.standardBasis, W.standardBasis)
+        
+        return DMatrix(size: (n, m), concurrentIterations: n) { (i, setEntry) in
+            let v = Vbasis[i]
+            for j in 0 ..< m {
+                let w = Wbasis[j]
+                let a = self.applied(to: (v, w))
+                setEntry(i, j, a)
+            }
+        }
+    }
+}
+
+public struct BilinearForm<V1: Module, V2: Module>: BilinearFormType where V1.BaseRing == V2.BaseRing {
+    public typealias BaseRing = V1.BaseRing
+    public typealias Domain = ProductModule<V1, V2>
+    public typealias Codomain = BaseRing
+    
+    public let function: (Domain) -> Codomain
+    public init(_ fnc: @escaping (Domain) -> Codomain) {
+        self.function = fnc
+    }
+    
+    public func applied(to v: ProductModule<V1, V2>) -> Codomain {
+        return function(v)
+    }
+}
+
