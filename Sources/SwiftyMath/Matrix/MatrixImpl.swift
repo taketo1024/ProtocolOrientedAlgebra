@@ -65,12 +65,9 @@ public struct DefaultMatrixImpl<R: Ring>: MatrixImpl {
         return .init(size: a.size, data: a.data.merging(b.data, uniquingKeysWith: +).exclude{ $0.value.isZero })
     }
     
+    @_specialize(where R == 𝐅₂)
     public static func *(a: Self, b: Self) -> Self {
         assert(a.size.cols == b.size.rows)
-        
-        let aRows = a.data.group{ (c, _) in c.row }
-        let bRows = b.data.group{ (c, _) in c.row }
-        var cData: Data = [:]
         
         //       j              k
         //                    |          |
@@ -83,21 +80,29 @@ public struct DefaultMatrixImpl<R: Ring>: MatrixImpl {
         //                      k
         //                  i>| *   *  * |
         
-        for (i, Ai) in aRows {
-            for (c1, a_ij) in Ai {
-                let j = c1.col
+        let aRows = a.data.group{ (e, _) in e.row }
+        let bRows = b.data.group{ (e, _) in e.row }
+        
+        let data =
+        Array(aRows).parallelFlatMap { (i, Ai) -> [(Coord, R)] in
+            Ai.flatMap { (e1, a) -> [(Coord, R)] in
+                let j = e1.col
                 guard let Bj = bRows[j] else {
-                    continue
+                    return []
                 }
-                for (c2, b_jk) in Bj {
-                    let k = c2.col
-                    let c3 = Coord(i, k)
-                    cData[c3] = (cData[c3] ?? .zero) + a_ij * b_jk
+                return Bj.map { (e2, b) in
+                    let k = e2.col
+                    return ( Coord(i, k), a * b )
                 }
+            }
+            .group(by: { (e, _) in e.col } )
+            .compactMap { (k, list) -> (Coord, R)? in
+                let sum = list.sum { (_, c) in c }
+                return sum.isZero ? nil : (Coord(i, k), sum)
             }
         }
         
-        return .init(size: (a.size.rows, b.size.cols), data: cData.exclude{ $0.value.isZero })
+        return .init(size: (a.size.rows, b.size.cols), data: Dictionary(pairs: data))
     }
 }
 
