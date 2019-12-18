@@ -13,6 +13,14 @@ public extension Array {
         []
     }
     
+    func count(where predicate: (Element) -> Bool) -> Int {
+        var c = 0
+        for e in self where predicate(e) {
+            c += 1
+        }
+        return c
+    }
+    
     func with(_ s: (inout Array) -> Void) -> Array {
         var a = self
         s(&a)
