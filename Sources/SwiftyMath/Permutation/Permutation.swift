@@ -165,8 +165,9 @@ extension Permutation where n == DynamicSize {
     }
 }
 
-extension Array where Element: Hashable {
+extension Array {
     public func permuted<n>(by p: Permutation<n>) -> Array {
-        (0 ..< count).map{ i in self[p[i]] }
+        let pInv = p.inverse!
+        return (0 ..< count).map{ i in self[pInv[i]] }
     }
 }
