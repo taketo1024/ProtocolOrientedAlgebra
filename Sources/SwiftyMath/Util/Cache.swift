@@ -35,15 +35,20 @@ public final class Cache<T>: CustomStringConvertible {
     }
     
     public func useCacheOrSet(_ initializer: () -> T) -> T {
-        queue.sync {
-            if let v = _value {
-                return v
-            }
-            
-            let v = initializer()
-            _value = v
-            return v
+        let cache = queue.sync { _value }
+        if let value = cache {
+            return value
         }
+        
+        let value = initializer()
+        
+        queue.sync {
+            if _value == nil {
+                _value = value
+            }
+        }
+        
+        return value
     }
     
     public func clear() {
@@ -88,17 +93,22 @@ public final class CacheDictionary<K, T>: CustomStringConvertible where K: Hasha
     }
     
     public func useCacheOrSet(key: K, _ initializer: () -> T) -> T {
-        queue.sync {
-            if let v = dictionary[key] {
-                return v
-            }
-            
-            let v = initializer()
-            dictionary[key] = v
-            return v
+        let cache = queue.sync { dictionary[key] }
+        if let value = cache {
+            return value
         }
+        
+        let value = initializer()
+        
+        queue.sync {
+            if dictionary[key] == nil {
+                dictionary[key] = value
+            }
+        }
+        
+        return value
     }
-    
+
     public func remove(key: K) {
         queue.sync {
             let _ = dictionary.removeValue(forKey: key)
