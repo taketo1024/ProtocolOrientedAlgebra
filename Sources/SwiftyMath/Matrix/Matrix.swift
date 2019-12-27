@@ -198,7 +198,7 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         }
     }
     
-    public func permuteCols(by σ: Permutation<n>) -> Self {
+    public func permuteCols(by σ: Permutation<m>) -> Self {
         .init(size: size) { setEntry in
             nonZeroComponents.forEach{ (i, j, a) in
                 setEntry(i, σ[j], a)

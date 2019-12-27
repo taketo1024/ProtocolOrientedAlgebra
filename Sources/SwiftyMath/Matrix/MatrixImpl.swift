@@ -27,7 +27,10 @@ public struct DefaultMatrixImpl<R: Ring>: MatrixImpl {
     private var data: Data
     
     private init(size: (Int, Int), data: Data) {
+        assert(size.0 >= 0)
+        assert(size.1 >= 0)
         assert(!data.contains{ $0.value.isZero })
+        
         self.size = size
         self.data = data
     }
