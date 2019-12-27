@@ -7,7 +7,7 @@
 //
 
 public struct Permutation<n: SizeType>: Group, Hashable {
-    internal var elements: [Int : Int]
+    public let elements: [Int : Int]
     
     public init(_ elements: [Int : Int]) {
         assert(Set(elements.keys) == Set(elements.values))
