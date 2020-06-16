@@ -45,14 +45,14 @@ class MapTests: XCTestCase {
         typealias F = Map<A, B>
         let f = F { a in B(a.value + 1) }
         let a = A(1)
-        XCTAssertEqual(f.applied(to: a), B(2))
+        XCTAssertEqual(f(a), B(2))
     }
 
     func testIdentity() {
         typealias F = Map<A, A>
         let id = F.identity
         let a = A(1)
-        XCTAssertEqual(id.applied(to: a), A(1))
+        XCTAssertEqual(id(a), A(1))
     }
 
     func testComposition() {
@@ -61,7 +61,7 @@ class MapTests: XCTestCase {
         let f = F { a in B(a.value + 1) }
         let g = G { b in C(b.value * 3) }
         let a = A(1)
-        XCTAssertEqual((g ∘ f).applied(to: a), C(6))
+        XCTAssertEqual((g ∘ f)(a), C(6))
     }
     
     func testEnd() {
@@ -69,7 +69,7 @@ class MapTests: XCTestCase {
         let f = F { a in A(a.value + 1)}
         let g = F { a in A(a.value * 3)}
         let a = A(1)
-        XCTAssertEqual((g ∘ f).applied(to: a), A(6))
-        XCTAssertEqual((f ∘ g).applied(to: a), A(4))
+        XCTAssertEqual((g ∘ f)(a), A(6))
+        XCTAssertEqual((f ∘ g)(a), A(4))
     }
 }

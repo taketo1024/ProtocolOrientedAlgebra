@@ -86,11 +86,11 @@ public protocol ModuleHomType: AdditiveGroupHomType, Module where Domain: Module
 
 public extension ModuleHomType {
     static func *(r: BaseRing, f: Self) -> Self {
-        Self { x in r * f.applied(to: x) }
+        Self { x in r * f(x) }
     }
     
     static func *(f: Self, r: BaseRing) -> Self {
-        Self { x in f.applied(to: x) * r }
+        Self { x in f(x) * r }
     }
 }
 
@@ -112,11 +112,11 @@ public typealias ModuleEnd<X: Module> = ModuleHom<X, X>
 public typealias Dual<M: Module> = ModuleHom<M, AsModule<M.BaseRing>>
 
 public func pair<M: Module>(x: M, f: Dual<M>) -> M.BaseRing {
-    f.applied(to: x).value
+    f(x).value
 }
 
 public func pair<M: Module>(f: Dual<M>, x: M) -> M.BaseRing {
-    f.applied(to: x).value
+    f(x).value
 }
 
 public protocol BilinearMapType: MapType, Module
@@ -129,7 +129,7 @@ public protocol BilinearMapType: MapType, Module
     BaseRing == Codomain.BaseRing {
     
     init(_ f: @escaping (Domain.Left, Domain.Right) -> Codomain)
-    func applied(to: (Domain.Left, Domain.Right)) -> Codomain
+    func callAsFunction(_: (Domain.Left, Domain.Right)) -> Codomain
 }
 
 public extension BilinearMapType {
@@ -137,8 +137,8 @@ public extension BilinearMapType {
         self.init { (v: Domain) in f(v.left, v.right) }
     }
     
-    func applied(to v: (Domain.Left, Domain.Right)) -> Codomain {
-        return applied(to: Domain(v.0, v.1))
+    func callAsFunction(_ v: (Domain.Left, Domain.Right)) -> Codomain {
+        return self(Domain(v.0, v.1))
     }
     
     static var zero: Self {
@@ -146,19 +146,19 @@ public extension BilinearMapType {
     }
     
     static func +(f: Self, g: Self) -> Self {
-        return Self { v in f.applied(to: v) + g.applied(to: v) }
+        return Self { v in f(v) + g(v) }
     }
     
     static prefix func -(f: Self) -> Self {
-        return Self { v in -f.applied(to: v) }
+        return Self { v in -f(v) }
     }
     
     static func *(r: BaseRing, f: Self) -> Self {
-        return Self { v in r * f.applied(to: v) }
+        return Self { v in r * f(v) }
     }
     
     static func *(f: Self, r: BaseRing) -> Self {
-        return Self { v in f.applied(to: v) * r }
+        return Self { v in f(v) * r }
     }
 }
 
@@ -172,7 +172,7 @@ public struct BilinearMap<V1: Module, V2: Module, W: Module>: BilinearMapType wh
         self.function = fnc
     }
     
-    public func applied(to v: ProductModule<V1, V2>) -> W {
+    public func callAsFunction(_ v: ProductModule<V1, V2>) -> W {
         return function(v)
     }
 }
@@ -187,7 +187,7 @@ public protocol BilinearFormType: MapType, Module
 {
     
     init(_ f: @escaping (Domain.Left, Domain.Right) -> Codomain)
-    func applied(to: (Domain.Left, Domain.Right)) -> Codomain
+    func callAsFunction(_: (Domain.Left, Domain.Right)) -> Codomain
 }
 
 public extension BilinearFormType {
@@ -195,8 +195,8 @@ public extension BilinearFormType {
         self.init { (v: Domain) in f(v.left, v.right) }
     }
     
-    func applied(to v: (Domain.Left, Domain.Right)) -> Codomain {
-        return applied(to: Domain(v.0, v.1))
+    func callAsFunction(_ v: (Domain.Left, Domain.Right)) -> Codomain {
+        return self(Domain(v.0, v.1))
     }
     
     static var zero: Self {
@@ -204,19 +204,19 @@ public extension BilinearFormType {
     }
     
     static func +(f: Self, g: Self) -> Self {
-        return Self { v in f.applied(to: v) + g.applied(to: v) }
+        return Self { v in f(v) + g(v) }
     }
     
     static prefix func -(f: Self) -> Self {
-        return Self { v in -f.applied(to: v) }
+        return Self { v in -f(v) }
     }
     
     static func *(r: BaseRing, f: Self) -> Self {
-        return Self { v in r * f.applied(to: v) }
+        return Self { v in r * f(v) }
     }
     
     static func *(f: Self, r: BaseRing) -> Self {
-        return Self { v in f.applied(to: v) * r }
+        return Self { v in f(v) * r }
     }
 }
 
@@ -232,7 +232,7 @@ public extension BilinearFormType where Domain.Left: FiniteDimVectorSpace, Domai
             let v = Vbasis[i]
             for j in 0 ..< m {
                 let w = Wbasis[j]
-                let a = self.applied(to: (v, w))
+                let a = self((v, w))
                 setEntry(i, j, a)
             }
         }
@@ -249,7 +249,7 @@ public struct BilinearForm<V1: Module, V2: Module>: BilinearFormType where V1.Ba
         self.function = fnc
     }
     
-    public func applied(to v: ProductModule<V1, V2>) -> Codomain {
+    public func callAsFunction(_ v: ProductModule<V1, V2>) -> Codomain {
         return function(v)
     }
 }

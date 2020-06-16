@@ -153,6 +153,6 @@ class GroupTests: XCTestCase {
         typealias F = GroupHom<A, A>
         let f = F { a in A(a.value * 2) }
         let a = A(3)
-        XCTAssertEqual(f.applied(to: a), A(6))
+        XCTAssertEqual(f(a), A(6))
     }
 }

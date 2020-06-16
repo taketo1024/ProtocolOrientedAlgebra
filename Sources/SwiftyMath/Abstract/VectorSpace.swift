@@ -31,7 +31,7 @@ public extension LinearMapType where Domain: FiniteDimVectorSpace, Codomain: Fin
     var asMatrix: DMatrix<BaseRing> {
         DMatrix(size: (Codomain.dim, Domain.dim), concurrentIterations: Domain.dim) { (j, setEntry) in
             let v = Domain.standardBasis[j]
-            let w = self.applied(to: v)
+            let w = self(v)
             w.standardCoordinates.enumerated().forEach { (i, a) in
                 setEntry(i, j, a)
             }
