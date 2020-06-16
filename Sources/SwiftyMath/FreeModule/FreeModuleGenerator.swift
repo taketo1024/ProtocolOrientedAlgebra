@@ -93,8 +93,7 @@ extension FreeModule where Generator: TensorMonoid {
 public func MultiTensorHom<A, R>(from f: ModuleEnd<LinearCombination<A, R>>, inputIndex: Int, outputIndex: Int) -> ModuleEnd<LinearCombination<MultiTensorGenerator<A>, R>> {
     .linearlyExtend { t in
         let x = t.factors[inputIndex]
-        let fx = f.applied(to: x)
-        return fx.mapGenerators { y in
+        return f(x).mapGenerators { y in
             MultiTensorGenerator(t.factors.with { factors in
                 factors.remove(at: inputIndex)
                 factors.insert(y, at: outputIndex)
@@ -106,8 +105,7 @@ public func MultiTensorHom<A, R>(from f: ModuleEnd<LinearCombination<A, R>>, inp
 public func MultiTensorHom<A, R>(from f: ModuleHom<LinearCombination<TensorGenerator<A, A>, R>, LinearCombination<A, R>>, inputIndices: (Int, Int), outputIndex: Int) -> ModuleEnd<LinearCombination<MultiTensorGenerator<A>, R>> {
     .linearlyExtend { t in
         let (x1, x2) = (t.factors[inputIndices.0], t.factors[inputIndices.1])
-        let fx = f.applied(to: x1 ⊗ x2)
-        return fx.mapGenerators { y in
+        return f(x1 ⊗ x2).mapGenerators { y in
             MultiTensorGenerator(t.factors.with { factors in
                 factors.remove(at: inputIndices.1)
                 factors.remove(at: inputIndices.0)
@@ -120,8 +118,7 @@ public func MultiTensorHom<A, R>(from f: ModuleHom<LinearCombination<TensorGener
 public func MultiTensorHom<A, R>(from f: ModuleHom<LinearCombination<A, R>, LinearCombination<TensorGenerator<A, A>, R>>, inputIndex: Int, outputIndices: (Int, Int)) -> ModuleEnd<LinearCombination<MultiTensorGenerator<A>, R>> {
     .linearlyExtend { t in
         let x = t.factors[inputIndex]
-        let fx = f.applied(to: x)
-        return fx.mapGenerators { y in
+        return f(x).mapGenerators { y in
             MultiTensorGenerator(t.factors.with { factors in
                 factors.remove(at: inputIndex)
                 factors.insert(y.factors.0, at: outputIndices.0)

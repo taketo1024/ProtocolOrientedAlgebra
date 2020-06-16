@@ -115,16 +115,16 @@ public extension AdditiveGroupHomType {
         Self { x in .zero }
     }
     static func + (f: Self, g: Self) -> Self {
-        Self { x in f.applied(to: x) + g.applied(to: x) }
+        Self { x in f(x) + g(x) }
     }
     
     prefix static func - (f: Self) -> Self {
-        Self { x in -f.applied(to: x) }
+        Self { x in -f(x) }
     }
     
     static func sum(_ elements: [Self]) -> Self {
         Self { x in
-            elements.map{ f in f.applied(to: x) }.sumAll()
+            elements.map{ f in f(x) }.sumAll()
         }
     }
 }

@@ -138,7 +138,7 @@ class ModuleTests: XCTestCase {
         typealias F = ModuleHom<A, A>
         let f = F { a in a * 2 }
         let a = A(3)
-        XCTAssertEqual(f.applied(to: a), A(6))
+        XCTAssertEqual(f(a), A(6))
     }
     
     func testMatrixMul() {

@@ -88,7 +88,7 @@ class FreeModuleTests: XCTestCase {
             }
         }
         let z = M(elements: ("a", 3), ("b", 2), ("c", 4))
-        let w = f.applied(to: z)
+        let w = f(z)
         XCTAssertEqual(w, M(elements: ("a", 6), ("b", 7), ("d", 2)))
     }
 }

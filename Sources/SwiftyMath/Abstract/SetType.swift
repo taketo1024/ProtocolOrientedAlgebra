@@ -113,7 +113,7 @@ public protocol MapType: SetType {
     
     init (_ f: @escaping (Domain) -> Codomain)
     var function: (Domain) -> Codomain { get }
-    func applied(to x: Domain) -> Codomain
+    func callAsFunction(_ x: Domain) -> Codomain
     static func ∘<G: MapType>(g: G, f: Self) -> Map<Self.Domain, G.Codomain> where Self.Codomain == G.Domain
 }
 
@@ -126,12 +126,12 @@ public extension MapType {
         Map(function)
     }
     
-    func applied(to x: Domain) -> Codomain {
+    func callAsFunction(_ x: Domain) -> Codomain {
         function(x)
     }
     
     static func ∘<G: MapType>(g: G, f: Self) -> Map<Self.Domain, G.Codomain> where Self.Codomain == G.Domain {
-        Map<Self.Domain, G.Codomain>{ x in g.applied( to: f.applied(to: x) ) }
+        Map<Self.Domain, G.Codomain>{ x in g(f(x)) }
     }
 
     static func == (lhs: Self, rhs: Self) -> Bool {
@@ -165,7 +165,7 @@ public extension EndType {
     }
     
     static func ∘(g: Self, f: Self) -> Self {
-        Self { x in g.applied(to: f.applied(to: x)) }
+        Self { x in g(f(x)) }
     }
 }
 

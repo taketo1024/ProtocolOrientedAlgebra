@@ -183,7 +183,7 @@ extension ModuleHom where X: FreeModule, Y: FreeModule {
         }
     }
     
-    public func applied(to x: X.Generator) -> Y {
-        applied(to: .wrap(x))
+    public func callAsFunction(_ x: X.Generator) -> Y {
+        callAsFunction(.wrap(x))
     }
 }
