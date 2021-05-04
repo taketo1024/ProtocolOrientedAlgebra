@@ -255,7 +255,7 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
     }
 
     public static func ⊕ <n1, m1>(A: Matrix<n, m, R>, B: Matrix<n1, m1, R>) -> DMatrix<R> {
-        return .init(size: (A.size.rows + B.size.rows, A.size.cols + B.size.cols)) { setEntry in
+        .init(size: (A.size.rows + B.size.rows, A.size.cols + B.size.cols)) { setEntry in
             A.nonZeroComponents.forEach { (i, j, a) in setEntry(i, j, a) }
             B.nonZeroComponents.forEach { (i, j, a) in setEntry(i + A.size.rows, j + A.size.cols, a) }
         }
@@ -265,7 +265,10 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         .init(size: (A.size.rows * B.size.rows, A.size.cols * B.size.cols)) { setEntry in
             A.nonZeroComponents.forEach { (i, j, a) in
                 B.nonZeroComponents.forEach { (k, l, b) in
-                    setEntry(i * B.size.rows + k, j * B.size.cols + l, a * b)
+                    let p = i * B.size.rows + k
+                    let q = j * B.size.cols + l
+                    let c = a * b
+                    setEntry(p, q, c)
                 }
             }
         }
