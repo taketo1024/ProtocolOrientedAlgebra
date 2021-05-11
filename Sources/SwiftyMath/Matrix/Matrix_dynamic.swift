@@ -7,7 +7,7 @@
 
 import Foundation
 
-extension Matrix where n == DynamicSize, m == DynamicSize {
+extension MatrixInterface where n == DynamicSize, m == DynamicSize {
     public init(size: (Int, Int), initializer: ( (Int, Int, R) -> Void ) -> Void) {
         self.init(impl: Impl(size: size, initializer: initializer))
     }
@@ -32,12 +32,12 @@ extension Matrix where n == DynamicSize, m == DynamicSize {
         assert(isSquare)
         assert(p >= 0)
         
-        let I = DMatrix<R>.identity(size: size.rows)
+        let I = Self.identity(size: size.rows)
         return (0 ..< p).reduce(I){ (res, _) in self * res }
     }
 }
 
-extension Matrix where n == DynamicSize, m == _1 { // DColVector
+extension MatrixInterface where n == DynamicSize, m == _1 { // DColVector
     public init(_ grid: [R]) {
         self.init(impl: Impl.init(size: (grid.count, 1), grid: grid))
     }
@@ -51,7 +51,7 @@ extension Matrix where n == DynamicSize, m == _1 { // DColVector
     }
 }
 
-extension Matrix where n == _1, m == DynamicSize { // DRowVector
+extension MatrixInterface where n == _1, m == DynamicSize { // DRowVector
     public init(_ grid: [R]) {
         self.init(impl: Impl.init(size: (1, grid.count), grid: grid))
     }

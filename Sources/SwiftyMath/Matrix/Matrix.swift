@@ -5,6 +5,7 @@
 //  Created by Taketo Sano.
 //
 
+public typealias Matrix<n: SizeType, m: SizeType, R: Ring> = MatrixInterface<DefaultMatrixImpl<R>, n, m, R>
 public typealias SquareMatrix<n: StaticSizeType, R: Ring> = Matrix<n, n, R>
 
 public typealias Matrix1<R: Ring> = SquareMatrix<_1, R>
@@ -27,7 +28,7 @@ public typealias DVector<R: Ring>    = DColVector<R>
 
 public typealias MatrixComponent<R: Ring> = (row: Int, col: Int, value: R)
 
-public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
+public struct MatrixInterface<Impl: MatrixImpl, n: SizeType, m: SizeType, R>: SetType where Impl.BaseRing == R {
     public typealias BaseRing = R
     public typealias Impl = DefaultMatrixImpl<R>
     public typealias Initializer = Impl.Initializer
@@ -60,27 +61,31 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         impl.isSquare
     }
     
-    public var transposed: Matrix<m, n, R> {
+    public var transposed: MatrixInterface<Impl, m, n, R> {
         .init(impl: impl.transposed)
     }
     
-    public func rowVector(_ i: Int) -> RowVector<m, R> {
-        submatrix(rowRange: i ..< i + 1, colRange: 0 ..< size.cols).as(RowVector<m, R>.self)
+    public func rowVector(_ i: Int) -> MatrixInterface<Impl, _1, m, R> {
+        submatrix(rowRange: i ..< i + 1, colRange: 0 ..< size.cols)
+            .as(MatrixInterface<Impl, _1, m, R>.self)
     }
     
-    public func colVector(_ j: Int) -> ColVector<n, R> {
-        submatrix(rowRange: 0 ..< size.rows, colRange: j ..< j + 1).as(ColVector<n, R>.self)
+    public func colVector(_ j: Int) -> MatrixInterface<Impl, n, _1, R> {
+        submatrix(rowRange: 0 ..< size.rows, colRange: j ..< j + 1)
+            .as(MatrixInterface<Impl, n, _1, R>.self)
     }
     
-    public func submatrix(rowRange: CountableRange<Int>) -> Matrix<DynamicSize, m, R> {
-        submatrix(rowRange: rowRange, colRange: 0 ..< size.cols).as(Matrix<DynamicSize, m, R>.self)
+    public func submatrix(rowRange: CountableRange<Int>) -> MatrixInterface<Impl, DynamicSize, m, R> {
+        submatrix(rowRange: rowRange, colRange: 0 ..< size.cols)
+            .as(MatrixInterface<Impl, DynamicSize, m, R>.self)
     }
     
-    public func submatrix(colRange: CountableRange<Int>) -> Matrix<n, DynamicSize, R> {
-        submatrix(rowRange: 0 ..< size.rows, colRange: colRange).as(Matrix<n, DynamicSize, R>.self)
+    public func submatrix(colRange: CountableRange<Int>) -> MatrixInterface<Impl, n, DynamicSize, R> {
+        submatrix(rowRange: 0 ..< size.rows, colRange: colRange)
+            .as(MatrixInterface<Impl, n, DynamicSize, R>.self)
     }
     
-    public func submatrix(rowRange: CountableRange<Int>,  colRange: CountableRange<Int>) -> DMatrix<R> {
+    public func submatrix(rowRange: CountableRange<Int>,  colRange: CountableRange<Int>) -> MatrixInterface<Impl, DynamicSize, DynamicSize, R> {
         .init(impl: impl.submatrix(rowRange: rowRange, colRange: colRange))
     }
     
@@ -92,7 +97,7 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         a.impl == b.impl
     }
     
-    public static func +(a: Self, b: Self) -> Matrix {
+    public static func +(a: Self, b: Self) -> Self {
         .init(impl: a.impl + b.impl)
     }
     
@@ -112,16 +117,16 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
         .init(impl: a.impl * r)
     }
     
-    public static func * <p>(a: Matrix<n, m, R>, b: Matrix<m, p, R>) -> Matrix<n, p, R> {
+    public static func * <p>(a: MatrixInterface<Impl, n, m, R>, b: MatrixInterface<Impl, m, p, R>) -> MatrixInterface<Impl, n, p, R> {
         .init(impl: a.impl * b.impl)
     }
     
-    public func `as`<n1, m1>(_ type: Matrix<n1, m1, R>.Type) -> Matrix<n1, m1, R> {
-        Matrix<n1, m1, R>(impl: impl)
+    public func `as`<n1, m1>(_ type: MatrixInterface<Impl, n1, m1, R>.Type) -> MatrixInterface<Impl, n1, m1, R> {
+        MatrixInterface<Impl, n1, m1, R>(impl: impl)
     }
     
-    public var asDynamicMatrix: DMatrix<R> {
-        self.as(DMatrix.self)
+    public var asDynamicMatrix: MatrixInterface<Impl, DynamicSize, DynamicSize, R> {
+        self.as(MatrixInterface<Impl, DynamicSize, DynamicSize, R>.self)
     }
     
     public var description: String {
@@ -155,7 +160,7 @@ public struct Matrix<n: SizeType, m: SizeType, R: Ring>: SetType {
     }
 }
 
-extension Matrix where n == m { // n, m: possibly dynamic
+extension MatrixInterface where n == m { // n, m: possibly dynamic
     public var isInvertible: Bool {
         isSquare && impl.isInvertible
     }
@@ -174,7 +179,7 @@ extension Matrix where n == m { // n, m: possibly dynamic
 }
 
 // ColVector
-extension Matrix where m == _1 { // n: possibly dynamic
+extension MatrixInterface where m == _1 { // n: possibly dynamic
     public subscript(index: Int) -> R {
         get {
             self[index, 0]
@@ -190,7 +195,7 @@ extension Matrix where m == _1 { // n: possibly dynamic
 }
 
 // RowVector
-extension Matrix where n == _1 { // m: possibly dynamic
+extension MatrixInterface where n == _1 { // m: possibly dynamic
     public subscript(index: Int) -> R {
         get {
             self[0, index]
@@ -227,7 +232,7 @@ extension Matrix where n == _1 { // m: possibly dynamic
 //}
 
 // DefaultImpl specific
-extension Matrix {
+extension MatrixInterface where Impl == DefaultMatrixImpl<R> {
     public var nonZeroComponents: AnySequence<MatrixComponent<R>> {
         impl.nonZeroComponents
     }

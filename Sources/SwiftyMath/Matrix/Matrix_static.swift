@@ -5,7 +5,7 @@
 //  Created by Taketo Sano on 2021/05/11.
 //
 
-extension Matrix: AdditiveGroup, Module, ExpressibleByArrayLiteral where n: StaticSizeType, m: StaticSizeType {
+extension MatrixInterface: AdditiveGroup, Module, ExpressibleByArrayLiteral where n: StaticSizeType, m: StaticSizeType {
     public typealias ArrayLiteralElement = BaseRing
     
     public static var size: (rows: Int, cols: Int) {
@@ -33,7 +33,7 @@ extension Matrix: AdditiveGroup, Module, ExpressibleByArrayLiteral where n: Stat
     }
 }
 
-extension Matrix: Multiplicative, Monoid, Ring where n == m, n: StaticSizeType {
+extension MatrixInterface: Multiplicative, Monoid, Ring where n == m, n: StaticSizeType {
     public init(from a : 𝐙) {
         self.init(impl: Impl.scalar(size: Self.size, value: R.init(from: a)))
     }
@@ -59,11 +59,11 @@ extension Matrix: Multiplicative, Monoid, Ring where n == m, n: StaticSizeType {
     }
 
     public var trace: R {
-        diagonalComponents.sumAll()
+        impl.trace
     }
 }
 
-extension Matrix where n == m, n == _1 {
+extension MatrixInterface where n == m, n == _1 {
     public var asScalar: R {
         self[0, 0]
     }

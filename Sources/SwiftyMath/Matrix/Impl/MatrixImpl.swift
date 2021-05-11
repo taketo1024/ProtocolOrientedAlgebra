@@ -36,6 +36,8 @@ public protocol MatrixImpl: CustomStringConvertible {
     static func *(r: BaseRing, a: Self) -> Self
     static func *(a: Self, r: BaseRing) -> Self
     static func *(a: Self, b: Self) -> Self
+    
+    var detailDescription: String { get }
 }
 
 extension MatrixImpl {
