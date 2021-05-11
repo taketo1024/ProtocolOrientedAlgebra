@@ -97,16 +97,14 @@ public struct Quaternion<Base: Ring>: Ring, Module {
     }
     
     public var asVector: Vector4<Base> {
-        Vector4(x, y, z, w)
+        [x, y, z, w]
     }
     
     public var asMatrix: Matrix4<Base> {
-        Matrix4(
-            x, -y, -z, -w,
-            y, x, -w, z,
-            z, w, x, -y,
-            w, -z, y, x
-        )
+        [x, -y, -z, -w,
+         y,  x, -w,  z,
+         z,  w,  x, -y,
+         w, -z,  y,  x]
     }
     
     public var description: String {

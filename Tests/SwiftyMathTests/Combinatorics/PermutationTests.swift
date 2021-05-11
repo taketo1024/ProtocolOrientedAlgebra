@@ -40,7 +40,7 @@ class PermutationTests: XCTestCase {
     func testAsMatrix() {
         let σ = S3(2,0,1)
         let A = σ.asMatrix
-        XCTAssertEqual(A, Matrix3(0,1,0,0,0,1,1,0,0))
+        XCTAssertEqual(A, [0,1,0,0,0,1,1,0,0])
     }
 
     func testAsMatrixProduct() {

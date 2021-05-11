@@ -228,9 +228,9 @@ public extension BilinearFormType where Domain.Left: FiniteDimVectorSpace, Domai
         let (n, m) = (V.dim, W.dim)
         let (Vbasis, Wbasis) = (V.standardBasis, W.standardBasis)
         
-        return DMatrix(size: (n, m), concurrentIterations: n) { (i, setEntry) in
-            let v = Vbasis[i]
-            for j in 0 ..< m {
+        return DMatrix(size: (n, m)) { setEntry in
+            for (i, j) in (0 ..< n) * (0 ..< m) {
+                let v = Vbasis[i]
                 let w = Wbasis[j]
                 let a = self((v, w))
                 setEntry(i, j, a)

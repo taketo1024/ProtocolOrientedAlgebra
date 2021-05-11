@@ -143,10 +143,10 @@ class ModuleTests: XCTestCase {
     
     func testMatrixMul() {
         let v = [A(1), A(2), A(3)]
-        let X = Matrix<_3, _2, 𝐙>(
-             1, 0,
+        let X: Matrix<_3, _2, 𝐙> =
+             [1, 0,
              0, 3,
-            -1, 2)
+            -1, 2]
         XCTAssertEqual( A.combine(basis: v, matrix: X), [A(-2), A(12)] )
     }
 }
