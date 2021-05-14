@@ -27,6 +27,8 @@ public protocol MatrixImpl: CustomStringConvertible {
     var trace: BaseRing { get }
 
     func submatrix(rowRange: CountableRange<Int>,  colRange: CountableRange<Int>) -> Self
+    
+    var nonZeroComponents: AnySequence<MatrixComponent<BaseRing>> { get }
     func serialize() -> [BaseRing]
     
     static func ==(a: Self, b: Self) -> Bool
@@ -78,6 +80,10 @@ extension MatrixImpl {
         size.rows == size.cols
     }
     
+    public var isInvertible: Bool {
+        determinant.isInvertible
+    }
+    
     public var trace: BaseRing {
         assert(isSquare)
         return (0 ..< size.rows).sum { i in
@@ -87,5 +93,25 @@ extension MatrixImpl {
     
     public static func -(a: Self, b: Self) -> Self {
         a + (-b)
+    }
+    
+    public var description: String {
+        "[" + (0 ..< size.rows).map({ i in
+            return (0 ..< size.cols).map({ j in
+                return "\(self[i, j])"
+            }).joined(separator: ", ")
+        }).joined(separator: "; ") + "]"
+    }
+    
+    public var detailDescription: String {
+        if size.rows == 0 || size.cols == 0 {
+            return "[\(size)]"
+        } else {
+            return "[\t" + (0 ..< size.rows).map({ i in
+                (0 ..< size.cols).map({ j in
+                    "\(self[i, j])"
+                }).joined(separator: ",\t")
+            }).joined(separator: "\n\t") + "]"
+        }
     }
 }

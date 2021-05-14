@@ -40,7 +40,7 @@ public func lcm<R: EuclideanRing>(_ a: R, _ b: R) -> R {
 }
 
 public func extendedGcd<R: EuclideanRing>(_ a: R, _ b: R) -> (x: R, y: R, gcd: R) {
-    typealias M = SquareMatrix<_2, R>
+    typealias M = Matrix2x2<R>
     
     func euclid(_ a: R, _ b: R, _ qs: [R]) -> (qs: [R], r: R) {
         switch b {

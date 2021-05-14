@@ -2,7 +2,7 @@
 //  DefaultMatrixImpl.swift
 //  
 //
-//  Created by Taketo Sano on 2021/05/11.
+//  Created by Taketo Sano on 2021/05/14.
 //
 
 public struct DefaultMatrixImpl<R: Ring>: MatrixImpl {
@@ -181,26 +181,6 @@ public struct DefaultMatrixImpl<R: Ring>: MatrixImpl {
         }
         
         return .init(size: (a.size.rows, b.size.cols), data: Dictionary(pairs: data))
-    }
-    
-    public var description: String {
-        "[" + (0 ..< size.rows).map({ i in
-            return (0 ..< size.cols).map({ j in
-                return "\(self[i, j])"
-            }).joined(separator: ", ")
-        }).joined(separator: "; ") + "]"
-    }
-    
-    public var detailDescription: String {
-        if size.rows == 0 || size.cols == 0 {
-            return "[\(size)]"
-        } else {
-            return "[\t" + (0 ..< size.rows).map({ i in
-                (0 ..< size.cols).map({ j in
-                    "\(self[i, j])"
-                }).joined(separator: ",\t")
-            }).joined(separator: "\n\t") + "]"
-        }
     }
 }
 

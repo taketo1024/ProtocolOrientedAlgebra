@@ -13,11 +13,11 @@ extension MatrixInterface: AdditiveGroup, Module, ExpressibleByArrayLiteral wher
     }
     
     public init(initializer: @escaping (Initializer) -> Void) {
-        self.init(impl: Impl.init(size: Self.size, initializer: initializer))
+        self.init(Impl.init(size: Self.size, initializer: initializer))
     }
     
-    public init<S: Sequence>(grid: S) where S.Element == R {
-        self.init(impl: Impl.init(size: Self.size, grid: grid))
+    public init<S: Sequence>(grid: S) where S.Element == BaseRing {
+        self.init(Impl.init(size: Self.size, grid: grid))
     }
     
     public init(arrayLiteral elements: ArrayLiteralElement...) {
@@ -25,25 +25,25 @@ extension MatrixInterface: AdditiveGroup, Module, ExpressibleByArrayLiteral wher
     }
 
     public static var zero: Self {
-        self.init(impl: Impl.zero(size: Self.size))
+        self.init(Impl.zero(size: Self.size))
     }
     
     public static func unit(_ i: Int, _ j: Int) -> Self {
-        self.init(impl: Impl.unit(size: Self.size, at: (i, j)))
+        self.init(Impl.unit(size: Self.size, at: (i, j)))
     }
 }
 
 extension MatrixInterface: Multiplicative, Monoid, Ring where n == m, n: StaticSizeType {
     public init(from a : 𝐙) {
-        self.init(impl: Impl.scalar(size: Self.size, value: R.init(from: a)))
+        self.init(Impl.scalar(size: Self.size, value: BaseRing.init(from: a)))
     }
     
-    public static func identity(_ a: R) -> Self {
-        self.init(impl: Impl.identity(size: Self.size))
+    public static func identity(_ a: BaseRing) -> Self {
+        self.init(Impl.identity(size: Self.size))
     }
 
-    public static func scalar(_ a: R) -> Self {
-        self.init(impl: Impl.scalar(size: Self.size, value: a))
+    public static func scalar(_ a: BaseRing) -> Self {
+        self.init(Impl.scalar(size: Self.size, value: a))
     }
 
     public var isInvertible: Bool {
@@ -51,20 +51,20 @@ extension MatrixInterface: Multiplicative, Monoid, Ring where n == m, n: StaticS
     }
     
     public var inverse: Self? {
-        impl.inverse.flatMap{ .init(impl: $0) }
+        impl.inverse.flatMap{ .init($0) }
     }
     
-    public var determinant: R {
+    public var determinant: BaseRing {
         impl.determinant
     }
 
-    public var trace: R {
+    public var trace: BaseRing {
         impl.trace
     }
 }
 
 extension MatrixInterface where n == m, n == _1 {
-    public var asScalar: R {
+    public var asScalar: BaseRing {
         self[0, 0]
     }
 }

@@ -142,15 +142,13 @@ extension Permutation: FiniteSetType where n: StaticSizeType {
     }
 }
 
-public typealias DPermutation = Permutation<DynamicSize>
-
 extension Permutation where n == DynamicSize {
-    public func asMatrix(size n: Int) -> DMatrix<𝐙> {
+    public func asMatrix(size n: Int) -> MatrixDxD<𝐙> {
         asMatrix(size: n, over: 𝐙.self)
     }
 
-    public func asMatrix<R>(size n: Int, over: R.Type) -> DMatrix<R> {
-        DMatrix(size: (n, n)) { setEntry in
+    public func asMatrix<R>(size n: Int, over: R.Type) -> MatrixDxD<R> {
+        MatrixDxD(size: (n, n)) { setEntry in
             (0 ..< n).forEach { i in setEntry(self[i], i, .identity) }
         }
     }

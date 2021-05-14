@@ -100,7 +100,7 @@ public struct Quaternion<Base: Ring>: Ring, Module {
         [x, y, z, w]
     }
     
-    public var asMatrix: Matrix4<Base> {
+    public var asMatrix: Matrix4x4<Base> {
         [x, -y, -z, -w,
          y,  x, -w,  z,
          z,  w,  x, -y,

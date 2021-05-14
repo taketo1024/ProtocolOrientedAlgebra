@@ -220,25 +220,6 @@ public extension BilinearFormType {
     }
 }
 
-public extension BilinearFormType where Domain.Left: FiniteDimVectorSpace, Domain.Right: FiniteDimVectorSpace {
-    var asMatrix: DMatrix<BaseRing> {
-        typealias V = Domain.Left
-        typealias W = Domain.Right
-        
-        let (n, m) = (V.dim, W.dim)
-        let (Vbasis, Wbasis) = (V.standardBasis, W.standardBasis)
-        
-        return DMatrix(size: (n, m)) { setEntry in
-            for (i, j) in (0 ..< n) * (0 ..< m) {
-                let v = Vbasis[i]
-                let w = Wbasis[j]
-                let a = self((v, w))
-                setEntry(i, j, a)
-            }
-        }
-    }
-}
-
 public struct BilinearForm<V1: Module, V2: Module>: BilinearFormType where V1.BaseRing == V2.BaseRing {
     public typealias BaseRing = V1.BaseRing
     public typealias Domain = ProductModule<V1, V2>
