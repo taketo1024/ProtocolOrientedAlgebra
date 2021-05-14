@@ -149,6 +149,10 @@ public struct MatrixInterface<Impl: MatrixImpl, n: SizeType, m: SizeType>: SetTy
         }
         return "Mat<\(str(n.self)), \(str(n.self)); \(BaseRing.symbol)>"
     }
+    
+    public static func commonInit(size: (Int, Int), initializer: @escaping (Initializer) -> Void) -> Self {
+        Self(.init(size: size, initializer: initializer))
+    }
 }
 
 extension MatrixInterface where Impl: SparseMatrixImpl {

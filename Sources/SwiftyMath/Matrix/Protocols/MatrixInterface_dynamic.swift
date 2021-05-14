@@ -38,30 +38,45 @@ extension MatrixInterface where n == DynamicSize, m == DynamicSize {
 }
 
 extension MatrixInterface where n == DynamicSize, m == _1 { // DColVector
+    public init(size n: Int, initializer s: @escaping ((Int, BaseRing) -> Void) -> Void) {
+        self.init(Impl(size: (n, 1)) { setEntry in
+            s { (i, a) in
+                setEntry(i, 0, a)
+            }
+        })
+    }
+    
     public init(_ grid: [BaseRing]) {
         self.init(Impl.init(size: (grid.count, 1), grid: grid))
     }
     
-    static func zero(size n: Int) -> Self {
+    public static func zero(size n: Int) -> Self {
         self.init(Impl.zero(size: (n, 1)))
     }
     
-    static func unit(size n: Int, at i: Int) -> Self {
+    public static func unit(size n: Int, at i: Int) -> Self {
         self.init(Impl.unit(size: (n, 1), at: (i, 0)))
     }
 }
 
 extension MatrixInterface where n == _1, m == DynamicSize { // DRowVector
+    public init(size m: Int, initializer s: @escaping ((Int, BaseRing) -> Void) -> Void) {
+        self.init(Impl(size: (1, m)) { setEntry in
+            s { (j, a) in
+                setEntry(0, j, a)
+            }
+        })
+    }
+    
     public init(_ grid: [BaseRing]) {
         self.init(Impl.init(size: (1, grid.count), grid: grid))
     }
     
-    static func zero(size m: Int) -> Self {
+    public static func zero(size m: Int) -> Self {
         self.init(Impl.zero(size: (1, m)))
     }
     
-    static func unit(size m: Int, at j: Int) -> Self {
+    public static func unit(size m: Int, at j: Int) -> Self {
         self.init(Impl.unit(size: (1, m), at: (0, j)))
     }
 }
-

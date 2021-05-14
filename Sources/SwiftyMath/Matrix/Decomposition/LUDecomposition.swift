@@ -9,6 +9,8 @@ public struct LUDecomposition<Impl: MatrixImpl_LU, n: SizeType, m: SizeType> {
     public typealias Matrix    = MatrixInterface<Impl, n, m>
     public typealias LeftPerm  = MatrixInterface<Impl, n, n>
     public typealias RightPerm = MatrixInterface<Impl, m, m>
+    public typealias MatrixL   = MatrixInterface<Impl, n, DynamicSize>
+    public typealias MatrixU   = MatrixInterface<Impl, DynamicSize, m>
     public typealias Image     = MatrixInterface<Impl, n, DynamicSize>
     public typealias Kernel    = MatrixInterface<Impl, m, DynamicSize>
 
@@ -18,11 +20,11 @@ public struct LUDecomposition<Impl: MatrixImpl_LU, n: SizeType, m: SizeType> {
         self.impl = impl
     }
     
-    public var L: Matrix {
+    public var L: MatrixL {
         .init(impl.L)
     }
     
-    public var U: Matrix {
+    public var U: MatrixU {
         .init(impl.U)
     }
     
@@ -34,7 +36,7 @@ public struct LUDecomposition<Impl: MatrixImpl_LU, n: SizeType, m: SizeType> {
         .init(impl.Q)
     }
     
-    public var LU: (Matrix, Matrix) {
+    public var LU: (MatrixL, MatrixU) {
         (L, U)
     }
     

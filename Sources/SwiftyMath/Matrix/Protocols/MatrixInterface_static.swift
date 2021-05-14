@@ -31,6 +31,14 @@ extension MatrixInterface: AdditiveGroup, Module, ExpressibleByArrayLiteral wher
     public static func unit(_ i: Int, _ j: Int) -> Self {
         self.init(Impl.unit(size: Self.size, at: (i, j)))
     }
+    
+    public static func diagonal(_ entries: BaseRing...) -> Self {
+        self.init { setEntry in
+            entries.enumerated().forEach { (i, a) in
+                setEntry(i, i, a)
+            }
+        }
+    }
 }
 
 extension MatrixInterface: Multiplicative, Monoid, Ring where n == m, n: StaticSizeType {
@@ -69,3 +77,22 @@ extension MatrixInterface where n == m, n == _1 {
     }
 }
 
+extension MatrixInterface where n: StaticSizeType, m == _1 {
+    public init(initializer s: @escaping ((Int, BaseRing) -> Void) -> Void) {
+        self.init { setEntry in
+            s { (i, a) in
+                setEntry(i, 0, a)
+            }
+        }
+    }
+}
+
+extension MatrixInterface where n == _1, m: StaticSizeType {
+    public init(initializer s: @escaping ((Int, BaseRing) -> Void) -> Void) {
+        self.init { setEntry in
+            s { (j, a) in
+                setEntry(0, j, a)
+            }
+        }
+    }
+}
