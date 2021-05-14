@@ -23,21 +23,17 @@ public struct Permutation<n: SizeType>: Group, Hashable {
         self.init(sequence)
     }
     
-    public init(cyclic elements: [Int]) {
+    public static func transposition(_ i: Int, _ j: Int) -> Self {
+        .init([i : j, j : i])
+    }
+    
+    public static func cyclic(_ elements: [Int]) -> Self {
         var d = [Int : Int]()
         let l = elements.count
         for (i, a) in elements.enumerated() {
             d[a] = elements[(i + 1) % l]
         }
-        self.init(d)
-    }
-    
-    public init(cyclic elements: Int...) {
-        self.init(cyclic: elements)
-    }
-    
-    public static func transposition(_ i: Int, _ j: Int) -> Self {
-        .init([i : j, j : i])
+        return .init(d)
     }
 
     public static var identity: Self {
@@ -75,7 +71,7 @@ public struct Permutation<n: SizeType>: Group, Hashable {
             }
             
             if c.count > 1 {
-                let p = Self(cyclic: c)
+                let p = Self.cyclic(c)
                 result.append(p)
             }
         }
@@ -97,6 +93,10 @@ public struct Permutation<n: SizeType>: Group, Hashable {
     
     public func `as`<m>(_ type: Permutation<m>.Type) -> Permutation<m> {
         Permutation<m>(self.elements)
+    }
+    
+    public var asDynamic: Permutation<DynamicSize> {
+        Permutation<DynamicSize>(self.elements)
     }
     
     public var asMap: Map<Int, Int> {

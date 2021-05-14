@@ -65,8 +65,20 @@ public struct MatrixInterface<Impl: MatrixImpl, n: SizeType, m: SizeType>: SetTy
         .init(impl.submatrix(rowRange: rowRange, colRange: colRange))
     }
     
-    public var nonZeroComponents: AnySequence<MatrixComponent<BaseRing>> {
-        impl.nonZeroComponents
+    public func concat<m1>(_ B: MatrixInterface<Impl, n, m1>) -> MatrixInterface<Impl, n, DynamicSize> {
+        .init(impl.concat(B.impl))
+    }
+    
+    public func stack<n1>(_ B: MatrixInterface<Impl, n1, m>) -> MatrixInterface<Impl, DynamicSize, m> {
+        .init(impl.stack(B.impl))
+    }
+    
+    public func permuteRows(by σ: Permutation<n>) -> Self {
+        .init(impl.permuteRows(by: σ.asDynamic))
+    }
+    
+    public func permuteCols(by σ: Permutation<m>) -> Self {
+        .init(impl.permuteCols(by: σ.asDynamic))
     }
     
     public func serialize() -> [BaseRing] {
@@ -101,6 +113,14 @@ public struct MatrixInterface<Impl: MatrixImpl, n: SizeType, m: SizeType>: SetTy
         .init(a.impl * b.impl)
     }
     
+    public static func ⊕ <n1, m1>(A: MatrixInterface<Impl, n, m>, B: MatrixInterface<Impl, n1, m1>) -> MatrixInterface<Impl, DynamicSize, DynamicSize> {
+        .init(A.impl ⊕ B.impl)
+    }
+    
+    public static func ⊗ <n1, m1>(A: MatrixInterface<Impl, n, m>, B: MatrixInterface<Impl, n1, m1>) -> MatrixInterface<Impl, DynamicSize, DynamicSize> {
+        .init(A.impl ⊗ B.impl)
+    }
+    
     public func `as`<n1, m1>(_ type: MatrixInterface<Impl, n1, m1>.Type) -> MatrixInterface<Impl, n1, m1> {
         MatrixInterface<Impl, n1, m1>(impl)
     }
@@ -128,6 +148,16 @@ public struct MatrixInterface<Impl: MatrixImpl, n: SizeType, m: SizeType>: SetTy
             return "RowVec<\(str(n.self)); \(BaseRing.symbol)>"
         }
         return "Mat<\(str(n.self)), \(str(n.self)); \(BaseRing.symbol)>"
+    }
+}
+
+extension MatrixInterface where Impl: SparseMatrixImpl {
+    public var numberOfNonZeros: Int {
+        impl.numberOfNonZeros
+    }
+    
+    public var nonZeroComponents: AnySequence<MatrixComponent<BaseRing>> {
+        impl.nonZeroComponents
     }
 }
 
@@ -180,103 +210,3 @@ extension MatrixInterface where n == _1 { // m: possibly dynamic
         return (0 ..< left.size.rows).sum { i in left[i] * right[i] }
     }
 }
-
-//    public func splitHorizontally(at j0: Int) -> (Matrix<n, DynamicSize, R>, Matrix<n, DynamicSize, R>) {
-//        let (Ac, Bc) = nonZeroComponents.split { $0.col < j0 }
-//        let A = Matrix<n, DynamicSize, R>(size: (size.rows, j0)) { setEntry in
-//            Ac.forEach { (i, j, a) in setEntry(i, j, a) }
-//        }
-//        let B = Matrix<n, DynamicSize, R>(size: (size.rows, size.cols - j0)) { setEntry in
-//            Bc.forEach { (i, j, a) in setEntry(i, j - j0, a) }
-//        }
-//        return (A, B)
-//    }
-//
-//    public func splitVertically(at i0: Int) -> (Matrix<DynamicSize, m, R>, Matrix<DynamicSize, m, R>) {
-//        let (Ac, Bc) = nonZeroComponents.split { $0.row < i0 }
-//        let A = Matrix<DynamicSize, m, R>(size: (i0, size.cols)) { setEntry in
-//            Ac.forEach { (i, j, a) in setEntry(i, j, a) }
-//        }
-//        let B = Matrix<DynamicSize, m, R>(size: (size.rows - i0, size.cols)) { setEntry in
-//            Bc.forEach { (i, j, a) in setEntry(i - i0, j, a) }
-//        }
-//        return (A, B)
-//    }
-//
-//    public func permuteRows(by σ: Permutation<n>) -> Self {
-//        .init(size: size) { setEntry in
-//            nonZeroComponents.forEach{ (i, j, a) in
-//                setEntry(σ[i], j, a)
-//            }
-//        }
-//    }
-//
-//    public func permuteCols(by σ: Permutation<m>) -> Self {
-//        .init(size: size) { setEntry in
-//            nonZeroComponents.forEach{ (i, j, a) in
-//                setEntry(i, σ[j], a)
-//            }
-//        }
-//    }
-//
-//    public func concatVertically<n1>(_ B: Matrix<n1, m, R>) -> Matrix<DynamicSize, m, R> {
-//        let A = self
-//        assert(A.size.cols == B.size.cols)
-//
-//        return .init(size: (A.size.rows + B.size.rows, A.size.cols)) { setEntry in
-//            A.nonZeroComponents.forEach { (i, j, a) in setEntry(i, j, a) }
-//            B.nonZeroComponents.forEach { (i, j, a) in setEntry(i + A.size.rows, j, a) }
-//        }
-//    }
-//
-//    public func concatHorizontally<m1>(_ B: Matrix<n, m1, R>) -> Matrix<n, DynamicSize, R> {
-//        let A = self
-//        assert(A.size.rows == B.size.rows)
-//
-//        return .init(size: (A.size.rows, A.size.cols + B.size.cols)) { setEntry in
-//            A.nonZeroComponents.forEach { (i, j, a) in setEntry(i, j, a) }
-//            B.nonZeroComponents.forEach { (i, j, a) in setEntry(i, j + A.size.cols, a) }
-//        }
-//    }
-//
-//    public static func ⊕ <n1, m1>(A: Matrix<n, m, R>, B: Matrix<n1, m1, R>) -> DMatrix<R> {
-//        .init(size: (A.size.rows + B.size.rows, A.size.cols + B.size.cols)) { setEntry in
-//            A.nonZeroComponents.forEach { (i, j, a) in setEntry(i, j, a) }
-//            B.nonZeroComponents.forEach { (i, j, a) in setEntry(i + A.size.rows, j + A.size.cols, a) }
-//        }
-//    }
-//
-//    public static func ⊗ <n1, m1>(A: Matrix<n, m, R>, B: Matrix<n1, m1, R>) -> DMatrix<R> {
-//        .init(size: (A.size.rows * B.size.rows, A.size.cols * B.size.cols)) { setEntry in
-//            A.nonZeroComponents.forEach { (i, j, a) in
-//                B.nonZeroComponents.forEach { (k, l, b) in
-//                    let p = i * B.size.rows + k
-//                    let q = j * B.size.cols + l
-//                    let c = a * b
-//                    setEntry(p, q, c)
-//                }
-//            }
-//        }
-//    }
-
-//extension Matrix: Codable where R: Codable {
-//    enum CodingKeys: String, CodingKey {
-//        case rows, cols, grid
-//    }
-//
-//    public init(from decoder: Decoder) throws {
-//        let c = try decoder.container(keyedBy: CodingKeys.self)
-//        let rows = try c.decode(Int.self, forKey: .rows)
-//        let cols = try c.decode(Int.self, forKey: .cols)
-//        let grid = try c.decode([R].self, forKey: .grid)
-//        self.init(size: (rows, cols), grid: grid)
-//    }
-//
-//    public func encode(to encoder: Encoder) throws {
-//        var c = encoder.container(keyedBy: CodingKeys.self)
-//        try c.encode(size.rows, forKey: .rows)
-//        try c.encode(size.cols, forKey: .cols)
-//        try c.encode(asArray, forKey: .grid)
-//    }
-//}
-

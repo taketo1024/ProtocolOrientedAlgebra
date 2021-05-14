@@ -4,24 +4,6 @@ public protocol Module: AdditiveGroup {
     static func * (m: Self, r: BaseRing) -> Self
 }
 
-extension Module {
-    public static func combine<n>(basis: [Self], vector: ColVector<n, BaseRing>) -> Self {
-        combine(basis: basis, matrix: vector)[0]
-    }
-
-    public static func combine<n, m>(basis: [Self], matrix A: Matrix<n, m, BaseRing>) -> [Self] {
-        assert(basis.count == A.size.rows)
-        let cols = A.nonZeroComponents.group{ $0.col }
-        
-        return Array(0 ..< A.size.cols).parallelMap { j in
-            guard let col = cols[j] else {
-                return .zero
-            }
-            return col.sum { (i, _, a) in a * basis[i] }
-        }
-    }
-}
-
 public protocol Submodule: Module, AdditiveSubgroup where Super: Module {}
 
 public extension Submodule where BaseRing == Super.BaseRing {

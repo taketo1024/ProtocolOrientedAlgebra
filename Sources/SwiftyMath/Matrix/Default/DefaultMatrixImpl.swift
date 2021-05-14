@@ -5,7 +5,7 @@
 //  Created by Taketo Sano on 2021/05/14.
 //
 
-public struct DefaultMatrixImpl<R: Ring>: MatrixImpl {
+public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
     public typealias BaseRing = R
     private typealias Data = [Coord : R]
     
@@ -38,6 +38,20 @@ public struct DefaultMatrixImpl<R: Ring>: MatrixImpl {
             data[i, j] ?? .zero
         } set {
             data[i, j] = (newValue.isZero) ? nil : newValue
+        }
+    }
+    
+    public var numberOfNonZeros: Int {
+        data.count
+    }
+    
+    public var nonZeroComponents: AnySequence<(row: Int, col: Int, value: R)> {
+        AnySequence( data.lazy.map{ (c, a) -> MatrixComponent<R> in (c.row, c.col, a) } )
+    }
+    
+    private func mapNonZeroComponents(_ f: (Int, Int, R) -> R) -> Self {
+        .init(size: size) { setEntry in
+            nonZeroComponents.forEach { (i, j, a) in setEntry(i, j, f(i, j, a)) }
         }
     }
     
@@ -79,6 +93,13 @@ public struct DefaultMatrixImpl<R: Ring>: MatrixImpl {
         }
     }
     
+    public var trace: BaseRing {
+        assert(isSquare)
+        return (0 ..< size.rows).sum { i in
+            self[i, i]
+        }
+    }
+    
     public var determinant: R {
         assert(isSquare)
         if size.rows == 0 {
@@ -103,25 +124,42 @@ public struct DefaultMatrixImpl<R: Ring>: MatrixImpl {
         return ε * minor.determinant
     }
     
-    public var nonZeroComponents: AnySequence<(row: Int, col: Int, value: R)> {
-        AnySequence( data.lazy.map{ (c, a) -> MatrixComponent<R> in (c.row, c.col, a) } )
+    public func concat(_ B: Self) -> Self {
+        assert(size.rows == B.size.rows)
+        
+        let A = self
+        return .init(size: (A.size.rows, A.size.cols + B.size.cols)) { setEntry in
+            A.nonZeroComponents.forEach { (i, j, a) in setEntry(i, j, a) }
+            B.nonZeroComponents.forEach { (i, j, a) in setEntry(i, j + A.size.cols, a) }
+        }
     }
     
-    public func mapNonZeroComponents(_ f: (Int, Int, R) -> R) -> Self {
+    public func stack(_ B: Self) -> Self {
+        assert(size.cols == B.size.cols)
+        
+        let A = self
+        return .init(size: (A.size.rows + B.size.rows, A.size.cols)) { setEntry in
+            A.nonZeroComponents.forEach { (i, j, a) in setEntry(i, j, a) }
+            B.nonZeroComponents.forEach { (i, j, a) in setEntry(i + A.size.rows, j, a) }
+        }
+    }
+    
+    public func permuteRows(by σ: Permutation<DynamicSize>) -> Self {
         .init(size: size) { setEntry in
-            nonZeroComponents.forEach { (i, j, a) in setEntry(i, j, f(i, j, a)) }
+            nonZeroComponents.forEach{ (i, j, a) in
+                setEntry(σ[i], j, a)
+            }
         }
     }
     
-    public func serialize() -> [R] {
-        let (n, m) = self.size
-        var grid = Array(repeating: R.zero, count: n * m)
-        for (i, j, a) in nonZeroComponents {
-            grid[i * m + j] = a
+    public func permuteCols(by σ: Permutation<DynamicSize>) -> Self {
+        .init(size: size) { setEntry in
+            nonZeroComponents.forEach{ (i, j, a) in
+                setEntry(i, σ[j], a)
+            }
         }
-        return grid
     }
-    
+
     public static func ==(a: Self, b: Self) -> Bool {
         a.data == b.data
     }
@@ -135,6 +173,11 @@ public struct DefaultMatrixImpl<R: Ring>: MatrixImpl {
         a.mapNonZeroComponents{ (_, _, a) in -a }
     }
     
+    public static func -(a: Self, b: Self) -> Self {
+        assert(a.size == b.size)
+        return .init(size: a.size, data: a.data.merging(b.data, uniquingKeysWith: -).exclude{ $0.value.isZero })
+    }
+    
     public static func * (r: R, a: DefaultMatrixImpl<R>) -> Self {
         a.mapNonZeroComponents{ (_, _, a) in r * a }
     }
@@ -143,7 +186,6 @@ public struct DefaultMatrixImpl<R: Ring>: MatrixImpl {
         a.mapNonZeroComponents{ (_, _, a) in a * r }
     }
     
-    @_specialize(where R == 𝐅₂)
     public static func *(a: Self, b: Self) -> Self {
         assert(a.size.cols == b.size.rows)
         
@@ -181,6 +223,35 @@ public struct DefaultMatrixImpl<R: Ring>: MatrixImpl {
         }
         
         return .init(size: (a.size.rows, b.size.cols), data: Dictionary(pairs: data))
+    }
+    
+    public static func ⊕ (A: Self, B: Self) -> Self {
+        .init(size: (A.size.rows + B.size.rows, A.size.cols + B.size.cols)) { setEntry in
+            A.nonZeroComponents.forEach { (i, j, a) in setEntry(i, j, a) }
+            B.nonZeroComponents.forEach { (i, j, a) in setEntry(i + A.size.rows, j + A.size.cols, a) }
+        }
+    }
+    
+    public static func ⊗ (A: Self, B: Self) -> Self {
+        .init(size: (A.size.rows * B.size.rows, A.size.cols * B.size.cols)) { setEntry in
+            A.nonZeroComponents.forEach { (i, j, a) in
+                B.nonZeroComponents.forEach { (k, l, b) in
+                    let p = i * B.size.rows + k
+                    let q = j * B.size.cols + l
+                    let c = a * b
+                    setEntry(p, q, c)
+                }
+            }
+        }
+    }
+
+    public func serialize() -> [R] {
+        let (n, m) = self.size
+        var grid = Array(repeating: R.zero, count: n * m)
+        for (i, j, a) in nonZeroComponents {
+            grid[i * m + j] = a
+        }
+        return grid
     }
 }
 

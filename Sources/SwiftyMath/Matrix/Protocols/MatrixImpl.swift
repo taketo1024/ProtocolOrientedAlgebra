@@ -27,9 +27,10 @@ public protocol MatrixImpl: CustomStringConvertible {
     var trace: BaseRing { get }
 
     func submatrix(rowRange: CountableRange<Int>,  colRange: CountableRange<Int>) -> Self
-    
-    var nonZeroComponents: AnySequence<MatrixComponent<BaseRing>> { get }
-    func serialize() -> [BaseRing]
+    func concat(_ B: Self) -> Self
+    func stack(_ B: Self) -> Self
+    func permuteRows(by σ: Permutation<DynamicSize>) -> Self
+    func permuteCols(by σ: Permutation<DynamicSize>) -> Self
     
     static func ==(a: Self, b: Self) -> Bool
     static func +(a: Self, b: Self) -> Self
@@ -38,7 +39,10 @@ public protocol MatrixImpl: CustomStringConvertible {
     static func *(r: BaseRing, a: Self) -> Self
     static func *(a: Self, r: BaseRing) -> Self
     static func *(a: Self, b: Self) -> Self
-    
+    static func ⊕(a: Self, B: Self) -> Self
+    static func ⊗(a: Self, B: Self) -> Self
+
+    func serialize() -> [BaseRing]
     var detailDescription: String { get }
 }
 
@@ -80,21 +84,6 @@ extension MatrixImpl {
         size.rows == size.cols
     }
     
-    public var isInvertible: Bool {
-        determinant.isInvertible
-    }
-    
-    public var trace: BaseRing {
-        assert(isSquare)
-        return (0 ..< size.rows).sum { i in
-            self[i, i]
-        }
-    }
-    
-    public static func -(a: Self, b: Self) -> Self {
-        a + (-b)
-    }
-    
     public var description: String {
         "[" + (0 ..< size.rows).map({ i in
             return (0 ..< size.cols).map({ j in
@@ -114,4 +103,9 @@ extension MatrixImpl {
             }).joined(separator: "\n\t") + "]"
         }
     }
+}
+
+public protocol SparseMatrixImpl: MatrixImpl {
+    var numberOfNonZeros: Int { get }
+    var nonZeroComponents: AnySequence<MatrixComponent<BaseRing>> { get }
 }

@@ -140,13 +140,4 @@ class ModuleTests: XCTestCase {
         let a = A(3)
         XCTAssertEqual(f(a), A(6))
     }
-    
-    func testMatrixMul() {
-        let v = [A(1), A(2), A(3)]
-        let X: Matrix<_3, _2, 𝐙> =
-             [1, 0,
-             0, 3,
-            -1, 2]
-        XCTAssertEqual( A.combine(basis: v, matrix: X), [A(-2), A(12)] )
-    }
 }

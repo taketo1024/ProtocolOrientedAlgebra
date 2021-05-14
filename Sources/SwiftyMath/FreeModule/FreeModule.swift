@@ -32,14 +32,6 @@ extension FreeModule {
         self.init(elements: zip(generators, coefficients))
     }
     
-    public init<S1: Sequence, n>(generators: S1, coefficients: ColVector<n, BaseRing>) where S1.Element == Generator {
-        let array = Array(generators)
-        assert(array.count >= coefficients.size.rows)
-        
-        let elements = coefficients.nonZeroComponents.map{ (i, _, r) in (array[i], r) }
-        self.init(elements: elements)
-    }
-    
     public init(_ z: LinearCombination<Generator, BaseRing>) {
         self.init(elements: z.elements)
     }

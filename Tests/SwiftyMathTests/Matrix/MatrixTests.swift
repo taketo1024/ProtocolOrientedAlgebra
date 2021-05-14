@@ -194,78 +194,77 @@ class MatrixTests: XCTestCase {
         XCTAssertEqual(a3, [3])
     }
     
-//    func testConcatHor() {
-//        let a: M = [1,2,3,4]
-//        let b: M = [5,6,7,8]
-//        let c = a.concatHorizontally(b).as(Matrix<_2, _4, R>.self)
-//
-//        let r = Matrix<_2, _4, R>(
-//            1,2,5,6,
-//            3,4,7,8
-//        )
-//
-//        XCTAssertEqual(c, r)
-//    }
-//
-//    func testConcatVer() {
-//        let a: M = [1,2,3,4]
-//        let b: M = [5,6,7,8]
-//        let c = a.concatVertically(b).as(Matrix<_4, _2, R>.self)
-//
-//        let r = Matrix<_4, _2, R>(
-//            1,2,
-//            3,4,
-//            5,6,
-//            7,8
-//        )
-//
-//        XCTAssertEqual(c, r)
-//    }
-//
-//    func testDirectSum() {
-//        let a: M = [1,2,3,4]
-//        let b: M = [5,6,7,8]
-//        let c = (a ⊕ b).as(Matrix4<R>.self)
-//
-//        let r = Matrix4(
-//            1,2,0,0,
-//            3,4,0,0,
-//            0,0,5,6,
-//            0,0,7,8
-//        )
-//
-//        XCTAssertEqual(c, r)
-//    }
-//
-//    func testTensorProduct() {
-//        let a: M = [1,2,0,3]
-//        let b: M = [1,2,3,4]
-//        let c = (a ⊗ b).as(Matrix4<R>.self)
-//        
-//        let r = Matrix4(
-//            1,2,2,4,
-//            3,4,6,8,
-//            0,0,3,6,
-//            0,0,9,12
-//        )
-//        
-//        XCTAssertEqual(c, r)
-//    }
+    func testConcat() {
+        let a: M = [1,2,3,4]
+        let b: M = [5,6,7,8]
+        let c = a.concat(b).as(Matrix<_2, _4, R>.self)
+
+        let r: Matrix<_2, _4, R> = [
+            1,2,5,6,
+            3,4,7,8
+        ]
+
+        XCTAssertEqual(c, r)
+    }
+
+    func testStack() {
+        let a: M = [1,2,3,4]
+        let b: M = [5,6,7,8]
+        let c = a.stack(b).as(Matrix<_4, _2, R>.self)
+
+        let r: Matrix<_4, _2, R> = [
+            1,2,
+            3,4,
+            5,6,
+            7,8
+        ]
+
+        XCTAssertEqual(c, r)
+    }
     
-//    func testCodable() {
-//        let a: M = [1,2,3,4]
-//        let d = try! JSONEncoder().encode(a)
-//        let b = try! JSONDecoder().decode(M<R>.self, from: d)
-//        XCTAssertEqual(a, b)
-//    }
-//
-//    func testConcurrent() {
-//        let (n, m) = (10, 10)
-//        let a = MatrixDxD<R>(size: (n, m), concurrentIterations: n) { (i, setEntry) in
-//            for j in 0 ..< m {
-//                setEntry(i, j, i * m + j)
-//            }
-//        }
-//        XCTAssertEqual(a.asArray, (0 ..< n * m).toArray())
-//    }
+    func testPermuteRows() {
+        let a: M = [1,2,3,4]
+        let s = Permutation<_2>.transposition(0, 1)
+        let b = a.permuteRows(by: s)
+
+        XCTAssertEqual(b, [3,4,1,2])
+    }
+
+    func testPermuteCols() {
+        let a: M = [1,2,3,4]
+        let s = Permutation<_2>.transposition(0, 1)
+        let b = a.permuteCols(by: s)
+
+        XCTAssertEqual(b, [2,1,4,3])
+    }
+
+    func testDirectSum() {
+        let a: M = [1,2,3,4]
+        let b: M = [5,6,7,8]
+        let c = (a ⊕ b).as( Matrix4x4<R>.self )
+
+        let r: Matrix4x4 = [
+            1,2,0,0,
+            3,4,0,0,
+            0,0,5,6,
+            0,0,7,8
+        ]
+
+        XCTAssertEqual(c, r)
+    }
+
+    func testTensorProduct() {
+        let a: M = [1,2,0,3]
+        let b: M = [1,2,3,4]
+        let c = (a ⊗ b).as( Matrix4x4<R>.self )
+        
+        let r: Matrix4x4 = [
+            1,2,2,4,
+            3,4,6,8,
+            0,0,3,6,
+            0,0,9,12
+        ]
+        
+        XCTAssertEqual(c, r)
+    }
 }
