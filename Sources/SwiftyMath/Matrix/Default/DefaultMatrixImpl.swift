@@ -175,7 +175,7 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
     
     public static func -(a: Self, b: Self) -> Self {
         assert(a.size == b.size)
-        return .init(size: a.size, data: a.data.merging(b.data, uniquingKeysWith: -).exclude{ $0.value.isZero })
+        return a + (-b)
     }
     
     public static func * (r: R, a: DefaultMatrixImpl<R>) -> Self {
