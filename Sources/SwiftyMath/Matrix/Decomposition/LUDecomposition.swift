@@ -60,8 +60,9 @@ public struct LUDecomposition<Impl: MatrixImpl_LU, n: SizeType, m: SizeType> {
         .init(impl.kernel)
     }
     
-    public func solve(_ b: MatrixInterface<Impl, n, _1>) -> MatrixInterface<Impl, m, _1>? {
-        impl.solve(b.impl).flatMap{ .init($0) }
+    public func solve<k>(_ b: MatrixInterface<Impl, n, k>) -> MatrixInterface<Impl, m, k>? {
+        assert(impl.size.rows == b.size.rows)
+        return impl.solve(b.impl).flatMap{ .init($0) }
     }
 }
 

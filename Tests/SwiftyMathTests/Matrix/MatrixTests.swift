@@ -91,9 +91,9 @@ class MatrixTests: XCTestCase {
     }
 
     func testSub() {
-        let a: M = [1,2,3,4]
+        let a: M = [1,0,3,4]
         let b: M = [2,1,7,2]
-        XCTAssertEqual(a - b, [-1,1,-4,2])
+        XCTAssertEqual(a - b, [-1,-1,-4,2])
     }
     
     func testMul() {

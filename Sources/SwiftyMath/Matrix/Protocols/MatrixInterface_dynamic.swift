@@ -46,8 +46,8 @@ extension MatrixInterface where n == DynamicSize, m == _1 { // DColVector
         })
     }
     
-    public init(_ grid: [BaseRing]) {
-        self.init(Impl.init(size: (grid.count, 1), grid: grid))
+    public init(size n: Int, grid: [BaseRing]) {
+        self.init(Impl.init(size: (n, 1), grid: grid))
     }
     
     public static func zero(size n: Int) -> Self {
@@ -68,8 +68,8 @@ extension MatrixInterface where n == _1, m == DynamicSize { // DRowVector
         })
     }
     
-    public init(_ grid: [BaseRing]) {
-        self.init(Impl.init(size: (1, grid.count), grid: grid))
+    public init(size m: Int, grid: [BaseRing]) {
+        self.init(Impl.init(size: (1, m), grid: grid))
     }
     
     public static func zero(size m: Int) -> Self {
