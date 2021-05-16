@@ -7,12 +7,12 @@
 
 public struct LUDecomposition<Impl: MatrixImpl_LU, n: SizeType, m: SizeType> {
     public typealias Matrix    = MatrixInterface<Impl, n, m>
-    public typealias LeftPerm  = MatrixInterface<Impl, n, n>
-    public typealias RightPerm = MatrixInterface<Impl, m, m>
     public typealias MatrixL   = MatrixInterface<Impl, n, DynamicSize>
     public typealias MatrixU   = MatrixInterface<Impl, DynamicSize, m>
-    public typealias Image     = MatrixInterface<Impl, n, DynamicSize>
-    public typealias Kernel    = MatrixInterface<Impl, m, DynamicSize>
+    public typealias LeftPermutation  = MatrixInterface<Impl, n, n>
+    public typealias RightPermutation = MatrixInterface<Impl, m, m>
+    public typealias CodomainSub = MatrixInterface<Impl, n, DynamicSize>
+    public typealias DomainSub   = MatrixInterface<Impl, m, DynamicSize>
 
     public let impl: Impl
     
@@ -28,20 +28,12 @@ public struct LUDecomposition<Impl: MatrixImpl_LU, n: SizeType, m: SizeType> {
         .init(impl.U)
     }
     
-    public var P: LeftPerm {
+    public var leftPermutation: LeftPermutation {
         .init(impl.P)
     }
 
-    public var Q: RightPerm {
+    public var rightPermutation: RightPermutation {
         .init(impl.Q)
-    }
-    
-    public var LU: (MatrixL, MatrixU) {
-        (L, U)
-    }
-    
-    public var PQ: (LeftPerm, RightPerm) {
-        (P, Q)
     }
     
     public var rank: Int {
@@ -52,12 +44,32 @@ public struct LUDecomposition<Impl: MatrixImpl_LU, n: SizeType, m: SizeType> {
         impl.nullity
     }
     
-    public var image: Image {
+    public var kernel: DomainSub {
+        .init(impl.kernel)
+    }
+    
+    public var image: CodomainSub {
         .init(impl.image)
     }
     
-    public var kernel: Kernel {
-        .init(impl.kernel)
+    // V / Ker(f) ≅ Im(f)
+    public var kernelComplement: DomainSub {
+        // A = P^-1 L U Q^-1.
+        // Q * [I_r; O] gives the injective part of U.
+        
+        let r = rank
+        let Q = rightPermutation
+        return Q.submatrix(colRange: 0 ..< r)
+    }
+    
+    // Coker(f) := W / Im(f)
+    public var cokernel: CodomainSub {
+        // Im(A) = Im(P^-1 L U Q^-1) = Im(P^-1 L).
+        //   -> complement: Im(P^-1 [O; I_{n-r}])
+        
+        let (n, r) = (impl.size.rows, rank)
+        let Pinv = leftPermutation.inverse!
+        return Pinv.submatrix(colRange: r ..< n)
     }
     
     public func solve<k>(_ b: MatrixInterface<Impl, n, k>) -> MatrixInterface<Impl, m, k>? {
