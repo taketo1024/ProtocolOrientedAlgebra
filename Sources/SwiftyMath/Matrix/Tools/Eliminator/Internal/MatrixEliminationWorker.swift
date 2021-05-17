@@ -6,19 +6,19 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-internal final class RowEliminationData<R: Ring> {
-    typealias Row = RowAlignedMatrixData<R>.Row
+internal final class MatrixEliminationWorker<R: Ring> {
+    typealias Row = MatrixEliminationData<R>.Row
 
-    private var data: RowAlignedMatrixData<R>
+    private var data: MatrixEliminationData<R>
     private var tracker: Tracker
     
-    init(data: RowAlignedMatrixData<R>) {
+    init(data: MatrixEliminationData<R>) {
         self.data = data
         self.tracker = Tracker(data)
     }
     
     convenience init<n, m>(_ A: Matrix<n, m, R>) {
-        self.init(data: RowAlignedMatrixData(A))
+        self.init(data: MatrixEliminationData(A))
     }
     
     var size: (Int, Int) {
@@ -118,7 +118,7 @@ internal final class RowEliminationData<R: Ring> {
         private var rowWeights: [Int]
         private var col2rowHead: [Set<Int>] // [col : { rows having head at col }]
 
-        init(_ data: RowAlignedMatrixData<R>) {
+        init(_ data: MatrixEliminationData<R>) {
             self.rowWeights = data.rows.map{ l in
                 l.sum{ c in c.value.matrixEliminationWeight }
             }

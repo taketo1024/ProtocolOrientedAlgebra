@@ -8,7 +8,7 @@
 internal typealias RowEntry<R> = (col: Int, value: R)
 internal typealias ColEntry<R> = (row: Int, value: R)
 
-internal final class RowAlignedMatrixData<R: Ring> {
+internal final class MatrixEliminationData<R: Ring> {
     typealias Row = LinkedList<RowEntry<R>>
     
     var size: (rows: Int, cols: Int)
@@ -36,7 +36,7 @@ internal final class RowAlignedMatrixData<R: Ring> {
         rows[i]
     }
     
-    func sub(_ rowRange: Range<Int>) -> RowAlignedMatrixData<R> {
+    func sub(_ rowRange: Range<Int>) -> MatrixEliminationData<R> {
         .init(
             size: (rowRange.upperBound - rowRange.lowerBound, size.cols),
             rows: Array(rows[rowRange.lowerBound ..< rowRange.upperBound])
@@ -48,7 +48,7 @@ internal final class RowAlignedMatrixData<R: Ring> {
         rows.append(row)
     }
     
-    func concat(_ data: RowAlignedMatrixData<R>) {
+    func concat(_ data: MatrixEliminationData<R>) {
         assert(size.cols == data.size.cols)
         size = (size.rows + data.size.rows, size.cols)
         rows.append(contentsOf: data.rows)

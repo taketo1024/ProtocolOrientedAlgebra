@@ -16,7 +16,7 @@ public class MatrixEliminator<R: EuclideanRing> {
         case Smith
     }
     
-    let data: RowEliminationData<R>
+    let worker: MatrixEliminationWorker<R>
     var rowOps: [RowElementaryOperation<R>]
     var colOps: [ColElementaryOperation<R>]
     var debug: Bool
@@ -24,38 +24,38 @@ public class MatrixEliminator<R: EuclideanRing> {
     private var aborted: Bool = false
     
     public static func eliminate<n, m>(target: Matrix<n, m, R>, form: MatrixEliminator<R>.Form = .Diagonal, debug: Bool = false) -> MatrixEliminationResult<n, m, R> {
-        let data = RowEliminationData(target)
+        let worker = MatrixEliminationWorker(target)
         let e: MatrixEliminator<R> = {
             switch form {
             case .RowEchelon:
-                return RowEchelonEliminator(data: data, debug: debug)
+                return RowEchelonEliminator(worker: worker, debug: debug)
             case .ColEchelon:
-                return ColEchelonEliminator(data: data, debug: debug)
+                return ColEchelonEliminator(worker: worker, debug: debug)
             case .RowHermite:
-                return RowEchelonEliminator(data: data, reduced: true, debug: debug)
+                return RowEchelonEliminator(worker: worker, reduced: true, debug: debug)
             case .ColHermite:
-                return ColEchelonEliminator(data: data, reduced: true, debug: debug)
+                return ColEchelonEliminator(worker: worker, reduced: true, debug: debug)
             case .Smith:
-                return SmithEliminator(data: data, debug: debug)
+                return SmithEliminator(worker: worker, debug: debug)
             default:
-                return DiagonalEliminator(data: data, debug: debug)
+                return DiagonalEliminator(worker: worker, debug: debug)
             }
         }()
         
         e.run()
         
-        return .init(form: form, result: data.resultAs(Matrix.self), rowOps: e.rowOps, colOps: e.colOps)
+        return .init(form: form, result: worker.resultAs(Matrix.self), rowOps: e.rowOps, colOps: e.colOps)
     }
     
-    init(data: RowEliminationData<R>, debug: Bool) {
-        self.data = data
+    init(worker: MatrixEliminationWorker<R>, debug: Bool) {
+        self.worker = worker
         self.rowOps = []
         self.colOps = []
         self.debug = debug
     }
     
     var size: (rows: Int, cols: Int) {
-        data.size
+        worker.size
     }
     
     final func run() {
@@ -88,7 +88,7 @@ public class MatrixEliminator<R: EuclideanRing> {
     
     final func subrun(_ e: MatrixEliminator<R>, transpose: Bool = false) {
         if transpose {
-            e.data.transpose()
+            e.worker.transpose()
         }
         
         e.run()
@@ -97,7 +97,7 @@ public class MatrixEliminator<R: EuclideanRing> {
             rowOps += e.rowOps
             colOps += e.colOps
         } else {
-            e.data.transpose()
+            e.worker.transpose()
             rowOps += e.colOps.map{ s in s.transposed }
             colOps += e.rowOps.map{ s in s.transposed }
         }
@@ -125,7 +125,7 @@ public class MatrixEliminator<R: EuclideanRing> {
     }
 
     func apply(_ s: RowElementaryOperation<R>) {
-        data.apply(s)
+        worker.apply(s)
         append(s)
     }
 
@@ -155,7 +155,7 @@ public class MatrixEliminator<R: EuclideanRing> {
             return
         }
         
-        print("\n", data.resultAs(MatrixDxD.self).detailDescription, "\n")
+        print("\n", worker.resultAs(MatrixDxD.self).detailDescription, "\n")
     }
     
     public var description: String {

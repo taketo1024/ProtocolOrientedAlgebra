@@ -5,12 +5,12 @@
 //  Created by Taketo Sano on 2019/10/26.
 //
 
-public enum RowElementaryOperation<R: Ring> {
+internal enum RowElementaryOperation<R: Ring> {
     case AddRow(at: Int, to: Int, mul: R)
     case MulRow(at: Int, by: R)
     case SwapRows(Int, Int)
     
-    public var determinant: R {
+    var determinant: R {
         switch self {
         case .AddRow(_, _, _):
             return .identity
@@ -21,7 +21,7 @@ public enum RowElementaryOperation<R: Ring> {
         }
     }
     
-    public var inverse: Self {
+    var inverse: Self {
         switch self {
         case let .AddRow(i, j, r):
             return .AddRow(at: i, to: j, mul: -r)
@@ -32,7 +32,7 @@ public enum RowElementaryOperation<R: Ring> {
         }
     }
     
-    public var transposed: ColElementaryOperation<R> {
+    var transposed: ColElementaryOperation<R> {
         switch self {
         case let .AddRow(i, j, r):
             return .AddCol(at: i, to: j, mul: r)
@@ -44,12 +44,12 @@ public enum RowElementaryOperation<R: Ring> {
     }
 }
 
-public enum ColElementaryOperation<R: Ring> {
+internal enum ColElementaryOperation<R: Ring> {
     case AddCol(at: Int, to: Int, mul: R)
     case MulCol(at: Int, by: R)
     case SwapCols(Int, Int)
     
-    public var determinant: R {
+    var determinant: R {
         switch self {
         case .AddCol(_, _, _):
             return .identity
@@ -60,7 +60,7 @@ public enum ColElementaryOperation<R: Ring> {
         }
     }
     
-    public var inverse: Self {
+    var inverse: Self {
         switch self {
         case let .AddCol(i, j, r):
             return .AddCol(at: i, to: j, mul: -r)
@@ -71,7 +71,7 @@ public enum ColElementaryOperation<R: Ring> {
         }
     }
     
-    public var transposed: RowElementaryOperation<R> {
+    var transposed: RowElementaryOperation<R> {
         switch self {
         case let .AddCol(i, j, r):
             return .AddRow(at: i, to: j, mul: r)
@@ -84,8 +84,8 @@ public enum ColElementaryOperation<R: Ring> {
 }
 
 extension Matrix where Impl: SparseMatrixImpl {
-    public func applyRowOperations<S: Sequence>(_ ops: S) -> Self where S.Element == RowElementaryOperation<BaseRing> {
-        let data = RowAlignedMatrixData(self)
+    func applyRowOperations<S: Sequence>(_ ops: S) -> Self where S.Element == RowElementaryOperation<BaseRing> {
+        let data = MatrixEliminationData(self)
         
         // TODO batch addRows
         for op in ops {
@@ -95,9 +95,9 @@ extension Matrix where Impl: SparseMatrixImpl {
         return data.as(Self.self)
     }
 
-    public func applyColOperations<S: Sequence>(_ ops: S) -> Self where S.Element == ColElementaryOperation<BaseRing> {
+    func applyColOperations<S: Sequence>(_ ops: S) -> Self where S.Element == ColElementaryOperation<BaseRing> {
         // TODO transpose in place to reduce overhead
-        let data = RowAlignedMatrixData(self.transposed)
+        let data = MatrixEliminationData(self.transposed)
         
         // TODO batch addRows
         for op in ops {
