@@ -155,7 +155,7 @@ public class MatrixEliminator<R: EuclideanRing> {
             return
         }
         
-        print("\n", data.resultAs(DMatrix.self).detailDescription, "\n")
+        print("\n", data.resultAs(MatrixDxD.self).detailDescription, "\n")
     }
     
     public var description: String {

@@ -10,7 +10,6 @@
 // The default implementation works over any ring, but is not useful for high-speed computation.
 
 public typealias Matrix<n: SizeType, m: SizeType, R: Ring> = MatrixIF<DefaultMatrixImpl<R>, n, m>
-
 public typealias Matrix1x1<R: Ring> = Matrix<_1, _1, R>
 public typealias Matrix2x2<R: Ring> = Matrix<_2, _2, R>
 public typealias Matrix3x3<R: Ring> = Matrix<_3, _3, R>
@@ -26,4 +25,4 @@ public typealias Vector3<R: Ring> = ColVector<_3, R>
 public typealias Vector4<R: Ring> = ColVector<_4, R>
 public typealias VectorD<R: Ring> = ColVector<DynamicSize, R>
 
-public typealias MatrixComponent<R: Ring> = (row: Int, col: Int, value: R)
+public typealias MatrixEntry<R: Ring> = (row: Int, col: Int, value: R)

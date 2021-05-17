@@ -188,7 +188,7 @@ extension MatrixIF where Impl: SparseMatrixImpl {
         impl.numberOfNonZeros
     }
     
-    public var nonZeroComponents: AnySequence<MatrixComponent<BaseRing>> {
+    public var nonZeroComponents: AnySequence<MatrixEntry<BaseRing>> {
         impl.nonZeroComponents
     }
 }

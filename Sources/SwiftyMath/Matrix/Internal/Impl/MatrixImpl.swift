@@ -107,5 +107,5 @@ extension MatrixImpl {
 
 public protocol SparseMatrixImpl: MatrixImpl {
     var numberOfNonZeros: Int { get }
-    var nonZeroComponents: AnySequence<MatrixComponent<BaseRing>> { get }
+    var nonZeroComponents: AnySequence<MatrixEntry<BaseRing>> { get }
 }

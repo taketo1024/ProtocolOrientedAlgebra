@@ -227,7 +227,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     //  produce P = (Pn ... P1) * I by applying the row-ops from P1 to Pn.
     
     private func composeRowOps<n, m, S>(size: Int, ops: S, restrictedToCols colRange: Range<Int>? = nil) -> Matrix<n, m, R> where S: Sequence, S.Element == RowElementaryOperation<R> {
-        let I = DMatrix<R>.identity(size: (size, size)).submatrix(colRange: colRange ?? 0 ..< size)
+        let I = MatrixDxD<R>.identity(size: (size, size)).submatrix(colRange: colRange ?? 0 ..< size)
         return I.applyRowOperations(ops).as(Matrix.self)
     }
     
@@ -235,7 +235,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     //  produce P = I * (Pn ... P1) by applying the corresponding col-ops from Pn to P1.
     
     private func composeRowOps<n, m, S>(size: Int, ops: S, restrictedToRows rowRange: Range<Int>) -> Matrix<n, m, R> where S: Sequence, S.Element == RowElementaryOperation<R> {
-        let I = DMatrix<R>.identity(size: (size, size)).submatrix(rowRange: rowRange)
+        let I = MatrixDxD<R>.identity(size: (size, size)).submatrix(rowRange: rowRange)
         return I.applyColOperations(ops.reversed().map{ $0.opposite }).as(Matrix.self)
     }
     
@@ -243,7 +243,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     //  produce Q = I * (Q1 ... Qn) by applying the col-ops from Q1 to Qn.
     
     private func composeColOps<n, m, S>(size: Int, ops: S, restrictedToRows rowRange: Range<Int>? = nil) -> Matrix<n, m, R> where S: Sequence, S.Element == ColElementaryOperation<R> {
-        let I = DMatrix<R>.identity(size: (size, size)).submatrix(rowRange: rowRange ?? 0 ..< size)
+        let I = MatrixDxD<R>.identity(size: (size, size)).submatrix(rowRange: rowRange ?? 0 ..< size)
         return I.applyColOperations(ops).as(Matrix.self)
     }
     
@@ -251,7 +251,7 @@ public struct MatrixEliminationResult<n: SizeType, m: SizeType, R: EuclideanRing
     //  produce Q = (Q1 ... Qn) * I by applying the corresponding row-ops from Qn to Q1.
     
     private func composeColOps<n, m, S>(size: Int, ops: S, restrictedToCols colRange: Range<Int>) -> Matrix<n, m, R> where S: Sequence, S.Element == ColElementaryOperation<R> {
-        let I = DMatrix<R>.identity(size: (size, size)).submatrix(colRange: colRange)
+        let I = MatrixDxD<R>.identity(size: (size, size)).submatrix(colRange: colRange)
         return I.applyRowOperations(ops.reversed().map{ $0.opposite }).as(Matrix.self)
     }
 }

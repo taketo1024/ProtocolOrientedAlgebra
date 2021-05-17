@@ -46,7 +46,7 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
     }
     
     public var nonZeroComponents: AnySequence<(row: Int, col: Int, value: R)> {
-        AnySequence( data.lazy.map{ (c, a) -> MatrixComponent<R> in (c.row, c.col, a) } )
+        AnySequence( data.lazy.map{ (c, a) -> MatrixEntry<R> in (c.row, c.col, a) } )
     }
     
     private func mapNonZeroComponents(_ f: (Int, Int, R) -> R) -> Self {

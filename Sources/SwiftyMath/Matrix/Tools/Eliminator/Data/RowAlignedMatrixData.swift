@@ -5,8 +5,11 @@
 //  Created by Taketo Sano on 2019/11/02.
 //
 
+internal typealias RowEntry<R> = (col: Int, value: R)
+internal typealias ColEntry<R> = (row: Int, value: R)
+
 internal final class RowAlignedMatrixData<R: Ring> {
-    typealias Row = LinkedList<RowComponent<R>>
+    typealias Row = LinkedList<RowEntry<R>>
     
     var size: (rows: Int, cols: Int)
     var rows: [Row]
@@ -16,7 +19,7 @@ internal final class RowAlignedMatrixData<R: Ring> {
         self.rows = rows
     }
     
-    convenience init<S: Sequence>(size: (rows: Int, cols: Int), components: S) where S.Element == MatrixComponent<R> {
+    convenience init<S: Sequence>(size: (rows: Int, cols: Int), components: S) where S.Element == MatrixEntry<R> {
         self.init(size: size, rows: Self.generateRows(size.rows, components))
     }
     
@@ -104,9 +107,9 @@ internal final class RowAlignedMatrixData<R: Ring> {
         }
     }
     
-    var components: AnySequence<MatrixComponent<R>> {
+    var components: AnySequence<MatrixEntry<R>> {
         AnySequence((0 ..< size.rows).lazy.flatMap { i in
-            self.row(i).map{ (j, a) in MatrixComponent(i, j, a) }
+            self.row(i).map{ (j, a) in (i, j, a) }
         })
     }
     
@@ -180,7 +183,7 @@ internal final class RowAlignedMatrixData<R: Ring> {
                 
             } else {
                 let a2 = r * a1
-                toPtr.pointee.insertNext( RowComponent(j1, a2) )
+                toPtr.pointee.insertNext( RowEntry(j1, a2) )
                 (toPrevPtr, toPtr) = (toPtr, toPtr.pointee.next!)
                 
                 dw += a2.matrixEliminationWeight
@@ -194,11 +197,11 @@ internal final class RowAlignedMatrixData<R: Ring> {
         return dw
     }
     
-    private static func generateRows<S: Sequence>(_ n: Int, _ components: S) -> [Row] where S.Element == MatrixComponent<R> {
+    private static func generateRows<S: Sequence>(_ n: Int, _ components: S) -> [Row] where S.Element == MatrixEntry<R> {
         let group = components.group{ c in c.row }
         return (0 ..< n).map { i in
             if let list = group[i] {
-                let sorted = list.map{ c in RowComponent(c.col, c.value) }.sorted{ $0.col }
+                let sorted = list.map{ c in RowEntry(c.col, c.value) }.sorted{ $0.col }
                 return Row(sorted)
             } else {
                 return Row()

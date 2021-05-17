@@ -35,12 +35,12 @@ internal final class RowEliminationData<R: Ring> {
         tracker.rowWeight(i)
     }
     
-    func headElements(inCol j: Int) -> [ColComponent<R>] {
+    func headElements(inCol j: Int) -> [ColEntry<R>] {
         tracker.rows(inCol: j).map{ i in (i, row(i).headElement!.value) }
     }
     
-    func elements(inCol j0: Int, aboveRow i0: Int) -> [ColComponent<R>] {
-        (0 ..< i0).compactMap { i -> ColComponent<R>? in
+    func elements(inCol j0: Int, aboveRow i0: Int) -> [ColEntry<R>] {
+        (0 ..< i0).compactMap { i -> ColEntry<R>? in
             if let a = data.find(i, j0).hit?.pointee.element.value {
                 return (i, a)
             } else {
@@ -106,7 +106,7 @@ internal final class RowEliminationData<R: Ring> {
         }
     }
     
-    var components: AnySequence<MatrixComponent<R>> {
+    var components: AnySequence<MatrixEntry<R>> {
         data.components
     }
     
