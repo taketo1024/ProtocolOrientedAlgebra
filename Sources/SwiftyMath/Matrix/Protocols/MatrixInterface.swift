@@ -17,6 +17,30 @@ public struct MatrixInterface<Impl: MatrixImpl, n: SizeType, m: SizeType>: SetTy
         self.impl = impl
     }
     
+    public init(size: (Int, Int), initializer: ( (Int, Int, BaseRing) -> Void ) -> Void) {
+        self.init(Impl(size: size, initializer: initializer))
+    }
+
+    public init<S: Sequence>(size: (Int, Int), grid: S) where S.Element == BaseRing {
+        self.init(Impl(size: size, grid: grid))
+    }
+    
+    public init<OtherImpl>(_ other: MatrixInterface<OtherImpl, n, m>) where OtherImpl.BaseRing == BaseRing {
+        self.init(Impl.init(size: other.size, grid: other.serialize()))
+    }
+    
+    public static func zero(size: (Int, Int)) -> Self {
+        self.init(Impl.zero(size: size))
+    }
+    
+    public static func identity(size: (Int, Int)) -> Self {
+        self.init(Impl.identity(size: size))
+    }
+    
+    public static func unit(size: (Int, Int), at: (Int, Int)) -> Self {
+        self.init(Impl.unit(size: size, at: at))
+    }
+    
     public subscript(i: Int, j: Int) -> BaseRing {
         get {
             impl[i, j]
@@ -121,6 +145,14 @@ public struct MatrixInterface<Impl: MatrixImpl, n: SizeType, m: SizeType>: SetTy
         .init(A.impl ⊗ B.impl)
     }
     
+    public static func *(σ: Permutation<n>, a: Self) -> Self {
+        a.permuteRows(by: σ)
+    }
+    
+    public static func *(a: Self, σ: Permutation<m>) -> Self {
+        a.permuteCols(by: σ)
+    }
+    
     public func `as`<n1, m1>(_ type: MatrixInterface<Impl, n1, m1>.Type) -> MatrixInterface<Impl, n1, m1> {
         MatrixInterface<Impl, n1, m1>(impl)
     }
@@ -148,10 +180,6 @@ public struct MatrixInterface<Impl: MatrixImpl, n: SizeType, m: SizeType>: SetTy
             return "RowVec<\(str(n.self)); \(BaseRing.symbol)>"
         }
         return "Mat<\(str(n.self)), \(str(n.self)); \(BaseRing.symbol)>"
-    }
-    
-    public static func commonInit(size: (Int, Int), initializer: @escaping (Initializer) -> Void) -> Self {
-        Self(.init(size: size, initializer: initializer))
     }
 }
 
@@ -185,6 +213,26 @@ extension MatrixInterface where n == m { // n, m: possibly dynamic
 
 // ColVector
 extension MatrixInterface where m == _1 { // n: possibly dynamic
+    public init(size n: Int, initializer s: @escaping ((Int, BaseRing) -> Void) -> Void) {
+        self.init(Impl(size: (n, 1)) { setEntry in
+            s { (i, a) in
+                setEntry(i, 0, a)
+            }
+        })
+    }
+    
+    public init(size n: Int, grid: [BaseRing]) {
+        self.init(Impl.init(size: (n, 1), grid: grid))
+    }
+    
+    public static func zero(size n: Int) -> Self {
+        self.init(Impl.zero(size: (n, 1)))
+    }
+    
+    public static func unit(size n: Int, at i: Int) -> Self {
+        self.init(Impl.unit(size: (n, 1), at: (i, 0)))
+    }
+
     public subscript(index: Int) -> BaseRing {
         get {
             self[index, 0]
@@ -201,6 +249,26 @@ extension MatrixInterface where m == _1 { // n: possibly dynamic
 
 // RowVector
 extension MatrixInterface where n == _1 { // m: possibly dynamic
+    public init(size m: Int, initializer s: @escaping ((Int, BaseRing) -> Void) -> Void) {
+        self.init(Impl(size: (1, m)) { setEntry in
+            s { (j, a) in
+                setEntry(0, j, a)
+            }
+        })
+    }
+    
+    public init(size m: Int, grid: [BaseRing]) {
+        self.init(Impl.init(size: (1, m), grid: grid))
+    }
+    
+    public static func zero(size m: Int) -> Self {
+        self.init(Impl.zero(size: (1, m)))
+    }
+    
+    public static func unit(size m: Int, at j: Int) -> Self {
+        self.init(Impl.unit(size: (1, m), at: (0, j)))
+    }
+    
     public subscript(index: Int) -> BaseRing {
         get {
             self[0, index]

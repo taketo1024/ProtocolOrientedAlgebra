@@ -6,13 +6,13 @@
 //
 
 public struct LUDecomposition<Impl: MatrixImpl_LU, n: SizeType, m: SizeType> {
-    public typealias Matrix    = MatrixInterface<Impl, n, m>
-    public typealias MatrixL   = MatrixInterface<Impl, n, DynamicSize>
-    public typealias MatrixU   = MatrixInterface<Impl, DynamicSize, m>
-    public typealias LeftPermutation  = MatrixInterface<Impl, n, n>
-    public typealias RightPermutation = MatrixInterface<Impl, m, m>
-    public typealias CodomainSub = MatrixInterface<Impl, n, DynamicSize>
-    public typealias DomainSub   = MatrixInterface<Impl, m, DynamicSize>
+    public typealias Matrix<n, m> = MatrixInterface<Impl, n, m> where n: SizeType, m: SizeType
+    public typealias MatrixL = Matrix<n, DynamicSize>
+    public typealias MatrixU = Matrix<DynamicSize, m>
+    public typealias CodomainSub = Matrix<n, DynamicSize>
+    public typealias DomainSub   = Matrix<m, DynamicSize>
+    public typealias LeftPermutation  = Permutation<n>
+    public typealias RightPermutation = Permutation<m>
 
     public let impl: Impl
     
@@ -29,11 +29,11 @@ public struct LUDecomposition<Impl: MatrixImpl_LU, n: SizeType, m: SizeType> {
     }
     
     public var leftPermutation: LeftPermutation {
-        .init(impl.P)
+        impl.P.as(LeftPermutation.self)
     }
 
     public var rightPermutation: RightPermutation {
-        .init(impl.Q)
+        impl.Q.as(RightPermutation.self)
     }
     
     public var rank: Int {
@@ -58,8 +58,8 @@ public struct LUDecomposition<Impl: MatrixImpl_LU, n: SizeType, m: SizeType> {
         // Q * [I_r; O] gives the injective part of U.
         
         let r = rank
-        let Q = rightPermutation
-        return Q.submatrix(colRange: 0 ..< r)
+        let Q = rightPermutation.asMatrix(Matrix.self)
+        return Matrix(Q).submatrix(colRange: 0 ..< r)
     }
     
     // Coker(f) := W / Im(f)
@@ -68,7 +68,10 @@ public struct LUDecomposition<Impl: MatrixImpl_LU, n: SizeType, m: SizeType> {
         //   -> complement: Im(P^-1 [O; I_{n-r}])
         
         let (n, r) = (impl.size.rows, rank)
-        let Pinv = leftPermutation.inverse!
+        let P = leftPermutation
+        assert(P.length == impl.size.rows)
+        let Pinv = leftPermutation.inverse!.asMatrix(Matrix.self)
+        assert(Pinv.size.rows == impl.size.rows)
         return Pinv.submatrix(colRange: r ..< n)
     }
     
@@ -81,8 +84,8 @@ public struct LUDecomposition<Impl: MatrixImpl_LU, n: SizeType, m: SizeType> {
 public protocol MatrixImpl_LU: MatrixImpl {
     var L: Self { get }
     var U: Self { get }
-    var P: Self { get }
-    var Q: Self { get }
+    var P: Permutation<DynamicSize> { get }
+    var Q: Permutation<DynamicSize> { get }
     var rank: Int { get }
     var nullity: Int { get }
     var image: Self { get }

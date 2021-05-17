@@ -38,14 +38,14 @@ class PermutationTests: XCTestCase {
     }
     
     func testAsMatrix() {
-        let σ = S3(2,0,1)
+        let σ = S3(indices: 2,0,1)
         let A = σ.asMatrix
         XCTAssertEqual(A, [0,1,0,0,0,1,1,0,0])
     }
 
     func testAsMatrixProduct() {
-        let σ = S3(2,0,1)
-        let τ = S3(1,2,0)
+        let σ = S3(indices: 2,0,1)
+        let τ = S3(indices: 1,2,0)
         XCTAssertEqual(σ.asMatrix * τ.asMatrix, (σ * τ).asMatrix)
     }
 }

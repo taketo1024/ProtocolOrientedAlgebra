@@ -13,11 +13,11 @@ extension MatrixInterface: AdditiveGroup, Module, ExpressibleByArrayLiteral wher
     }
     
     public init(initializer: @escaping (Initializer) -> Void) {
-        self.init(Impl.init(size: Self.size, initializer: initializer))
+        self.init(size: Self.size, initializer: initializer)
     }
     
     public init<S: Sequence>(grid: S) where S.Element == BaseRing {
-        self.init(Impl.init(size: Self.size, grid: grid))
+        self.init(size: Self.size, grid: grid)
     }
     
     public init(arrayLiteral elements: ArrayLiteralElement...) {
@@ -25,11 +25,19 @@ extension MatrixInterface: AdditiveGroup, Module, ExpressibleByArrayLiteral wher
     }
 
     public static var zero: Self {
-        self.init(Impl.zero(size: Self.size))
+        self.zero(size: Self.size)
     }
     
+    public static var identity: Self {
+        self.identity(size: Self.size)
+    }
+
+    public static func scalar(_ a: BaseRing) -> Self {
+        self.init(Impl.scalar(size: Self.size, value: a))
+    }
+
     public static func unit(_ i: Int, _ j: Int) -> Self {
-        self.init(Impl.unit(size: Self.size, at: (i, j)))
+        self.unit(size: Self.size, at: (i, j))
     }
     
     public static func diagonal(_ entries: BaseRing...) -> Self {
@@ -46,14 +54,6 @@ extension MatrixInterface: Multiplicative, Monoid, Ring where n == m, n: StaticS
         self.init(Impl.scalar(size: Self.size, value: BaseRing.init(from: a)))
     }
     
-    public static func identity(_ a: BaseRing) -> Self {
-        self.init(Impl.identity(size: Self.size))
-    }
-
-    public static func scalar(_ a: BaseRing) -> Self {
-        self.init(Impl.scalar(size: Self.size, value: a))
-    }
-
     public var isInvertible: Bool {
         impl.isInvertible
     }
