@@ -58,7 +58,7 @@ public struct LUDecomposition<Impl: MatrixImpl_LU, n: SizeType, m: SizeType> {
         // Q * [I_r; O] gives the injective part of U.
         
         let r = rank
-        let Q = rightPermutation.asMatrix(Matrix.self)
+        let Q = rightPermutation.asMatrix(Impl.self)
         return Matrix(Q).submatrix(colRange: 0 ..< r)
     }
     
@@ -68,10 +68,7 @@ public struct LUDecomposition<Impl: MatrixImpl_LU, n: SizeType, m: SizeType> {
         //   -> complement: Im(P^-1 [O; I_{n-r}])
         
         let (n, r) = (impl.size.rows, rank)
-        let P = leftPermutation
-        assert(P.length == impl.size.rows)
-        let Pinv = leftPermutation.inverse!.asMatrix(Matrix.self)
-        assert(Pinv.size.rows == impl.size.rows)
+        let Pinv = leftPermutation.inverse!.asMatrix(Impl.self)
         return Pinv.submatrix(colRange: r ..< n)
     }
     
