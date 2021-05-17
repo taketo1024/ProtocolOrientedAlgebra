@@ -82,7 +82,7 @@ public struct Permutation<n: SizeType>: Multiplicative, SetType, Hashable {
         asMatrix(DefaultMatrixImpl<R>.self)
     }
     
-    public func asMatrix<_MatrixImpl>(_ implType: _MatrixImpl.Type) -> MatrixInterface<_MatrixImpl, n, n> {
+    public func asMatrix<_MatrixImpl>(_ implType: _MatrixImpl.Type) -> MatrixIF<_MatrixImpl, n, n> {
         .init(size: (length, length)) { setEntry in
             (0 ..< length).forEach { i in setEntry(self[i], i, .identity) }
         }

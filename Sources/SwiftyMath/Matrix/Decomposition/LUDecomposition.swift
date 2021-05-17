@@ -6,7 +6,7 @@
 //
 
 public struct LUDecomposition<Impl: MatrixImpl_LU, n: SizeType, m: SizeType> {
-    public typealias Matrix<n, m> = MatrixInterface<Impl, n, m> where n: SizeType, m: SizeType
+    public typealias Matrix<n, m> = MatrixIF<Impl, n, m> where n: SizeType, m: SizeType
     public typealias MatrixL = Matrix<n, DynamicSize>
     public typealias MatrixU = Matrix<DynamicSize, m>
     public typealias CodomainSub = Matrix<n, DynamicSize>
@@ -72,7 +72,7 @@ public struct LUDecomposition<Impl: MatrixImpl_LU, n: SizeType, m: SizeType> {
         return Pinv.submatrix(colRange: r ..< n)
     }
     
-    public func solve<k>(_ b: MatrixInterface<Impl, n, k>) -> MatrixInterface<Impl, m, k>? {
+    public func solve<k>(_ b: MatrixIF<Impl, n, k>) -> MatrixIF<Impl, m, k>? {
         assert(impl.size.rows == b.size.rows)
         return impl.solve(b.impl).flatMap{ .init($0) }
     }
@@ -90,7 +90,7 @@ public protocol MatrixImpl_LU: MatrixImpl {
     func solve(_ b: Self) -> Self?
 }
 
-extension MatrixInterface where Impl: MatrixImpl_LU {
+extension MatrixIF where Impl: MatrixImpl_LU {
     public func luDecomposition() -> LUDecomposition<Impl, n, m> {
         LUDecomposition(impl)
     }

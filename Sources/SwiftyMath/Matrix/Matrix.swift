@@ -6,10 +6,10 @@
 //
 
 // MEMO:
-// The implementation of a matrix-type can be changed by replacing the type parameter `Impl` of `MatrixInterface`.
+// The implementation of a matrix-type can be changed by replacing the type parameter `Impl` of `MatrixIF`.
 // The default implementation works over any ring, but is not useful for high-speed computation.
 
-public typealias Matrix<n: SizeType, m: SizeType, R: Ring> = MatrixInterface<DefaultMatrixImpl<R>, n, m>
+public typealias Matrix<n: SizeType, m: SizeType, R: Ring> = MatrixIF<DefaultMatrixImpl<R>, n, m>
 
 public typealias Matrix1x1<R: Ring> = Matrix<_1, _1, R>
 public typealias Matrix2x2<R: Ring> = Matrix<_2, _2, R>

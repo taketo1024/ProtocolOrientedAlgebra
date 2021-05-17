@@ -5,7 +5,7 @@
 //  Created by Taketo Sano on 2021/05/11.
 //
 
-extension MatrixInterface: AdditiveGroup, Module, ExpressibleByArrayLiteral where n: StaticSizeType, m: StaticSizeType {
+extension MatrixIF: AdditiveGroup, Module, ExpressibleByArrayLiteral where n: StaticSizeType, m: StaticSizeType {
     public typealias ArrayLiteralElement = BaseRing
     
     public static var size: (rows: Int, cols: Int) {
@@ -49,7 +49,7 @@ extension MatrixInterface: AdditiveGroup, Module, ExpressibleByArrayLiteral wher
     }
 }
 
-extension MatrixInterface: Multiplicative, Monoid, Ring where n == m, n: StaticSizeType {
+extension MatrixIF: Multiplicative, Monoid, Ring where n == m, n: StaticSizeType {
     public init(from a : 𝐙) {
         self.init(Impl.scalar(size: Self.size, value: BaseRing.init(from: a)))
     }
@@ -71,13 +71,13 @@ extension MatrixInterface: Multiplicative, Monoid, Ring where n == m, n: StaticS
     }
 }
 
-extension MatrixInterface where n == m, n == _1 {
+extension MatrixIF where n == m, n == _1 {
     public var asScalar: BaseRing {
         self[0, 0]
     }
 }
 
-extension MatrixInterface where n: StaticSizeType, m == _1 {
+extension MatrixIF where n: StaticSizeType, m == _1 {
     public init(initializer s: @escaping ((Int, BaseRing) -> Void) -> Void) {
         self.init { setEntry in
             s { (i, a) in
@@ -87,7 +87,7 @@ extension MatrixInterface where n: StaticSizeType, m == _1 {
     }
 }
 
-extension MatrixInterface where n == _1, m: StaticSizeType {
+extension MatrixIF where n == _1, m: StaticSizeType {
     public init(initializer s: @escaping ((Int, BaseRing) -> Void) -> Void) {
         self.init { setEntry in
             s { (j, a) in

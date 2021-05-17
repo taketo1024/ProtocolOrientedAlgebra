@@ -5,7 +5,7 @@
 //  Created by Taketo Sano.
 //
 
-public struct MatrixInterface<Impl: MatrixImpl, n: SizeType, m: SizeType>: SetType {
+public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: SetType {
     public typealias BaseRing = Impl.BaseRing
     public typealias Initializer = Impl.Initializer
     
@@ -25,7 +25,7 @@ public struct MatrixInterface<Impl: MatrixImpl, n: SizeType, m: SizeType>: SetTy
         self.init(Impl(size: size, grid: grid))
     }
     
-    public init<OtherImpl>(_ other: MatrixInterface<OtherImpl, n, m>) where OtherImpl.BaseRing == BaseRing {
+    public init<OtherImpl>(_ other: MatrixIF<OtherImpl, n, m>) where OtherImpl.BaseRing == BaseRing {
         self.init(Impl.init(size: other.size, grid: other.serialize()))
     }
     
@@ -61,39 +61,39 @@ public struct MatrixInterface<Impl: MatrixImpl, n: SizeType, m: SizeType>: SetTy
         impl.isSquare
     }
     
-    public var transposed: MatrixInterface<Impl, m, n> {
+    public var transposed: MatrixIF<Impl, m, n> {
         .init(impl.transposed)
     }
     
-    public func rowVector(_ i: Int) -> MatrixInterface<Impl, _1, m> {
+    public func rowVector(_ i: Int) -> MatrixIF<Impl, _1, m> {
         submatrix(rowRange: i ..< i + 1, colRange: 0 ..< size.cols)
-            .as(MatrixInterface<Impl, _1, m>.self)
+            .as(MatrixIF<Impl, _1, m>.self)
     }
     
-    public func colVector(_ j: Int) -> MatrixInterface<Impl, n, _1> {
+    public func colVector(_ j: Int) -> MatrixIF<Impl, n, _1> {
         submatrix(rowRange: 0 ..< size.rows, colRange: j ..< j + 1)
-            .as(MatrixInterface<Impl, n, _1>.self)
+            .as(MatrixIF<Impl, n, _1>.self)
     }
     
-    public func submatrix(rowRange: CountableRange<Int>) -> MatrixInterface<Impl, DynamicSize, m> {
+    public func submatrix(rowRange: CountableRange<Int>) -> MatrixIF<Impl, DynamicSize, m> {
         submatrix(rowRange: rowRange, colRange: 0 ..< size.cols)
-            .as(MatrixInterface<Impl, DynamicSize, m>.self)
+            .as(MatrixIF<Impl, DynamicSize, m>.self)
     }
     
-    public func submatrix(colRange: CountableRange<Int>) -> MatrixInterface<Impl, n, DynamicSize> {
+    public func submatrix(colRange: CountableRange<Int>) -> MatrixIF<Impl, n, DynamicSize> {
         submatrix(rowRange: 0 ..< size.rows, colRange: colRange)
-            .as(MatrixInterface<Impl, n, DynamicSize>.self)
+            .as(MatrixIF<Impl, n, DynamicSize>.self)
     }
     
-    public func submatrix(rowRange: CountableRange<Int>,  colRange: CountableRange<Int>) -> MatrixInterface<Impl, DynamicSize, DynamicSize> {
+    public func submatrix(rowRange: CountableRange<Int>,  colRange: CountableRange<Int>) -> MatrixIF<Impl, DynamicSize, DynamicSize> {
         .init(impl.submatrix(rowRange: rowRange, colRange: colRange))
     }
     
-    public func concat<m1>(_ B: MatrixInterface<Impl, n, m1>) -> MatrixInterface<Impl, n, DynamicSize> {
+    public func concat<m1>(_ B: MatrixIF<Impl, n, m1>) -> MatrixIF<Impl, n, DynamicSize> {
         .init(impl.concat(B.impl))
     }
     
-    public func stack<n1>(_ B: MatrixInterface<Impl, n1, m>) -> MatrixInterface<Impl, DynamicSize, m> {
+    public func stack<n1>(_ B: MatrixIF<Impl, n1, m>) -> MatrixIF<Impl, DynamicSize, m> {
         .init(impl.stack(B.impl))
     }
     
@@ -133,15 +133,15 @@ public struct MatrixInterface<Impl: MatrixImpl, n: SizeType, m: SizeType>: SetTy
         .init(a.impl * r)
     }
     
-    public static func * <p>(a: MatrixInterface<Impl, n, m>, b: MatrixInterface<Impl, m, p>) -> MatrixInterface<Impl, n, p> {
+    public static func * <p>(a: MatrixIF<Impl, n, m>, b: MatrixIF<Impl, m, p>) -> MatrixIF<Impl, n, p> {
         .init(a.impl * b.impl)
     }
     
-    public static func ⊕ <n1, m1>(A: MatrixInterface<Impl, n, m>, B: MatrixInterface<Impl, n1, m1>) -> MatrixInterface<Impl, DynamicSize, DynamicSize> {
+    public static func ⊕ <n1, m1>(A: MatrixIF<Impl, n, m>, B: MatrixIF<Impl, n1, m1>) -> MatrixIF<Impl, DynamicSize, DynamicSize> {
         .init(A.impl ⊕ B.impl)
     }
     
-    public static func ⊗ <n1, m1>(A: MatrixInterface<Impl, n, m>, B: MatrixInterface<Impl, n1, m1>) -> MatrixInterface<Impl, DynamicSize, DynamicSize> {
+    public static func ⊗ <n1, m1>(A: MatrixIF<Impl, n, m>, B: MatrixIF<Impl, n1, m1>) -> MatrixIF<Impl, DynamicSize, DynamicSize> {
         .init(A.impl ⊗ B.impl)
     }
     
@@ -153,12 +153,12 @@ public struct MatrixInterface<Impl: MatrixImpl, n: SizeType, m: SizeType>: SetTy
         a.permuteCols(by: σ)
     }
     
-    public func `as`<n1, m1>(_ type: MatrixInterface<Impl, n1, m1>.Type) -> MatrixInterface<Impl, n1, m1> {
-        MatrixInterface<Impl, n1, m1>(impl)
+    public func `as`<n1, m1>(_ type: MatrixIF<Impl, n1, m1>.Type) -> MatrixIF<Impl, n1, m1> {
+        MatrixIF<Impl, n1, m1>(impl)
     }
     
-    public var asDynamicMatrix: MatrixInterface<Impl, DynamicSize, DynamicSize> {
-        self.as(MatrixInterface<Impl, DynamicSize, DynamicSize>.self)
+    public var asDynamicMatrix: MatrixIF<Impl, DynamicSize, DynamicSize> {
+        self.as(MatrixIF<Impl, DynamicSize, DynamicSize>.self)
     }
     
     public var description: String {
@@ -183,7 +183,7 @@ public struct MatrixInterface<Impl: MatrixImpl, n: SizeType, m: SizeType>: SetTy
     }
 }
 
-extension MatrixInterface where Impl: SparseMatrixImpl {
+extension MatrixIF where Impl: SparseMatrixImpl {
     public var numberOfNonZeros: Int {
         impl.numberOfNonZeros
     }
@@ -193,7 +193,7 @@ extension MatrixInterface where Impl: SparseMatrixImpl {
     }
 }
 
-extension MatrixInterface where n == m { // n, m: possibly dynamic
+extension MatrixIF where n == m { // n, m: possibly dynamic
     public var isInvertible: Bool {
         isSquare && impl.isInvertible
     }
@@ -212,7 +212,7 @@ extension MatrixInterface where n == m { // n, m: possibly dynamic
 }
 
 // ColVector
-extension MatrixInterface where m == _1 { // n: possibly dynamic
+extension MatrixIF where m == _1 { // n: possibly dynamic
     public init(size n: Int, initializer s: @escaping ((Int, BaseRing) -> Void) -> Void) {
         self.init(Impl(size: (n, 1)) { setEntry in
             s { (i, a) in
@@ -248,7 +248,7 @@ extension MatrixInterface where m == _1 { // n: possibly dynamic
 }
 
 // RowVector
-extension MatrixInterface where n == _1 { // m: possibly dynamic
+extension MatrixIF where n == _1 { // m: possibly dynamic
     public init(size m: Int, initializer s: @escaping ((Int, BaseRing) -> Void) -> Void) {
         self.init(Impl(size: (1, m)) { setEntry in
             s { (j, a) in
