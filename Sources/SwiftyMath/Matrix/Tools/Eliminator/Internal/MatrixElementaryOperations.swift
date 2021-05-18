@@ -42,6 +42,15 @@ internal enum RowElementaryOperation<R: Ring> {
             return .SwapCols(i, j)
         }
     }
+    
+    var asColOperation: ColElementaryOperation<R> {
+        switch self {
+        case let .AddRow(at: i, to: j, mul: a):
+            return .AddCol(at: j, to: i, mul: a)
+        default:
+            return transposed
+        }
+    }
 }
 
 internal enum ColElementaryOperation<R: Ring> {
@@ -81,29 +90,13 @@ internal enum ColElementaryOperation<R: Ring> {
             return .SwapRows(i, j)
         }
     }
-}
-
-extension Matrix where Impl: SparseMatrixImpl {
-    func applyRowOperations<S: Sequence>(_ ops: S) -> Self where S.Element == RowElementaryOperation<BaseRing> {
-        let data = MatrixEliminationData(self)
-        
-        // TODO batch addRows
-        for op in ops {
-            data.apply(op)
+    
+    var asRowOperation: RowElementaryOperation<R> {
+        switch self {
+        case let .AddCol(at: i, to: j, mul: a):
+            return .AddRow(at: j, to: i, mul: a)
+        default:
+            return transposed
         }
-        
-        return data.as(Self.self)
-    }
-
-    func applyColOperations<S: Sequence>(_ ops: S) -> Self where S.Element == ColElementaryOperation<BaseRing> {
-        // TODO transpose in place to reduce overhead
-        let data = MatrixEliminationData(self.transposed)
-        
-        // TODO batch addRows
-        for op in ops {
-            data.apply(op.transposed)
-        }
-        
-        return data.as(MatrixIF<Impl, m, n>.self).transposed
     }
 }

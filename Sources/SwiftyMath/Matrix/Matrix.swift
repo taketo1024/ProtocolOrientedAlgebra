@@ -25,4 +25,5 @@ public typealias Vector3<R: Ring> = ColVector<_3, R>
 public typealias Vector4<R: Ring> = ColVector<_4, R>
 public typealias VectorD<R: Ring> = ColVector<DynamicSize, R>
 
+public typealias MatrixSize = (rows: Int, cols: Int)
 public typealias MatrixEntry<R: Ring> = (row: Int, col: Int, value: R)

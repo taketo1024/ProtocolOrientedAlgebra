@@ -81,7 +81,6 @@ class MatrixEliminationTests: XCTestCase {
         let E = MatrixEliminator.eliminate(target: A, form: .Smith)
         
         let P = E.left
-        XCTAssertEqual(E.left(restrictedToCols: 2 ..< 4), P.submatrix(colRange: 2 ..< 4))
         XCTAssertEqual(E.left(restrictedToRows: 2 ..< 4), P.submatrix(rowRange: 2 ..< 4))
     }
     
@@ -91,7 +90,6 @@ class MatrixEliminationTests: XCTestCase {
         
         let P = E.leftInverse
         XCTAssertEqual(E.leftInverse(restrictedToCols: 2 ..< 4), P.submatrix(colRange: 2 ..< 4))
-        XCTAssertEqual(E.leftInverse(restrictedToRows: 2 ..< 4), P.submatrix(rowRange: 2 ..< 4))
     }
     
     func testRightRestriction() {
@@ -100,7 +98,6 @@ class MatrixEliminationTests: XCTestCase {
         
         let Q = E.right
         XCTAssertEqual(E.right(restrictedToCols: 2 ..< 4), Q.submatrix(colRange: 2 ..< 4))
-        XCTAssertEqual(E.right(restrictedToRows: 2 ..< 4), Q.submatrix(rowRange: 2 ..< 4))
     }
     
     func testRightInverseRestriction() {
@@ -108,7 +105,6 @@ class MatrixEliminationTests: XCTestCase {
         let E = MatrixEliminator.eliminate(target: A, form: .Smith)
         
         let Q = E.rightInverse
-        XCTAssertEqual(E.rightInverse(restrictedToCols: 2 ..< 4), Q.submatrix(colRange: 2 ..< 4))
         XCTAssertEqual(E.rightInverse(restrictedToRows: 2 ..< 4), Q.submatrix(rowRange: 2 ..< 4))
     }
     

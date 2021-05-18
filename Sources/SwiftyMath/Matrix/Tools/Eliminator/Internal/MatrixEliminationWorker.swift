@@ -17,8 +17,12 @@ internal final class MatrixEliminationWorker<R: Ring> {
         self.tracker = Tracker(data)
     }
     
+    convenience init<S: Sequence>(size: (Int, Int), entries: S) where S.Element == MatrixEntry<R> {
+        self.init(data: MatrixEliminationData(size: size, components: entries))
+    }
+    
     convenience init<n, m>(_ A: Matrix<n, m, R>) {
-        self.init(data: MatrixEliminationData(A))
+        self.init(size: A.size, entries: A.nonZeroEntries)
     }
     
     var size: (Int, Int) {
@@ -54,7 +58,8 @@ internal final class MatrixEliminationWorker<R: Ring> {
         tracker = Tracker(data)
     }
     
-    func apply(_ s: RowElementaryOperation<R>) {
+    @discardableResult
+    func apply(_ s: RowElementaryOperation<R>) -> Self {
         switch s {
         case let .AddRow(i, j, r):
             addRow(at: i, to: j, multipliedBy: r)
@@ -63,6 +68,15 @@ internal final class MatrixEliminationWorker<R: Ring> {
         case let .SwapRows(i, j):
             swapRows(i, j)
         }
+        return self
+    }
+
+    @discardableResult
+    func applyAll<S: Sequence>(_ seq: S) -> Self where S.Element == RowElementaryOperation<R> {
+        for s in seq {
+            apply(s)
+        }
+        return self
     }
 
     func multiplyRow(at i: Int, by r: R) {

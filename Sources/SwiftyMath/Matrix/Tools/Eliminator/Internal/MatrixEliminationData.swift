@@ -23,10 +23,6 @@ internal final class MatrixEliminationData<R: Ring> {
         self.init(size: size, rows: Self.generateRows(size.rows, components))
     }
     
-    convenience init<Impl, n, m>(_ A: MatrixIF<Impl, n, m>) where Impl: SparseMatrixImpl, Impl.BaseRing == R {
-        self.init(size: A.size, components: A.nonZeroComponents)
-    }
-
     func find(_ i: Int, _ j: Int) -> (hit: Row.NodePointer?, prev: Row.NodePointer?) {
         rows[i].find({ e in e.col == j}, while: { e in e.col <= j})
     }
