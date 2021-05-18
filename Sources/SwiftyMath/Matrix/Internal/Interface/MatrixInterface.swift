@@ -161,6 +161,14 @@ public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: SetType {
         self.as(MatrixIF<Impl, DynamicSize, DynamicSize>.self)
     }
     
+    public var entries: AnySequence<MatrixEntry<BaseRing>> {
+        impl.entries
+    }
+    
+    public var nonZeroEntries: AnySequence<MatrixEntry<BaseRing>> {
+        impl.nonZeroEntries
+    }
+    
     public var description: String {
         impl.description
     }
@@ -188,6 +196,7 @@ extension MatrixIF where Impl: SparseMatrixImpl {
         impl.numberOfNonZeros
     }
     
+    @available(*, deprecated)
     public var nonZeroComponents: AnySequence<MatrixEntry<BaseRing>> {
         impl.nonZeroComponents
     }

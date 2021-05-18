@@ -42,7 +42,10 @@ public protocol MatrixImpl: CustomStringConvertible {
     static func ⊕(a: Self, B: Self) -> Self
     static func ⊗(a: Self, B: Self) -> Self
 
+    var entries: AnySequence<MatrixEntry<BaseRing>> { get }
+    var nonZeroEntries: AnySequence<MatrixEntry<BaseRing>> { get }
     func serialize() -> [BaseRing]
+
     var detailDescription: String { get }
 }
 
@@ -84,6 +87,23 @@ extension MatrixImpl {
         size.rows == size.cols
     }
     
+    public var entries: AnySequence<MatrixEntry<BaseRing>> {
+        AnySequence((0 ..< size.rows).lazy.flatMap{ i in
+            (0 ..< size.cols).lazy.map { j in
+                (i, j, self[i, j])
+            }
+        })
+    }
+    
+    public var nonZeroEntries: AnySequence<MatrixEntry<BaseRing>> {
+        AnySequence((0 ..< size.rows).lazy.flatMap{ i in
+            (0 ..< size.cols).lazy.compactMap { j in
+                let a = self[i, j]
+                return a.isZero ? nil : (i, j, a)
+            }
+        })
+    }
+
     public var description: String {
         "[" + (0 ..< size.rows).map({ i in
             return (0 ..< size.cols).map({ j in
@@ -107,5 +127,7 @@ extension MatrixImpl {
 
 public protocol SparseMatrixImpl: MatrixImpl {
     var numberOfNonZeros: Int { get }
+    
+    @available(*, deprecated)
     var nonZeroComponents: AnySequence<MatrixEntry<BaseRing>> { get }
 }

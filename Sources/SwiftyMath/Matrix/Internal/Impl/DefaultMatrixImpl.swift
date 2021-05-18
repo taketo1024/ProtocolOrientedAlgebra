@@ -49,26 +49,20 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
         AnySequence( data.lazy.map{ (c, a) -> MatrixEntry<R> in (c.row, c.col, a) } )
     }
     
-    private func mapNonZeroComponents(_ f: (Int, Int, R) -> R) -> Self {
-        .init(size: size) { setEntry in
-            nonZeroComponents.forEach { (i, j, a) in setEntry(i, j, f(i, j, a)) }
-        }
-    }
-    
     public var isZero: Bool {
         data.isEmpty
     }
     
     public var transposed: Self {
         .init(size: (size.cols, size.rows)) { setEntry in
-            nonZeroComponents.forEach { (i, j, a) in setEntry(j, i, a) }
+            nonZeroEntries.forEach { (i, j, a) in setEntry(j, i, a) }
         }
     }
     
     public func submatrix(rowRange: CountableRange<Int>, colRange: CountableRange<Int>) -> Self {
         let size = (rowRange.upperBound - rowRange.lowerBound, colRange.upperBound - colRange.lowerBound)
         return .init(size: size ) { setEntry in
-            nonZeroComponents.forEach { (i, j, a) in
+            nonZeroEntries.forEach { (i, j, a) in
                 if rowRange.contains(i) && colRange.contains(j) {
                     setEntry(i - rowRange.lowerBound, j - colRange.lowerBound, a)
                 }
@@ -105,7 +99,7 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
         if size.rows == 0 {
             return .identity
         } else {
-            return nonZeroComponents
+            return nonZeroEntries
                 .filter{ (i, j, a) in i == 0 }
                 .sum { (_, j, a) in a * cofactor(0, j) }
         }
@@ -114,7 +108,7 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
     private func cofactor(_ i0: Int, _ j0: Int) -> R {
         let ε = (-R.identity).pow(i0 + j0)
         let minor = Self(size: (size.rows - 1, size.cols - 1)) { setEntry in
-            nonZeroComponents.forEach { (i, j, a) in
+            nonZeroEntries.forEach { (i, j, a) in
                 if i == i0 || j == j0 { return }
                 let i1 = i < i0 ? i : i - 1
                 let j1 = j < j0 ? j : j - 1
@@ -129,8 +123,8 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
         
         let A = self
         return .init(size: (A.size.rows, A.size.cols + B.size.cols)) { setEntry in
-            A.nonZeroComponents.forEach { (i, j, a) in setEntry(i, j, a) }
-            B.nonZeroComponents.forEach { (i, j, a) in setEntry(i, j + A.size.cols, a) }
+            A.nonZeroEntries.forEach { (i, j, a) in setEntry(i, j, a) }
+            B.nonZeroEntries.forEach { (i, j, a) in setEntry(i, j + A.size.cols, a) }
         }
     }
     
@@ -139,14 +133,14 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
         
         let A = self
         return .init(size: (A.size.rows + B.size.rows, A.size.cols)) { setEntry in
-            A.nonZeroComponents.forEach { (i, j, a) in setEntry(i, j, a) }
-            B.nonZeroComponents.forEach { (i, j, a) in setEntry(i + A.size.rows, j, a) }
+            A.nonZeroEntries.forEach { (i, j, a) in setEntry(i, j, a) }
+            B.nonZeroEntries.forEach { (i, j, a) in setEntry(i + A.size.rows, j, a) }
         }
     }
     
     public func permuteRows(by σ: Permutation<DynamicSize>) -> Self {
         .init(size: size) { setEntry in
-            nonZeroComponents.forEach{ (i, j, a) in
+            nonZeroEntries.forEach{ (i, j, a) in
                 setEntry(σ[i], j, a)
             }
         }
@@ -154,7 +148,7 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
     
     public func permuteCols(by σ: Permutation<DynamicSize>) -> Self {
         .init(size: size) { setEntry in
-            nonZeroComponents.forEach{ (i, j, a) in
+            nonZeroEntries.forEach{ (i, j, a) in
                 setEntry(i, σ[j], a)
             }
         }
@@ -170,7 +164,7 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
     }
     
     public static prefix func - (a: Self) -> Self {
-        a.mapNonZeroComponents{ (_, _, a) in -a }
+        a.mapNonZeroEntries{ (_, _, a) in -a }
     }
     
     public static func -(a: Self, b: Self) -> Self {
@@ -179,11 +173,11 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
     }
     
     public static func * (r: R, a: DefaultMatrixImpl<R>) -> Self {
-        a.mapNonZeroComponents{ (_, _, a) in r * a }
+        a.mapNonZeroEntries{ (_, _, a) in r * a }
     }
     
     public static func * (a: DefaultMatrixImpl<R>, r: R) -> Self {
-        a.mapNonZeroComponents{ (_, _, a) in a * r }
+        a.mapNonZeroEntries{ (_, _, a) in a * r }
     }
     
     public static func *(a: Self, b: Self) -> Self {
@@ -227,15 +221,15 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
     
     public static func ⊕ (A: Self, B: Self) -> Self {
         .init(size: (A.size.rows + B.size.rows, A.size.cols + B.size.cols)) { setEntry in
-            A.nonZeroComponents.forEach { (i, j, a) in setEntry(i, j, a) }
-            B.nonZeroComponents.forEach { (i, j, a) in setEntry(i + A.size.rows, j + A.size.cols, a) }
+            A.nonZeroEntries.forEach { (i, j, a) in setEntry(i, j, a) }
+            B.nonZeroEntries.forEach { (i, j, a) in setEntry(i + A.size.rows, j + A.size.cols, a) }
         }
     }
     
     public static func ⊗ (A: Self, B: Self) -> Self {
         .init(size: (A.size.rows * B.size.rows, A.size.cols * B.size.cols)) { setEntry in
-            A.nonZeroComponents.forEach { (i, j, a) in
-                B.nonZeroComponents.forEach { (k, l, b) in
+            A.nonZeroEntries.forEach { (i, j, a) in
+                B.nonZeroEntries.forEach { (k, l, b) in
                     let p = i * B.size.rows + k
                     let q = j * B.size.cols + l
                     let c = a * b
@@ -244,11 +238,23 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
             }
         }
     }
-
+    
+    public var nonZeroEntries: AnyIterator<MatrixEntry<R>> {
+        AnyIterator(data.lazy.map{ (c, a) in
+            (c.row, c.col, a)
+        }.makeIterator())
+    }
+    
+    private func mapNonZeroEntries(_ f: (Int, Int, R) -> R) -> Self {
+        .init(size: size) { setEntry in
+            nonZeroEntries.forEach { (i, j, a) in setEntry(i, j, f(i, j, a)) }
+        }
+    }
+    
     public func serialize() -> [R] {
         let (n, m) = self.size
         var grid = Array(repeating: R.zero, count: n * m)
-        for (i, j, a) in nonZeroComponents {
+        for (i, j, a) in nonZeroEntries {
             grid[i * m + j] = a
         }
         return grid
