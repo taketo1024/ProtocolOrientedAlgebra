@@ -8,7 +8,7 @@
 extension MatrixIF: AdditiveGroup, Module, ExpressibleByArrayLiteral where n: StaticSizeType, m: StaticSizeType {
     public typealias ArrayLiteralElement = BaseRing
     
-    public static var size: (rows: Int, cols: Int) {
+    public static var size: MatrixSize {
         (n.intValue, m.intValue)
     }
     
@@ -18,6 +18,10 @@ extension MatrixIF: AdditiveGroup, Module, ExpressibleByArrayLiteral where n: St
     
     public init<S: Sequence>(grid: S) where S.Element == BaseRing {
         self.init(size: Self.size, grid: grid)
+    }
+    
+    public init<S: Sequence>(entries: S) where S.Element == MatrixEntry<BaseRing> {
+        self.init(size: Self.size, entries: entries)
     }
     
     public init(arrayLiteral elements: ArrayLiteralElement...) {

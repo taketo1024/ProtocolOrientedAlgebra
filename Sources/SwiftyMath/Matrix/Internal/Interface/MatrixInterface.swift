@@ -17,27 +17,31 @@ public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: SetType {
         self.impl = impl
     }
     
-    public init(size: (Int, Int), initializer: ( (Int, Int, BaseRing) -> Void ) -> Void) {
+    public init(size: MatrixSize, initializer: ( (Int, Int, BaseRing) -> Void ) -> Void) {
         self.init(Impl(size: size, initializer: initializer))
     }
 
-    public init<S: Sequence>(size: (Int, Int), grid: S) where S.Element == BaseRing {
+    public init<S: Sequence>(size: MatrixSize, grid: S) where S.Element == BaseRing {
         self.init(Impl(size: size, grid: grid))
+    }
+    
+    public init<S: Sequence>(size: MatrixSize, entries: S) where S.Element == MatrixEntry<BaseRing> {
+        self.init(Impl(size: size, entries: entries))
     }
     
     public init<OtherImpl>(_ other: MatrixIF<OtherImpl, n, m>) where OtherImpl.BaseRing == BaseRing {
         self.init(Impl.init(size: other.size, grid: other.serialize()))
     }
     
-    public static func zero(size: (Int, Int)) -> Self {
+    public static func zero(size: MatrixSize) -> Self {
         self.init(Impl.zero(size: size))
     }
     
-    public static func identity(size: (Int, Int)) -> Self {
+    public static func identity(size: MatrixSize) -> Self {
         self.init(Impl.identity(size: size))
     }
     
-    public static func unit(size: (Int, Int), at: (Int, Int)) -> Self {
+    public static func unit(size: MatrixSize, at: (Int, Int)) -> Self {
         self.init(Impl.unit(size: size, at: at))
     }
     

@@ -12,7 +12,7 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
     public var size: (rows: Int, cols: Int)
     private var data: Data
     
-    private init(size: (Int, Int), data: Data) {
+    private init(size: MatrixSize, data: Data) {
         assert(size.0 >= 0)
         assert(size.1 >= 0)
         assert(!data.contains{ $0.value.isZero })
@@ -21,7 +21,7 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
         self.data = data
     }
     
-    public init(size: (Int, Int), initializer: (Initializer) -> Void) {
+    public init(size: MatrixSize, initializer: (Initializer) -> Void) {
         var data: Data = [:]
         initializer { (i, j, a) in
             assert( 0 <= i && i < size.0 )

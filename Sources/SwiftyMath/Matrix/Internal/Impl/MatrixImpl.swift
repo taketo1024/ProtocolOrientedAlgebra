@@ -9,13 +9,14 @@ public protocol MatrixImpl: CustomStringConvertible {
     associatedtype BaseRing: Ring
     typealias Initializer = (Int, Int, BaseRing) -> Void
     
-    init(size: (Int, Int), initializer: (Initializer) -> Void)
-    init<S: Sequence>(size: (Int, Int), grid: S) where S.Element == BaseRing
+    init(size: MatrixSize, initializer: (Initializer) -> Void)
+    init<S: Sequence>(size: MatrixSize, grid: S) where S.Element == BaseRing
+    init<S: Sequence>(size: MatrixSize, entries: S) where S.Element == MatrixEntry<BaseRing>
 
-    static func zero(size: (Int, Int)) -> Self
-    static func identity(size: (Int, Int)) -> Self
-    static func unit(size: (Int, Int), at: (Int, Int)) -> Self
-    static func scalar(size: (Int, Int), value: BaseRing) -> Self
+    static func zero(size: MatrixSize) -> Self
+    static func identity(size: MatrixSize) -> Self
+    static func unit(size: MatrixSize, at: (Int, Int)) -> Self
+    static func scalar(size: MatrixSize, value: BaseRing) -> Self
 
     subscript(i: Int, j: Int) -> BaseRing { get set }
     var size: (rows: Int, cols: Int) { get }
@@ -50,31 +51,39 @@ public protocol MatrixImpl: CustomStringConvertible {
 }
 
 extension MatrixImpl {
-    public init<S: Sequence>(size: (Int, Int), grid: S) where S.Element == BaseRing {
-        self.init(size: size) { setEntry in
-            let m = size.1
-            for (idx, a) in grid.enumerated() where !a.isZero {
+    public init<S: Sequence>(size: MatrixSize, grid: S) where S.Element == BaseRing {
+        let m = size.cols
+        self.init(size: size, entries: grid.enumerated().lazy.compactMap{ (idx, a) in
+            if !a.isZero {
                 let (i, j) = (idx / m, idx % m)
-                setEntry(i, j, a)
+                return (i, j, a)
+            } else {
+                return nil
             }
+        })
+    }
+    
+    public init<S: Sequence>(size: MatrixSize, entries: S) where S.Element == MatrixEntry<BaseRing> {
+        self.init(size: size) { setEntry in
+            entries.forEach { (i, j, a) in setEntry(i, j, a) }
         }
     }
     
-    public static func zero(size: (Int, Int)) -> Self {
+    public static func zero(size: MatrixSize) -> Self {
         .init(size: size) { _ in () }
     }
     
-    public static func identity(size: (Int, Int)) -> Self {
+    public static func identity(size: MatrixSize) -> Self {
         scalar(size: size, value: .identity)
     }
     
-    public static func unit(size: (Int, Int), at: (Int, Int)) -> Self {
+    public static func unit(size: MatrixSize, at: (Int, Int)) -> Self {
         .init(size: size) { setEntry in
             setEntry(at.0, at.1, .identity)
         }
     }
     
-    public static func scalar(size: (Int, Int), value: BaseRing) -> Self {
+    public static func scalar(size: MatrixSize, value: BaseRing) -> Self {
         .init(size: size) { setEntry in
             let r = min(size.0, size.1)
             for i in 0 ..< r {
