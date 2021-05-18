@@ -15,7 +15,7 @@ internal class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     }
     
     override func isDone() -> Bool {
-        currentRow >= size.rows || currentCol >= size.cols
+        currentRow >= worker.size.rows || currentCol >= worker.size.cols
     }
     
     @_specialize(where R == 𝐙)

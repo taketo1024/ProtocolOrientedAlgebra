@@ -22,7 +22,7 @@ public struct MatrixEliminationResult<Impl: MatrixImpl, n: SizeType, m: SizeType
     }
     
     public var result: MatrixIF<Impl, n, m> {
-        eliminator.worker.resultAs(MatrixIF.self)
+        eliminator.resultAs(MatrixIF.self)
     }
     
     var rowOps: [RowElementaryOperation<R>] {
@@ -46,19 +46,20 @@ public struct MatrixEliminationResult<Impl: MatrixImpl, n: SizeType, m: SizeType
     }
     
     public var isDiagonal: Bool {
-        eliminator.worker.entries.allSatisfy { (i, j, _) in i == j }
+        eliminator.entries.allSatisfy { (i, j, _) in i == j }
     }
     
     public var isIdentity: Bool {
-        isSquare && eliminator.worker.entries.allSatisfy { (i, j, a) in i == j && a.isIdentity }
+        isSquare && eliminator.entries.allSatisfy { (i, j, a) in i == j && a.isIdentity }
     }
     
     public var diagonalEntries: [R] {
-        eliminator.worker.headEntries.map{ $0.value }
+        eliminator.headEntries.map{ $0.value }
     }
     
     public var rank: Int {
-        eliminator.worker.numberOfNonEmptyRows
+        // FIXME this is false for col-based form.
+        eliminator.headEntries.count
     }
     
     public var nullity: Int {

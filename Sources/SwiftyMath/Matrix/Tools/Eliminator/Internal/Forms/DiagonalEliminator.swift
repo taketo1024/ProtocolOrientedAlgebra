@@ -24,6 +24,8 @@ internal final class DiagonalEliminator<R: EuclideanRing>: MatrixEliminator<R> {
             return
         }
         
-        subrun(RowEchelonEliminator(worker: worker, transpose: true))
+        worker.transpose()
+        subrun(RowEchelonEliminator(worker: worker, transposed: true))
+        worker.transpose()
     }
 }
