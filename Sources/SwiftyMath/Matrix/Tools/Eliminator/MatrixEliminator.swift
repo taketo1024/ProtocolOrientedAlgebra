@@ -6,60 +6,71 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-public class MatrixEliminator<R: EuclideanRing> {
-    public enum Form {
-        case RowEchelon
-        case ColEchelon
-        case RowHermite
-        case ColHermite
-        case Diagonal
-        case Smith
-    }
-    
-    let worker: MatrixEliminationWorker<R>
-    var rowOps: [RowElementaryOperation<R>]
-    var colOps: [ColElementaryOperation<R>]
-    var debug: Bool
+public enum MatrixEliminationForm {
+    case none
+    case RowEchelon
+    case ColEchelon
+    case RowHermite
+    case ColHermite
+    case Diagonal
+    case Smith
+}
 
-    private var aborted: Bool = false
-    
-    public static func eliminate<n, m>(target: Matrix<n, m, R>, form: MatrixEliminator<R>.Form = .Diagonal, debug: Bool = false) -> MatrixEliminationResult<n, m, R> {
-        let worker = MatrixEliminationWorker(target)
-        let e: MatrixEliminator<R> = {
+extension MatrixIF where BaseRing: EuclideanRing {
+    public func eliminate(form: MatrixEliminationForm = .Diagonal) -> MatrixEliminationResult<Impl, n, m> {
+        let (type, transpose): (MatrixEliminator<BaseRing>.Type, Bool) = {
             switch form {
             case .RowEchelon:
-                return RowEchelonEliminator(worker: worker, debug: debug)
+                return (RowEchelonEliminator.self, false)
             case .ColEchelon:
-                return ColEchelonEliminator(worker: worker, debug: debug)
+                return (RowEchelonEliminator.self, true)
             case .RowHermite:
-                return RowEchelonEliminator(worker: worker, reduced: true, debug: debug)
+                return (ReducedRowEchelonEliminator.self, false)
             case .ColHermite:
-                return ColEchelonEliminator(worker: worker, reduced: true, debug: debug)
+                return (ReducedRowEchelonEliminator.self, true)
+            case .Diagonal:
+                return (DiagonalEliminator.self, false)
             case .Smith:
-                return SmithEliminator(worker: worker, debug: debug)
+                return (SmithEliminator.self, false)
             default:
-                return DiagonalEliminator(worker: worker, debug: debug)
+                return (MatrixEliminator.self, false)
             }
         }()
         
-        e.run()
+        let worker = MatrixEliminationWorker(self)
+        let elim = type.init(worker: worker, transpose: transpose)
+        elim.run()
         
-        return .init(form: form, result: worker.resultAs(Matrix.self), rowOps: e.rowOps, colOps: e.colOps)
+        return MatrixEliminationResult(elim)
     }
+}
+
+public class MatrixEliminator<R: Ring> {
+    let worker: MatrixEliminationWorker<R>
+    var rowOps: [RowElementaryOperation<R>]
+    var colOps: [ColElementaryOperation<R>]
     
-    init(worker: MatrixEliminationWorker<R>, debug: Bool) {
+    var transposed: Bool
+    var debug: Bool = false
+    var aborted: Bool = false
+    
+    required init(worker: MatrixEliminationWorker<R>, transpose: Bool = false) {
         self.worker = worker
         self.rowOps = []
         self.colOps = []
-        self.debug = debug
+        self.transposed = transpose
     }
     
-    var size: (rows: Int, cols: Int) {
+    public final var size: MatrixSize {
         worker.size
     }
     
-    final func run() {
+    public final func run() {
         log("Start: \(self)")
+        
+        if transposed {
+            transpose()
+        }
         
         prepare()
         
@@ -79,6 +90,10 @@ public class MatrixEliminator<R: EuclideanRing> {
         
         finalize()
         
+        if transposed {
+            transpose()
+        }
+        
         log("Done:  \(self), \(rowOps.count + colOps.count) steps")
         
         if debug {
@@ -86,45 +101,23 @@ public class MatrixEliminator<R: EuclideanRing> {
         }
     }
     
-    final func subrun(_ e: MatrixEliminator<R>, transpose: Bool = false) {
-        if transpose {
-            e.worker.transpose()
-        }
-        
+    public var description: String {
+        "\(type(of: self))"
+    }
+    
+    // MARK: Internal methods
+
+    final func subrun(_ e: MatrixEliminator<R>) {
         e.run()
-        
-        if !transpose {
-            rowOps += e.rowOps
-            colOps += e.colOps
-        } else {
-            e.worker.transpose()
-            rowOps += e.colOps.map{ s in s.transposed }
-            colOps += e.rowOps.map{ s in s.transposed }
-        }
+        rowOps += e.rowOps
+        colOps += e.colOps
     }
     
     final func abort() {
         aborted = true
     }
     
-    func prepare() {
-        // override in subclass
-    }
-    
-    func isDone() -> Bool {
-        // override in subclass
-        true
-    }
-    
-    func iteration() {
-        // override in subclass
-    }
-    
-    func finalize() {
-        // override in subclass
-    }
-
-    func apply(_ s: RowElementaryOperation<R>) {
+    final func apply(_ s: RowElementaryOperation<R>) {
         worker.apply(s)
         append(s)
     }
@@ -144,6 +137,12 @@ public class MatrixEliminator<R: EuclideanRing> {
         log(s.map{ "\($0)"}.joined(separator: "\n"))
     }
     
+    final func transpose() {
+        log("Transpose: \(self)")
+        worker.transpose()
+        (rowOps, colOps) = (colOps.map{ $0.transposed }, rowOps.map{ $0.transposed })
+    }
+    
     final func log(_ msg: @autoclosure () -> String) {
         if debug {
             print(msg())
@@ -157,8 +156,12 @@ public class MatrixEliminator<R: EuclideanRing> {
         
         print("\n", worker.resultAs(MatrixDxD.self).detailDescription, "\n")
     }
+
+    // MARK: Methods to be overridden
     
-    public var description: String {
-        "\(type(of: self))"
-    }
+    public var form: MatrixEliminationForm { .none }
+    func prepare() {}
+    func isDone() -> Bool { true }
+    func iteration() {}
+    func finalize() {}
 }

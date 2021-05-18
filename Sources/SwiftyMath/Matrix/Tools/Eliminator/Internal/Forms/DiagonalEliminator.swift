@@ -7,6 +7,10 @@
 //
 
 internal final class DiagonalEliminator<R: EuclideanRing>: MatrixEliminator<R> {
+    override var form: MatrixEliminationForm {
+        .Diagonal
+    }
+    
     override func isDone() -> Bool {
         worker.entries.allSatisfy { (i, j, a) in
             (i == j) && a.isNormalized
@@ -14,12 +18,12 @@ internal final class DiagonalEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     }
     
     override func iteration() {
-        subrun(RowEchelonEliminator(worker: worker, debug: debug))
+        subrun(RowEchelonEliminator(worker: worker))
         
         if isDone() {
             return
         }
         
-        subrun(ColEchelonEliminator(worker: worker, debug: debug))
+        subrun(RowEchelonEliminator(worker: worker, transpose: true))
     }
 }

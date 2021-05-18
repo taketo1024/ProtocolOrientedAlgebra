@@ -7,15 +7,13 @@
 //
 
 internal class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
-    let reduced: Bool
     var currentRow = 0
     var currentCol = 0
     
-    init(worker: MatrixEliminationWorker<R>, reduced: Bool = false, debug: Bool = false) {
-        self.reduced = reduced
-        super.init(worker: worker, debug: debug)
+    override var form: MatrixEliminationForm {
+        !transposed ? .RowEchelon : .ColEchelon
     }
-
+    
     override func isDone() -> Bool {
         currentRow >= size.rows || currentCol >= size.cols
     }
@@ -67,27 +65,16 @@ internal class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
             apply(.SwapRows(i0, currentRow))
         }
         
-        if reduced {
-            reduceCurrentCol()
-        }
-        
+        reduceCurrentCol()
         currentRow += 1
         currentCol += 1
     }
     
-    private func reduceCurrentCol() {
-        let a0 = worker.row(currentRow).headElement!.value
-        let targets = worker
-            .colEntries(in: currentCol, aboveRow: currentRow)
-            .compactMap { (i, a) -> (Int, R)? in
-                let q = a / a0
-                return !q.isZero ? (i, -q) : nil
-            }
-        
-        batchAddRow(at: currentRow, targets: targets)
+    fileprivate func reduceCurrentCol() {
+        // override in subclass
     }
     
-    private func batchAddRow(at i0: Int, targets: [ColEntry<R>]) {
+    fileprivate func batchAddRow(at i0: Int, targets: [ColEntry<R>]) {
         worker.batchAddRow(
             at: i0,
             to: targets.map{ $0.row },
@@ -109,20 +96,20 @@ internal class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     }
 }
 
-final class ColEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
-    let reduced: Bool
-    
-    init(worker: MatrixEliminationWorker<R>, reduced: Bool = false, debug: Bool = false) {
-        self.reduced = reduced
-        super.init(worker: worker, debug: debug)
+internal class ReducedRowEchelonEliminator<R: EuclideanRing>: RowEchelonEliminator<R> {
+    override var form: MatrixEliminationForm {
+        !transposed ? .RowHermite : .ColHermite
     }
 
-    override func prepare() {
-        let sub = RowEchelonEliminator(worker: worker, reduced: reduced, debug: debug)
-        subrun(sub, transpose: true)
-    }
-    
-    override func isDone() -> Bool {
-        true
+    override func reduceCurrentCol() {
+        let a0 = worker.row(currentRow).headElement!.value
+        let targets = worker
+            .colEntries(in: currentCol, aboveRow: currentRow)
+            .compactMap { (i, a) -> (Int, R)? in
+                let q = a / a0
+                return !q.isZero ? (i, -q) : nil
+            }
+        
+        batchAddRow(at: currentRow, targets: targets)
     }
 }

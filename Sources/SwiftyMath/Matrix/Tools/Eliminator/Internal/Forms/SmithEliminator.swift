@@ -10,8 +10,12 @@ internal final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     var currentIndex = 0
     var diagonals: [R] = []
     
+    override var form: MatrixEliminationForm {
+        .Smith
+    }
+    
     override func prepare() {
-        subrun(DiagonalEliminator(worker: worker, debug: debug))
+        subrun(DiagonalEliminator(worker: worker))
         diagonals = worker.headEntries.map { $0.value }
     }
     
@@ -36,7 +40,8 @@ internal final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         }
         
         if !a0.isNormalized {
-            apply(.MulRow(at: i0, by: a0.normalizingUnit))
+            let u = a0.normalizingUnit
+            multiply(i0, by: u)
         }
         
         if i0 != currentIndex {
@@ -46,21 +51,16 @@ internal final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         currentIndex += 1
     }
     
-    override func apply(_ s: RowElementaryOperation<R>) {
-        switch s {
-        case let .MulRow(at: i, by: a):
-            diagonals[i] = a * diagonals[i]
-            super.apply(s)
-        default:
-            fatalError()
-        }
-    }
-    
     private func findPivot() -> (Int, R)? {
         diagonals[currentIndex...]
             .enumerated()
             .min { (c1, c2) in c1.1.matrixEliminationWeight < c2.1.matrixEliminationWeight }
             .map{ (i, a) in (i + currentIndex, a) }
+    }
+    
+    private func multiply(_ i: Int, by a: R) {
+        setEntry(i, a * diagonals[i])
+        append(.MulRow(at: i, by: a))
     }
     
     private func diagonalGCD(_ d1: (Int, R), _ d2: (Int, R)) {
@@ -75,8 +75,8 @@ internal final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         let (p, q, d) = extendedGcd(a, b)
         let m = -(a * b) / d
         
-        set(i, d)
-        set(j, m)
+        setEntry(i, d)
+        setEntry(j, m)
         
         append(.AddRow(at: i, to: j, mul: p))     // [a, 0; pa, b]
         append(.AddCol(at: j, to: i, mul: q))     // [a, 0;  d, b]
@@ -90,14 +90,14 @@ internal final class SmithEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         
         let (a, b) = (diagonals[i], diagonals[j])
         
-        set(i, b)
-        set(j, a)
+        setEntry(i, b)
+        setEntry(j, a)
 
         append(.SwapRows(i, j))
         append(.SwapCols(i, j))
     }
     
-    private func set(_ i: Int, _ r: R) {
+    private func setEntry(_ i: Int, _ r: R) {
         worker.row(i).headPointer!.pointee.element.value = r
         diagonals[i] = r
     }

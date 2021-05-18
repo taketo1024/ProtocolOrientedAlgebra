@@ -21,7 +21,7 @@ internal final class MatrixEliminationWorker<R: Ring> {
         self.init(data: MatrixEliminationData(size: size, entries: entries))
     }
     
-    convenience init<n, m>(_ A: Matrix<n, m, R>) {
+    convenience init<Impl, n, m>(_ A: MatrixIF<Impl, n, m>) where Impl.BaseRing == R {
         self.init(size: A.size, entries: A.nonZeroEntries)
     }
     
@@ -37,6 +37,10 @@ internal final class MatrixEliminationWorker<R: Ring> {
     @inlinable
     func rowWeight(_ i: Int) -> Int {
         tracker.rowWeight(i)
+    }
+    
+    var numberOfNonEmptyRows: Int {
+        data.rows.count{ !$0.isEmpty }
     }
     
     var entries: AnySequence<MatrixEntry<R>> {
@@ -134,7 +138,7 @@ internal final class MatrixEliminationWorker<R: Ring> {
         }
     }
     
-    func resultAs<n, m>(_ type: Matrix<n, m, R>.Type) -> Matrix<n, m, R> {
+    func resultAs<Impl, n, m>(_ type: MatrixIF<Impl, n, m>.Type) -> MatrixIF<Impl, n, m> where Impl.BaseRing == R {
         .init(size: size) { setEntry in
             for (i, j, a) in entries {
                 setEntry(i, j, a)
