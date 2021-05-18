@@ -24,8 +24,8 @@ internal class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     override func iteration() {
         
         // find pivot point
-        let elements = worker.headElements(inCol: currentCol)
-        guard let (i0, a0) = findPivot(in: elements) else {
+        let colEntries = worker.headColEntries(in: currentCol)
+        guard let (i0, a0) = findPivot(in: colEntries) else {
             currentCol += 1
             return
         }
@@ -34,10 +34,10 @@ internal class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
         
         // eliminate target col
         
-        if elements.count > 1 {
+        if colEntries.count > 1 {
             var again = false
             
-            let targets = elements.compactMap { (i, a) -> (Int, R)? in
+            let targets = colEntries.compactMap { (i, a) -> (Int, R)? in
                 if i == i0 {
                     return nil
                 }
@@ -78,7 +78,7 @@ internal class RowEchelonEliminator<R: EuclideanRing>: MatrixEliminator<R> {
     private func reduceCurrentCol() {
         let a0 = worker.row(currentRow).headElement!.value
         let targets = worker
-            .elements(inCol: currentCol, aboveRow: currentRow)
+            .colEntries(in: currentCol, aboveRow: currentRow)
             .compactMap { (i, a) -> (Int, R)? in
                 let q = a / a0
                 return !q.isZero ? (i, -q) : nil

@@ -11,20 +11,22 @@ internal typealias ColEntry<R> = (row: Int, value: R)
 internal final class MatrixEliminationData<R: Ring> {
     typealias Row = LinkedList<RowEntry<R>>
     
-    var size: (rows: Int, cols: Int)
-    var rows: [Row]
+    var size: MatrixSize
+    private(set) var rows: [Row]
     
-    init(size: (rows: Int, cols: Int), rows: [Row]) {
+    private init(size: MatrixSize, rows: [Row]) {
         self.size = size
         self.rows = rows
     }
     
-    convenience init<S: Sequence>(size: (rows: Int, cols: Int), components: S) where S.Element == MatrixEntry<R> {
-        self.init(size: size, rows: Self.generateRows(size.rows, components))
+    convenience init<S: Sequence>(size: (rows: Int, cols: Int), entries: S) where S.Element == MatrixEntry<R> {
+        self.init(size: size, rows: Self.generateRows(rows: size.rows, entries: entries))
     }
     
-    func find(_ i: Int, _ j: Int) -> (hit: Row.NodePointer?, prev: Row.NodePointer?) {
-        rows[i].find({ e in e.col == j}, while: { e in e.col <= j})
+    var entries: AnySequence<MatrixEntry<R>> {
+        AnySequence(rows.enumerated().lazy.flatMap { (i, row) in
+            row.lazy.map { (j, a) in (i, j, a) }
+        })
     }
     
     @inlinable
@@ -32,61 +34,25 @@ internal final class MatrixEliminationData<R: Ring> {
         rows[i]
     }
     
-    func sub(_ rowRange: Range<Int>) -> MatrixEliminationData<R> {
-        .init(
-            size: (rowRange.upperBound - rowRange.lowerBound, size.cols),
-            rows: Array(rows[rowRange.lowerBound ..< rowRange.upperBound])
-        )
-    }
-    
-    func append(_ row: Row) {
-        size = (size.rows + 1, size.cols)
-        rows.append(row)
-    }
-    
-    func concat(_ data: MatrixEliminationData<R>) {
-        assert(size.cols == data.size.cols)
-        size = (size.rows + data.size.rows, size.cols)
-        rows.append(contentsOf: data.rows)
+    func find(_ i: Int, _ j: Int) -> (hit: Row.NodePointer?, prev: Row.NodePointer?) {
+        rows[i].find({ e in e.col == j}, while: { e in e.col <= j})
     }
     
     func transpose() {
         let tSize = (size.cols, size.rows)
-        let tRows = Self.generateRows(size.cols, components.map { (i, j, a) in (j, i, a) })
+        let tRows = Self.generateRows(
+            rows: size.cols,
+            entries: entries.map { (i, j, a) in (j, i, a) }
+        )
         
         self.size = tSize
         self.rows = tRows
     }
     
-    func apply(_ s: RowElementaryOperation<R>) {
-        switch s {
-        case let .AddRow(i, j, r):
-            addRow(at: i, to: j, multipliedBy: r)
-        case let .MulRow(i, r):
-            multiplyRow(at: i, by: r)
-        case let .SwapRows(i, j):
-            swapRows(i, j)
-        }
-    }
-
-    @_specialize(where R == 𝐙)
-    @_specialize(where R == 𝐐)
-    @_specialize(where R == 𝐅₂)
-
-    func multiplyRow(at i: Int, by r: R) {
-        row(i).modifyEach { e in
-            e.value = r * e.value
-        }
-    }
-    
-    func swapRows(_ i: Int, _ j: Int) {
-        rows.swapAt(i, j)
-    }
-    
     @discardableResult
     func addRow(at i1: Int, to i2: Int, multipliedBy r: R) -> Int {
         if !row(i1).isEmpty {
-            return Self.addRow(row(i1), into: row(i2), multipliedBy: r)
+            return addRow(row(i1), into: row(i2), multipliedBy: r)
         } else {
             return 0
         }
@@ -94,28 +60,13 @@ internal final class MatrixEliminationData<R: Ring> {
     
     @discardableResult
     func batchAddRow(at i1: Int, to rowIndices: [Int], multipliedBy rs: [R]) -> [Int] {
-        if !row(i1).isEmpty {
+        let from = row(i1)
+        if !from.isEmpty {
             return Array(zip(rowIndices, rs)).parallelMap { (i2, r) in
-                Self.addRow(row(i1), into: row(i2), multipliedBy: r)
+                addRow(from, into: row(i2), multipliedBy: r)
             }
         } else {
             return [0] * rowIndices.count
-        }
-    }
-    
-    var components: AnySequence<MatrixEntry<R>> {
-        AnySequence((0 ..< size.rows).lazy.flatMap { i in
-            self.row(i).map{ (j, a) in (i, j, a) }
-        })
-    }
-    
-    func `as`<Impl, n, m>(_ type: MatrixIF<Impl, n, m>.Type) -> MatrixIF<Impl, n, m> where Impl.BaseRing == R {
-        .init(size: size) { setEntry in
-            for i in (0 ..< self.size.rows) {
-                for (j, a) in self.row(i) {
-                    setEntry(i, j, a)
-                }
-            }
         }
     }
     
@@ -123,8 +74,8 @@ internal final class MatrixEliminationData<R: Ring> {
     @_specialize(where R == 𝐙)
     @_specialize(where R == 𝐐)
     @_specialize(where R == 𝐅₂)
-
-    static func addRow(_ from: Row, into to: Row, multipliedBy r: R) -> Int {
+    
+    private func addRow(_ from: Row, into to: Row, multipliedBy r: R) -> Int {
         if from.isEmpty {
             return 0
         }
@@ -193,8 +144,22 @@ internal final class MatrixEliminationData<R: Ring> {
         return dw
     }
     
-    private static func generateRows<S: Sequence>(_ n: Int, _ components: S) -> [Row] where S.Element == MatrixEntry<R> {
-        let group = components.group{ c in c.row }
+    @_specialize(where R == 𝐙)
+    @_specialize(where R == 𝐐)
+    @_specialize(where R == 𝐅₂)
+
+    func multiplyRow(at i: Int, by r: R) {
+        row(i).modifyEach { e in
+            e.value = r * e.value
+        }
+    }
+    
+    func swapRows(_ i: Int, _ j: Int) {
+        rows.swapAt(i, j)
+    }
+    
+    private static func generateRows<S: Sequence>(rows n: Int, entries: S) -> [Row] where S.Element == MatrixEntry<R> {
+        let group = entries.group{ c in c.row }
         return (0 ..< n).map { i in
             if let list = group[i] {
                 let sorted = list.map{ c in RowEntry(c.col, c.value) }.sorted{ $0.col }

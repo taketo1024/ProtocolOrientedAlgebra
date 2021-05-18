@@ -18,14 +18,14 @@ internal final class MatrixEliminationWorker<R: Ring> {
     }
     
     convenience init<S: Sequence>(size: (Int, Int), entries: S) where S.Element == MatrixEntry<R> {
-        self.init(data: MatrixEliminationData(size: size, components: entries))
+        self.init(data: MatrixEliminationData(size: size, entries: entries))
     }
     
     convenience init<n, m>(_ A: Matrix<n, m, R>) {
         self.init(size: A.size, entries: A.nonZeroEntries)
     }
     
-    var size: (Int, Int) {
+    var size: MatrixSize {
         data.size
     }
     
@@ -39,11 +39,25 @@ internal final class MatrixEliminationWorker<R: Ring> {
         tracker.rowWeight(i)
     }
     
-    func headElements(inCol j: Int) -> [ColEntry<R>] {
-        tracker.rows(inCol: j).map{ i in (i, row(i).headElement!.value) }
+    var entries: AnySequence<MatrixEntry<R>> {
+        data.entries
     }
     
-    func elements(inCol j0: Int, aboveRow i0: Int) -> [ColEntry<R>] {
+    var headEntries: [MatrixEntry<R>] {
+        data.rows.enumerated().compactMap { (i, row) in
+            row.headElement.flatMap { (j, a) in
+                (i, j, a)
+            }
+        }
+    }
+    
+    func headColEntries(in j: Int) -> [ColEntry<R>] {
+        tracker
+            .rowIndices(withHeadInCol: j)
+            .map{ i in (i, row(i).headElement!.value) }
+    }
+    
+    func colEntries(in j0: Int, aboveRow i0: Int) -> [ColEntry<R>] {
         (0 ..< i0).compactMap { i -> ColEntry<R>? in
             if let a = data.find(i, j0).hit?.pointee.element.value {
                 return (i, a)
@@ -120,12 +134,12 @@ internal final class MatrixEliminationWorker<R: Ring> {
         }
     }
     
-    var components: AnySequence<MatrixEntry<R>> {
-        data.components
-    }
-    
     func resultAs<n, m>(_ type: Matrix<n, m, R>.Type) -> Matrix<n, m, R> {
-        data.as(type)
+        .init(size: size) { setEntry in
+            for (i, j, a) in entries {
+                setEntry(i, j, a)
+            }
+        }
     }
     
     private final class Tracker {
@@ -151,7 +165,7 @@ internal final class MatrixEliminationWorker<R: Ring> {
             rowWeights[i]
         }
         
-        func rows(inCol j: Int) -> Set<Int> {
+        func rowIndices(withHeadInCol j: Int) -> Set<Int> {
             col2rowHead[j]
         }
         
