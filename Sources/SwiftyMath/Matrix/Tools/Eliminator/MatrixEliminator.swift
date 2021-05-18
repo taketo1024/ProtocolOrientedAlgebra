@@ -50,7 +50,7 @@ extension MatrixIF where BaseRing: EuclideanRing {
 public class MatrixEliminator<R: Ring> {
     let worker: MatrixEliminationWorker<R>
     var transposed: Bool
-    var debug: Bool = true
+    var debug: Bool = false
     var aborted: Bool = false
     
     private var rowOps_: [RowElementaryOperation<R>]

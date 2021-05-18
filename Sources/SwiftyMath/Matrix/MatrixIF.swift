@@ -226,7 +226,8 @@ extension MatrixIF where n == m { // n, m: possibly dynamic
 
 // ColVector
 extension MatrixIF where m == _1 { // n: possibly dynamic
-    public init(size n: Int, initializer s: @escaping ((Int, BaseRing) -> Void) -> Void) {
+    public typealias ColInitializer = (Int, BaseRing) -> Void
+    public init(size n: Int, initializer s: @escaping (ColInitializer) -> Void) {
         self.init(Impl(size: (n, 1)) { setEntry in
             s { (i, a) in
                 setEntry(i, 0, a)
@@ -262,7 +263,8 @@ extension MatrixIF where m == _1 { // n: possibly dynamic
 
 // RowVector
 extension MatrixIF where n == _1 { // m: possibly dynamic
-    public init(size m: Int, initializer s: @escaping ((Int, BaseRing) -> Void) -> Void) {
+    public typealias RowInitializer = (Int, BaseRing) -> Void
+    public init(size m: Int, initializer s: @escaping (RowInitializer) -> Void) {
         self.init(Impl(size: (1, m)) { setEntry in
             s { (j, a) in
                 setEntry(0, j, a)

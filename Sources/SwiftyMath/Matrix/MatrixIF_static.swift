@@ -82,7 +82,7 @@ extension MatrixIF where n == m, n == _1 {
 }
 
 extension MatrixIF where n: StaticSizeType, m == _1 {
-    public init(initializer s: @escaping ((Int, BaseRing) -> Void) -> Void) {
+    public init(initializer s: @escaping (ColInitializer) -> Void) {
         self.init { setEntry in
             s { (i, a) in
                 setEntry(i, 0, a)
@@ -92,7 +92,7 @@ extension MatrixIF where n: StaticSizeType, m == _1 {
 }
 
 extension MatrixIF where n == _1, m: StaticSizeType {
-    public init(initializer s: @escaping ((Int, BaseRing) -> Void) -> Void) {
+    public init(initializer s: @escaping (RowInitializer) -> Void) {
         self.init { setEntry in
             s { (j, a) in
                 setEntry(0, j, a)

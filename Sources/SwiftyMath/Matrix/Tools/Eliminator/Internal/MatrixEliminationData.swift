@@ -5,9 +5,6 @@
 //  Created by Taketo Sano on 2019/11/02.
 //
 
-internal typealias RowEntry<R> = (col: Int, value: R)
-internal typealias ColEntry<R> = (row: Int, value: R)
-
 internal final class MatrixEliminationData<R: Ring> {
     typealias Row = LinkedList<RowEntry<R>>
     
