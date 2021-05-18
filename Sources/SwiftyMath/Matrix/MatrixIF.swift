@@ -264,6 +264,14 @@ extension MatrixIF where m == _1 { // n: possibly dynamic
         assert(left.size == right.size)
         return (0 ..< left.size.rows).sum { i in left[i] * right[i] }
     }
+    
+    public var colEntries: AnySequence<ColEntry<BaseRing>> {
+        AnySequence(entries.lazy.map{ (i, _, a) in (i, a)})
+    }
+    
+    public var nonZeroColEntries: AnySequence<ColEntry<BaseRing>> {
+        AnySequence(nonZeroEntries.lazy.map{ (i, _, a) in (i, a)})
+    }
 }
 
 // MARK: RowVector
@@ -301,6 +309,14 @@ extension MatrixIF where n == _1 { // m: possibly dynamic
     public static func •(_ left: Self, _ right: Self) -> BaseRing {
         assert(left.size == right.size)
         return (0 ..< left.size.rows).sum { i in left[i] * right[i] }
+    }
+    
+    public var rowEntries: AnySequence<RowEntry<BaseRing>> {
+        AnySequence(entries.lazy.map{ (_, j, a) in (j, a)})
+    }
+    
+    public var nonZeroRowEntries: AnySequence<RowEntry<BaseRing>> {
+        AnySequence(nonZeroEntries.lazy.map{ (_, j, a) in (j, a)})
     }
 }
 
