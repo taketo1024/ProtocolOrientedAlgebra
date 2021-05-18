@@ -58,7 +58,6 @@ public struct MatrixEliminationResult<Impl: MatrixImpl, n: SizeType, m: SizeType
     }
     
     public var rank: Int {
-        // FIXME this is false for col-based form.
         eliminator.headEntries.count
     }
     
