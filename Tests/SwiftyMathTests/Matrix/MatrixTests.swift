@@ -166,25 +166,25 @@ class MatrixTests: XCTestCase {
     
     func testAsStatic() {
         let a = MatrixDxD(size: (2, 3), grid: [1,2,3,4,5,6])
-        let b = a.as(Matrix<_2, _3, R>.self)
-        XCTAssertEqual(b, Matrix<_2, _3, R>(grid: [1,2,3,4,5,6]))
+        let b = a.as(Matrix<R, _2, _3>.self)
+        XCTAssertEqual(b, Matrix<R, _2, _3>(grid: [1,2,3,4,5,6]))
     }
     
     func testAsDynamic() {
-        let a = Matrix<_2, _3, R>(grid: [1,2,3,4,5,6])
+        let a = Matrix<R, _2, _3>(grid: [1,2,3,4,5,6])
         let b = a.as(MatrixDxD<R>.self)
         XCTAssertEqual(b, MatrixDxD(size: (2, 3), grid: [1,2,3,4,5,6]))
     }
     
     func testSubmatrixRow() {
         let a: M = [1,2,3,4]
-        let a1 = a.submatrix(rowRange: 0 ..< 1).as(Matrix<_1, _2, R>.self)
+        let a1 = a.submatrix(rowRange: 0 ..< 1).as(Matrix<R, _1, _2>.self)
         XCTAssertEqual(a1, [1, 2])
     }
     
     func testSubmatrixCol() {
         let a: M = [1,2,3,4]
-        let a2 = a.submatrix(colRange: 1 ..< 2).as(Matrix<_2, _1, R>.self)
+        let a2 = a.submatrix(colRange: 1 ..< 2).as(Matrix<R, _2, _1>.self)
         XCTAssertEqual(a2, [2, 4])
     }
     
@@ -197,9 +197,9 @@ class MatrixTests: XCTestCase {
     func testConcat() {
         let a: M = [1,2,3,4]
         let b: M = [5,6,7,8]
-        let c = a.concat(b).as(Matrix<_2, _4, R>.self)
+        let c = a.concat(b).as(Matrix<R, _2, _4>.self)
 
-        let r: Matrix<_2, _4, R> = [
+        let r: Matrix<R, _2, _4> = [
             1,2,5,6,
             3,4,7,8
         ]
@@ -210,9 +210,9 @@ class MatrixTests: XCTestCase {
     func testStack() {
         let a: M = [1,2,3,4]
         let b: M = [5,6,7,8]
-        let c = a.stack(b).as(Matrix<_4, _2, R>.self)
+        let c = a.stack(b).as(Matrix<R, _4, _2>.self)
 
-        let r: Matrix<_4, _2, R> = [
+        let r: Matrix<R, _4, _2> = [
             1,2,
             3,4,
             5,6,

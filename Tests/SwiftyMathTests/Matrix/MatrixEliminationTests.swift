@@ -16,7 +16,7 @@ class MatrixEliminationTests: XCTestCase {
     typealias M2 = Matrix2x2
     typealias M3 = Matrix3x3
     typealias M4 = Matrix4x4
-    typealias M5<R: EuclideanRing> = Matrix<_5, _5, R>
+    typealias M5<R: EuclideanRing> = Matrix<R, _5, _5>
     
     func testNormalize_Z() {
         let A: M1 = [-2]
@@ -151,14 +151,14 @@ class MatrixEliminationTests: XCTestCase {
     }
 
     func testZ46_rank4WithFactors() {
-        let A: M<_4, _6, 𝐙> = [8, -6, 14, -10, -14, 6, 12, -8, 18, -18, -20, 8, -16, 7, -23, 22, 23, -7, 32, -17, 44, -49, -49, 17]
+        let A: M<𝐙, _4, _6> = [8, -6, 14, -10, -14, 6, 12, -8, 18, -18, -20, 8, -16, 7, -23, 22, 23, -7, 32, -17, 44, -49, -49, 17]
         let E = A.eliminate(form: .Smith)
 
         XCTAssertEqual(E.result, M.diagonal(1,1,2,12))
     }
 
     func testZ46_zero() {
-        let A = M<_4, _6, 𝐙>.zero
+        let A = M<𝐙, _4, _6>.zero
         let E = A.eliminate(form: .Smith)
         
         XCTAssertEqual(E.result, M.zero)
@@ -241,7 +241,7 @@ class MatrixEliminationTests: XCTestCase {
     }
     
     public func testLinEq() {
-        let A: M<_6, _4, 𝐙> = [8, -6, 14, -10, -14, 6, 12, -8, 18, -18, -20, 8, -16, 7, -23, 22, 23, -7, 32, -17, 44, -49, -49, 17]
+        let A: M<𝐙, _6, _4> = [8, -6, 14, -10, -14, 6, 12, -8, 18, -18, -20, 8, -16, 7, -23, 22, 23, -7, 32, -17, 44, -49, -49, 17]
         let E = A.eliminate()
         let y = A * Vector4(grid: [1,2,3,4])
         
@@ -251,10 +251,10 @@ class MatrixEliminationTests: XCTestCase {
             XCTFail()
         }
         
-        let y2: ColVector<_6, 𝐙> = [243996, -422477, 555238, -482263, 689731, 1363066]
+        let y2: ColVector<𝐙, _6> = [243996, -422477, 555238, -482263, 689731, 1363066]
         XCTAssertNil(E.invert(y2))
         
-        let y3: ColVector<_6, 𝐙> = [520530, -901291, 1184519, -1028837, 1471438, 2907903]
+        let y3: ColVector<𝐙, _6> = [520530, -901291, 1184519, -1028837, 1471438, 2907903]
         XCTAssertNil(E.invert(y3))
     }
 }

@@ -74,11 +74,11 @@ public struct Permutation<n: SizeType>: Multiplicative, SetType, Hashable {
         self.as(Permutation<DynamicSize>.self)
     }
     
-    public var asMatrix: Matrix<n, n, 𝐙> {
+    public var asMatrix: Matrix<𝐙, n, n> {
         asMatrix(over: 𝐙.self)
     }
 
-    public func asMatrix<R>(over: R.Type) -> Matrix<n, n, R> {
+    public func asMatrix<R>(over: R.Type) -> Matrix<R, n, n> {
         asMatrix(DefaultMatrixImpl<R>.self)
     }
     
