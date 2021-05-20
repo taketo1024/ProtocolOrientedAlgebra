@@ -68,7 +68,11 @@ extension GenericPolynomialType {
     }
     
     public func term(_ d: Exponent) -> Self {
-        return Self(coeffs: [d: coeff(d)])
+        Self(coeffs: [d: coeff(d)])
+    }
+    
+    public var terms: [Self] {
+        coeffs.keys.sorted().map( term(_:) )
     }
     
     public var leadExponent: Exponent {

@@ -169,9 +169,11 @@ class MPolynomialTests: XCTestCase {
         XCTAssertTrue(mons.allSatisfy{ $0.degree == 5 })
     }
     
-    //    func testSymmetricPolynomial() {
-    //        XCTAssertEqual(A.elementarySymmetric(0), A(1))
-    //        XCTAssertEqual(A.elementarySymmetric(1), A(coeffs: [[1]: 1, [0, 1]: 1]))
-    //        XCTAssertEqual(A.elementarySymmetric(2), A(coeffs: [[1, 1]: 1]))
-    //    }
+    func testSymmetricPolynomial() {
+        XCTAssertEqual(A.elementarySymmetricPolynomial(ofDegree: 0), A(1))
+        XCTAssertEqual(A.elementarySymmetricPolynomial(ofDegree: 1), A(coeffs: [[1]: 1, [0, 1]: 1, [0, 0, 1]: 1]))
+        XCTAssertEqual(A.elementarySymmetricPolynomial(ofDegree: 2), A(coeffs: [[1, 1]: 1, [0, 1, 1]: 1, [1, 0, 1]: 1]))
+        XCTAssertEqual(A.elementarySymmetricPolynomial(ofDegree: 3), A(coeffs: [[1, 1, 1]: 1]))
+        XCTAssertEqual(A.elementarySymmetricPolynomial(ofDegree: 4), .zero)
+    }
 }

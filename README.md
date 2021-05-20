@@ -171,7 +171,7 @@ F_5.printMulTable()
 // Construct an algebraic extension over 𝐐:
 // K = 𝐐(√2) = 𝐐[x]/(x^2 - 2).
 
-struct p: _Polynomial {                            // p = x^2 - 2, as a struct
+struct p: Polynomial {                            // p = x^2 - 2, as a struct
     typealias K = 𝐐
     static let value = Polynomial<𝐐>(-2, 0, 1)
 }

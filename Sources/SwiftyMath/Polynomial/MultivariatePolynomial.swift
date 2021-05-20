@@ -75,35 +75,6 @@ extension MultivariatePolynomialType {
     public func evaluate(by values: BaseRing...) -> BaseRing {
         evaluate(by: values)
     }
-    
-//    public static func elementarySymmetric(_ i: Int) -> Self {
-//        assert(xn.isFinite)
-//        assert(i >= 0)
-//
-//        let n = xn.numberOfIndeterminates
-//        if i > n {
-//            return .zero
-//        }
-//
-//        let exponents = (0 ..< n).choose(i).map { combi -> [Int] in
-//            // e.g.  [0, 1, 3] -> (1, 1, 0, 1)
-//            let l = combi.last ?? 0
-//            return (0 ... l).map { combi.contains($0) ? 1 : 0 }
-//        }
-//
-//        let coeffs = Dictionary(pairs: exponents.map{ ($0, R.identity) } )
-//        return .init(coeffs: coeffs)
-//    }
-//    
-//    public static var symbol: String {
-//        typealias xn = Indeterminates
-//        if xn.isFinite {
-//            let n = xn.numberOfIndeterminates
-//            return "\(BaseRing.symbol)[\( (0 ..< n).map{ i in xn.symbol(i) }.joined(separator: ", "))]"
-//        } else {
-//            return "\(BaseRing.symbol)[\( (0 ..< 3).map{ i in xn.symbol(i) }.appended("…").joined(separator: ", "))]"
-//        }
-//    }
 }
 
 public struct MultivariatePolynomial<R: Ring, xn: MultivariatePolynomialIndeterminates>: MultivariatePolynomialType {
@@ -156,11 +127,38 @@ public struct MultivariatePolynomial<R: Ring, xn: MultivariatePolynomialIndeterm
             return monomial(withExponents: Exponent(exponent))
         }
     }
+    
+    public static func elementarySymmetricPolynomial<S: Sequence>(ofDegree deg: Int, usingIndeterminates indices: S) -> Self where S.Element == Int {
+        assert(indices.isUnique)
+        assert(indices.allSatisfy{ $0 >= 0 })
+
+        let n = indices.count
+        if deg > n {
+            return .zero
+        }
+        
+        let max = indices.max() ?? 0
+        let table = indices.asDictionary.inverse!
+        
+        let exponents = (0 ..< n).choose(deg).map { list -> [Int] in
+            // e.g. [0, 1, 3] -> (1, 1, 0, 1)
+            let set = Set(list)
+            return (0 ... max).map { i in
+                set.contains(table[i] ?? -1) ? 1 : 0
+            }
+        }
+        
+        return .init(coeffs: Dictionary(pairs: exponents.map{ (Exponent($0), .identity) } ))
+    }
 }
 
 extension MultivariatePolynomial where Indeterminate.NumberOfIndeterminates: StaticSizeType {
     public static func monomials(ofDegree deg: Int) -> [Self] {
         monomials(ofDegree: deg, usingIndeterminates: 0 ..< numberOfIndeterminates)
+    }
+    
+    public static func elementarySymmetricPolynomial(ofDegree deg: Int) -> Self {
+        elementarySymmetricPolynomial(ofDegree: deg, usingIndeterminates: 0 ..< numberOfIndeterminates)
     }
 }
 

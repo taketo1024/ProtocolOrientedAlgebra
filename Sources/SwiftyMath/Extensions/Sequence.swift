@@ -7,10 +7,6 @@
 //
 
 public extension Sequence {
-    func toArray() -> [Element] {
-        Array(self)
-    }
-    
     var isEmpty: Bool {
         anyElement == nil
     }
@@ -52,6 +48,14 @@ public extension Sequence {
             }
         }
         return (T, F)
+    }
+    
+    func toArray() -> [Element] {
+        Array(self)
+    }
+    
+    var asDictionary: [Int: Element] {
+        Dictionary(pairs: self.enumerated().map{ (i, a) in (i, a) } )
     }
     
     static func *<S: Sequence>(s1: Self, s2: S) -> AnySequence<(Self.Element, S.Element)> {
