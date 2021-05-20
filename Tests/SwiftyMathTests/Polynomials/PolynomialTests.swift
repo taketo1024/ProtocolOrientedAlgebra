@@ -9,11 +9,21 @@ import XCTest
 @testable import SwiftyMath
 
 class PolynomialTests: XCTestCase {
-    typealias A = Polynomial<_x, 𝐙>
-    typealias B = Polynomial<_x, 𝐐>
+    struct _x: PolynomialIndeterminate {
+        static let degree: Int = 1
+        static let symbol: String = "x"
+    }
+    
+    typealias A = Polynomial<𝐙, _x>
+    typealias B = Polynomial<𝐐, _x>
 
     func testInitFromInt() {
         let a = A(from: 3)
+        XCTAssertEqual(a, A(coeffs: [0: 3]))
+    }
+    
+    func testInitFromIntLiteral() {
+        let a: A = 3
         XCTAssertEqual(a, A(coeffs: [0: 3]))
     }
     
@@ -26,11 +36,10 @@ class PolynomialTests: XCTestCase {
         let a = A(coeffs: 3, 4, 0, 5)
         XCTAssertEqual(a.leadCoeff, 5)
         XCTAssertEqual(a.leadTerm, A(coeffs: [3: 5]))
-        XCTAssertEqual(a.constTerm, 3)
-        XCTAssertEqual(a.highestExponent, 3)
-        XCTAssertEqual(a.lowestExponent, 0)
+        XCTAssertEqual(a.constTerm, A(3))
+        XCTAssertEqual(a.leadExponent, 3)
         XCTAssertEqual(a.degree, 3)
-        XCTAssertFalse(a.isSingleTerm)
+        XCTAssertFalse(a.isMonomial)
     }
     
     func testIndeterminate() {
@@ -38,9 +47,8 @@ class PolynomialTests: XCTestCase {
         XCTAssertEqual(x, A(coeffs: [1: 1]))
         XCTAssertEqual(x.description, "x")
         XCTAssertEqual(x.degree, 1)
-        XCTAssertEqual(x.highestExponent, 1)
-        XCTAssertEqual(x.lowestExponent, 1)
-        XCTAssertTrue (x.isSingleTerm)
+        XCTAssertEqual(x.leadExponent, 1)
+        XCTAssertTrue (x.isMonomial)
     }
     
     func testSum() {
@@ -115,14 +123,6 @@ class PolynomialTests: XCTestCase {
         XCTAssertFalse(b.isMonic)
     }
     
-    func testToMonic() {
-        let a = B(coeffs: 1, 2, 1)
-        XCTAssertEqual(a.toMonic(), a)
-        
-        let b = B(coeffs: 1, 2, 3)
-        XCTAssertEqual(b.toMonic(), B(coeffs: 1./3, 2./3, 1))
-    }
-    
     func testEucDiv() {
         let a = B(coeffs: 1, 2, 1)
         let b = B(coeffs: 3, 2)
@@ -139,12 +139,11 @@ class PolynomialTests: XCTestCase {
     }
     
     func testCustomIndeterminate() {
-        typealias T = Polynomial<_t, 𝐙>
+        typealias T = Polynomial<𝐙, _t>
         let t = T.indeterminate
         XCTAssertEqual(t, T(coeffs: [1: 1]))
         XCTAssertEqual(t.description, "t")
         XCTAssertEqual(t.degree, 2)
-        XCTAssertEqual(t.highestExponent, 1)
-        XCTAssertEqual(t.lowestExponent, 1)
+        XCTAssertEqual(t.leadExponent, 1)
     }
 }

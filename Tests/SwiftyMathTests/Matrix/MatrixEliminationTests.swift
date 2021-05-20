@@ -178,15 +178,20 @@ class MatrixEliminationTests: XCTestCase {
         XCTAssertEqual(E.result, M.diagonal(1,1,1))
     }
     
+    struct _x: PolynomialIndeterminate {
+        static let symbol: String = "x"
+    }
+    
     func testQPolynomial() {
-        typealias R = Polynomial<_x, 𝐐>
+        typealias R = Polynomial<𝐐, _x>
         
         let x = R.indeterminate
         let I = M3<R>.identity
-        let A: M3 =
-            [R(0), R(2), R(1),
-             R(-4), R(6), R(2),
-             R(4), R(-4), R(0)]
+        let A: M3<R> =
+            [0, 2, 1,
+             -4, 6, 2,
+             4, -4, 0]
+        
         let P = x * I - A
         let e = P.eliminate(form: .Smith)
         

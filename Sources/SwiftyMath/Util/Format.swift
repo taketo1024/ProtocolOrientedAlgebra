@@ -73,6 +73,22 @@ public struct Format {
         return n == 0 ? "1" : n == 1 ? xStr : "\(xStr)\(sup(n))"
     }
     
+    public static func term<R: Ring, X: CustomStringConvertible>(_ r: R = .identity, _ x: X, _ n: Int = 0) -> String {
+        let p = power(x, n)
+        switch (r, p) {
+        case (.zero, _):
+            return "0"
+        case (_, "1"):
+            return "\(r)"
+        case (.identity, _):
+            return p
+        case (-.identity, _):
+            return "-\(p)"
+        default:
+            return "\(r)\(p)"
+        }
+    }
+    
     public static func linearCombination<S: Sequence, X: CustomStringConvertible, R: Ring>(_ terms: S) -> String where S.Element == (X, R) {
         let termsStr = terms.compactMap{ (x, r) -> String? in
             let xStr = x.description

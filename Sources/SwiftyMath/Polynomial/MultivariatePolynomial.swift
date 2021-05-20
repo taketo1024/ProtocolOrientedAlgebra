@@ -5,7 +5,7 @@
 //  Created by Taketo Sano on 2021/05/19.
 //
 
-public protocol _MultivariatePolynomialIndeterminates {
+public protocol MultivariatePolynomialIndeterminates {
     associatedtype NumberOfIndeterminates: SizeType
     static var isFinite: Bool { get }
     static var numberOfIndeterminates: Int { get }
@@ -13,7 +13,7 @@ public protocol _MultivariatePolynomialIndeterminates {
     static func degree(_ i: Int) -> Int
 }
 
-extension _MultivariatePolynomialIndeterminates {
+extension MultivariatePolynomialIndeterminates {
     public static var isFinite: Bool {
         !NumberOfIndeterminates.isDynamic
     }
@@ -34,11 +34,11 @@ extension _MultivariatePolynomialIndeterminates {
     }
 }
 
-public protocol _MultivariatePolynomialType: _PolynomialType where Indeterminate: _MultivariatePolynomialIndeterminates, Exponent == MultiIndex<Indeterminate.NumberOfIndeterminates> {
+public protocol MultivariatePolynomialType: PolynomialType where Indeterminate: MultivariatePolynomialIndeterminates, Exponent == MultiIndex<Indeterminate.NumberOfIndeterminates> {
     typealias NumberOfIndeterminates = Indeterminate.NumberOfIndeterminates
 }
 
-extension _MultivariatePolynomialType {
+extension MultivariatePolynomialType {
     public static func indeterminate(_ i: Int) -> Self {
         let l = Indeterminate.isFinite ? Indeterminate.numberOfIndeterminates : i + 1
         let indices = (0 ..< l).map{ $0 == i ? 1 : 0 }
@@ -61,6 +61,26 @@ extension _MultivariatePolynomialType {
 //    public static func monomials(ofTotalExponent e: Int, usingIndeterminates indices: [Int]) -> [Self] {
 //        Generator.monomials(ofTotalExponent: e, usingIndeterminates: indices).map { .init(elements: [$0: .identity] )}
 //    }
+    
+//    typealias xn = Indeterminates
+//    guard !indices.isEmpty else {
+//        return (total == 0) ? [.identity] : []
+//    }
+//    
+//    func generate(_ total: Int, _ i: Int) -> [[Int : Int]] {
+//        if i == 0 {
+//            return [[indices[i] : total]]
+//        } else {
+//            return (0 ... total).flatMap { e_i -> [[Int : Int]] in
+//                generate(total - e_i, i - 1).map { exponents in
+//                    exponents.merging([indices[i] : e_i])
+//                }
+//            }
+//        }
+//    }
+//    
+//    return generate(total, indices.count - 1).map { .init($0) }
+
     
     public func coeff(_ exponent: Int...) -> BaseRing {
         self.coeff(Exponent(exponent))
@@ -127,7 +147,7 @@ extension _MultivariatePolynomialType {
 //    }
 }
 
-public struct _MultivariatePolynomial<R: Ring, xn: _MultivariatePolynomialIndeterminates>: _MultivariatePolynomialType {
+public struct MultivariatePolynomial<R: Ring, xn: MultivariatePolynomialIndeterminates>: MultivariatePolynomialType {
     public typealias BaseRing = R
     public typealias Indeterminate = xn
     public typealias Exponent = MultiIndex<xn.NumberOfIndeterminates>
@@ -142,6 +162,32 @@ public struct _MultivariatePolynomial<R: Ring, xn: _MultivariatePolynomialIndete
     }
     
     public var inverse: Self? {
-        nil // TODO
+        (isConst && constCoeff.isInvertible)
+            ? .init(constCoeff.inverse!)
+            : nil
     }
 }
+
+extension MultivariatePolynomial: ExpressibleByIntegerLiteral where R: ExpressibleByIntegerLiteral {
+    public init(integerLiteral value: R.IntegerLiteralType) {
+        self.init(BaseRing(integerLiteral: value))
+    }
+}
+
+//// MEMO: Waiting for parameterized extension.
+//public func splitPolynomials<xn, A, R>(_ z: LinearCombination<A, MultivariatePolynomial<xn, R>>) -> LinearCombination<TensorGenerator<MultivariatePolynomialGenerator<xn>, A>, R> {
+//    return z.elements.sum { (a, p) in
+//        p.elements.sum { (m, r) in
+//            LinearCombination(elements: [ m ⊗ a : r])
+//        }
+//    }
+//}
+//
+//// MEMO: Waiting for parameterized extension.
+//public func combineMonomials<xn, A, R>(_ z: LinearCombination<TensorGenerator<MultivariatePolynomialGenerator<xn>, A>, R>) -> LinearCombination<A, MultivariatePolynomial<xn, R>> {
+//    return z.elements.sum { (x, r) in
+//        let (m, a) = x.factors
+//        let p = r * MultivariatePolynomial<xn, R>.wrap(m)
+//        return LinearCombination(elements: [a : p])
+//    }
+//}
