@@ -11,7 +11,7 @@ import XCTest
 class MPolynomialTests: XCTestCase {
     struct xyz: MultivariatePolynomialIndeterminates {
         typealias NumberOfIndeterminates = _3
-        static func symbol(_ i: Int) -> String {
+        static func symbolOfIndeterminate(at i: Int) -> String {
             switch i {
             case 0: return "x"
             case 1: return "y"
@@ -19,12 +19,20 @@ class MPolynomialTests: XCTestCase {
             default: fatalError()
             }
         }
+        
+        static func degreeOfIndeterminate(at i: Int) -> Int {
+            i + 1
+        }
     }
     
     struct xn: MultivariatePolynomialIndeterminates {
         typealias NumberOfIndeterminates = DynamicSize
-        static func symbol(_ i: Int) -> String {
+        static func symbolOfIndeterminate(at i: Int) -> String {
             "x\(Format.sub(i))"
+        }
+        
+        static func degreeOfIndeterminate(at i: Int) -> Int {
+            i + 1
         }
     }
 
@@ -34,24 +42,28 @@ class MPolynomialTests: XCTestCase {
     func testFiniteVariateIndeterminates() {
         XCTAssertTrue (xyz.isFinite)
         XCTAssertEqual(xyz.numberOfIndeterminates, 3)
-        XCTAssertEqual(xyz.degree(0), 1)
-        XCTAssertEqual(xyz.degree(1), 1)
-        XCTAssertEqual(xyz.degree(2), 1)
-        XCTAssertEqual(xyz.symbol(0), "x")
-        XCTAssertEqual(xyz.symbol(1), "y")
-        XCTAssertEqual(xyz.symbol(2), "z")
-//        XCTAssertEqual(xyz.totalDegree(exponents: [2, 3, 7]), 12)
+        XCTAssertEqual(xyz.degreeOfIndeterminate(at: 0), 1)
+        XCTAssertEqual(xyz.degreeOfIndeterminate(at: 1), 2)
+        XCTAssertEqual(xyz.degreeOfIndeterminate(at: 2), 3)
+        XCTAssertEqual(xyz.degreeOfMonomial(withExponent: [1, 0, 3]), 10)
+        
+        XCTAssertEqual(xyz.symbolOfIndeterminate(at: 0), "x")
+        XCTAssertEqual(xyz.symbolOfIndeterminate(at: 1), "y")
+        XCTAssertEqual(xyz.symbolOfIndeterminate(at: 2), "z")
+        XCTAssertEqual(xyz.descriptionOfMonomial(withExponent: [1, 2, 3]), "xy²z³")
     }
     
     func testInfiniteVariateIndeterminates() {
         XCTAssertFalse(xn.isFinite)
-        XCTAssertEqual(xn.degree(0), 1)
-        XCTAssertEqual(xn.degree(1), 1)
-        XCTAssertEqual(xn.degree(2), 1)
-        XCTAssertEqual(xn.symbol(0), "x₀")
-        XCTAssertEqual(xn.symbol(1), "x₁")
-        XCTAssertEqual(xn.symbol(1), "x₁")
-//        XCTAssertEqual(xn.totalDegree(exponents: [2, 3, 7]), 12)
+        XCTAssertEqual(xn.degreeOfIndeterminate(at: 0), 1)
+        XCTAssertEqual(xn.degreeOfIndeterminate(at: 1), 2)
+        XCTAssertEqual(xn.degreeOfIndeterminate(at: 2), 3)
+        XCTAssertEqual(xn.degreeOfMonomial(withExponent: [0, 2, 2]), 10)
+
+        XCTAssertEqual(xn.symbolOfIndeterminate(at: 0), "x₀")
+        XCTAssertEqual(xn.symbolOfIndeterminate(at: 1), "x₁")
+        XCTAssertEqual(xn.symbolOfIndeterminate(at: 2), "x₂")
+        XCTAssertEqual(xn.descriptionOfMonomial(withExponent: [1, 0, 3, 4]), "x₀x₂³x₃⁴")
     }
     
     func testInitFromInt() {
@@ -97,6 +109,12 @@ class MPolynomialTests: XCTestCase {
         let a = A(coeffs: [[1]: 1])
         let b = A(coeffs: [[1,0]: 1, [0,1]: 0])
         XCTAssertEqual(a, b)
+    }
+    
+    func testDegree() {
+        let a = A(coeffs: [.zero: 1, [1,2,3]: 2, [5,2]: 3])
+        XCTAssertEqual(a.leadExponent, [1,2,3])
+        XCTAssertEqual(a.degree, 14)
     }
     
     func testSum() {
@@ -145,11 +163,11 @@ class MPolynomialTests: XCTestCase {
         XCTAssertEqual(a.evaluate(by: 1, 2), 11)                  // f(1, 2) = 6 - 1 + 4 + 2
     }
 
-//    func testGenerateMonomials() {
-//        let mons = A.monomials(ofTotalExponent: 3)
-//        XCTAssertEqual(mons.count, 4)
-//        XCTAssertTrue(mons.allSatisfy{ $0.degree == 3 })
-//    }
+    func testMonomialsOfDegree() {
+        let mons = A.monomials(ofDegree: 5)
+        XCTAssertEqual(mons.count, 5)
+        XCTAssertTrue(mons.allSatisfy{ $0.degree == 5 })
+    }
     
     //    func testSymmetricPolynomial() {
     //        XCTAssertEqual(A.elementarySymmetric(0), A(1))

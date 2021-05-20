@@ -5,12 +5,12 @@
 //  Created by Taketo Sano on 2021/05/19.
 //
 
-public protocol MultivariatePolynomialIndeterminates {
+public protocol MultivariatePolynomialIndeterminates: GenericPolynomialIndeterminate where Exponent == MultiIndex<NumberOfIndeterminates> {
     associatedtype NumberOfIndeterminates: SizeType
     static var isFinite: Bool { get }
     static var numberOfIndeterminates: Int { get }
-    static func symbol(_ i: Int) -> String
-    static func degree(_ i: Int) -> Int
+    static func symbolOfIndeterminate(at i: Int) -> String
+    static func degreeOfIndeterminate(at i: Int) -> Int
 }
 
 extension MultivariatePolynomialIndeterminates {
@@ -22,19 +22,26 @@ extension MultivariatePolynomialIndeterminates {
         NumberOfIndeterminates.intValue
     }
     
-    public static func degree(_ i: Int) -> Int {
+    public static func degreeOfIndeterminate(at i: Int) -> Int {
         1
     }
     
-    public static func totalDegree(exponents: MultiIndex<NumberOfIndeterminates>) -> Int {
-        assert(!isFinite || exponents.length <= numberOfIndeterminates)
-        return exponents.indices.enumerated().sum { (i, k) in
-            k * degree(i)
+    public static func degreeOfMonomial(withExponent e: Exponent) -> Int {
+        assert(!isFinite || e.length <= numberOfIndeterminates)
+        return e.indices.enumerated().sum { (i, k) in
+            k * degreeOfIndeterminate(at: i)
         }
+    }
+    
+    public static func descriptionOfMonomial(withExponent e: Exponent) -> String {
+        let s = e.indices.enumerated().map{ (i, d) in
+            (d > 0) ? Format.power(symbolOfIndeterminate(at: i), d) : ""
+        }.joined()
+        return s.isEmpty ? "1" : s
     }
 }
 
-public protocol MultivariatePolynomialType: PolynomialType where Indeterminate: MultivariatePolynomialIndeterminates, Exponent == MultiIndex<Indeterminate.NumberOfIndeterminates> {
+public protocol MultivariatePolynomialType: GenericPolynomialType where Indeterminate: MultivariatePolynomialIndeterminates {
     typealias NumberOfIndeterminates = Indeterminate.NumberOfIndeterminates
 }
 
@@ -53,34 +60,6 @@ extension MultivariatePolynomialType {
     public static func monomial(withExponents I: Exponent) -> Self {
         .init(coeffs: [I: .identity])
     }
-    
-//    public static func monomials(ofTotalExponent e: Int) -> [Self] {
-//        monomials(ofTotalExponent: e, usingIndeterminates: (0 ..< Indeterminates.numberOfIndeterminates).toArray())
-//    }
-//
-//    public static func monomials(ofTotalExponent e: Int, usingIndeterminates indices: [Int]) -> [Self] {
-//        Generator.monomials(ofTotalExponent: e, usingIndeterminates: indices).map { .init(elements: [$0: .identity] )}
-//    }
-    
-//    typealias xn = Indeterminates
-//    guard !indices.isEmpty else {
-//        return (total == 0) ? [.identity] : []
-//    }
-//    
-//    func generate(_ total: Int, _ i: Int) -> [[Int : Int]] {
-//        if i == 0 {
-//            return [[indices[i] : total]]
-//        } else {
-//            return (0 ... total).flatMap { e_i -> [[Int : Int]] in
-//                generate(total - e_i, i - 1).map { exponents in
-//                    exponents.merging([indices[i] : e_i])
-//                }
-//            }
-//        }
-//    }
-//    
-//    return generate(total, indices.count - 1).map { .init($0) }
-
     
     public func coeff(_ exponent: Int...) -> BaseRing {
         self.coeff(Exponent(exponent))
@@ -115,27 +94,7 @@ extension MultivariatePolynomialType {
 //        let coeffs = Dictionary(pairs: exponents.map{ ($0, R.identity) } )
 //        return .init(coeffs: coeffs)
 //    }
-    
-    public var description: String {
-        if coeffs.isEmpty {
-            return "0"
-        }
-        
-        let elements = coeffs.sorted{ $0.key.total }
-            .map { (I, a) -> (String, BaseRing) in
-                if I.isZero {
-                    return (a.description, .identity)
-                } else {
-                    let m = I.indices.enumerated().map{ (i, d) in
-                        (d > 0) ? Format.power(Indeterminate.symbol(i), d) : ""
-                    }.joined()
-                    return (m, a)
-                }
-            }
-        
-        return Format.linearCombination(elements)
-    }
-    
+//    
 //    public static var symbol: String {
 //        typealias xn = Indeterminates
 //        if xn.isFinite {
@@ -150,21 +109,58 @@ extension MultivariatePolynomialType {
 public struct MultivariatePolynomial<R: Ring, xn: MultivariatePolynomialIndeterminates>: MultivariatePolynomialType {
     public typealias BaseRing = R
     public typealias Indeterminate = xn
-    public typealias Exponent = MultiIndex<xn.NumberOfIndeterminates>
 
     public let coeffs: [Exponent : R]
     public init(coeffs: [Exponent : R]) {
         self.coeffs = coeffs.exclude{ $0.value.isZero }
     }
     
-    public var leadExponent: Exponent {
-        coeffs.keys.max(by: { $0.total < $1.total }) ?? .zero
-    }
-    
     public var inverse: Self? {
         (isConst && constCoeff.isInvertible)
             ? .init(constCoeff.inverse!)
             : nil
+    }
+    
+    public static func monomials<S: Sequence>(ofDegree deg: Int, usingIndeterminates indices: S) -> [Self] where S.Element == Int {
+        assert(indices.isUnique)
+        assert(indices.allSatisfy{ $0 >= 0 })
+        assert(
+            deg == 0 && indices.allSatisfy{ i in Indeterminate.degreeOfIndeterminate(at: i) != 0 } ||
+            deg  > 0 && indices.allSatisfy{ i in Indeterminate.degreeOfIndeterminate(at: i) >  0 } ||
+            deg  < 0 && indices.allSatisfy{ i in Indeterminate.degreeOfIndeterminate(at: i) <  0 }
+        )
+        
+        typealias E = Indeterminate.Exponent // MultiIndex<n>
+        func generate(_ deg: Int, _ indices: ArraySlice<Int>) -> [[Int]] {
+            if indices.isEmpty {
+                return deg == 0 ? [[]] : []
+            }
+            
+            let i = indices.last!
+            let d = Indeterminate.degreeOfIndeterminate(at: i)
+            let c = deg / d  // = 0 when |deg| < |d|
+            
+            return (0 ... c).flatMap { e -> [[Int]] in
+                generate(deg - e * d, indices.dropLast()).map { res in
+                    res + [e]
+                }
+            }
+        }
+        
+        let max = indices.max() ?? 0
+        return generate(deg, ArraySlice(indices)).map { list -> Self in
+            let table = Dictionary(pairs: zip(indices, list))
+            let exponent = (0 ... max).map { i in
+                table[i] ?? 0
+            }
+            return monomial(withExponents: Exponent(exponent))
+        }
+    }
+}
+
+extension MultivariatePolynomial where Indeterminate.NumberOfIndeterminates: StaticSizeType {
+    public static func monomials(ofDegree deg: Int) -> [Self] {
+        monomials(ofDegree: deg, usingIndeterminates: 0 ..< numberOfIndeterminates)
     }
 }
 
@@ -173,21 +169,3 @@ extension MultivariatePolynomial: ExpressibleByIntegerLiteral where R: Expressib
         self.init(BaseRing(integerLiteral: value))
     }
 }
-
-//// MEMO: Waiting for parameterized extension.
-//public func splitPolynomials<xn, A, R>(_ z: LinearCombination<A, MultivariatePolynomial<xn, R>>) -> LinearCombination<TensorGenerator<MultivariatePolynomialGenerator<xn>, A>, R> {
-//    return z.elements.sum { (a, p) in
-//        p.elements.sum { (m, r) in
-//            LinearCombination(elements: [ m ⊗ a : r])
-//        }
-//    }
-//}
-//
-//// MEMO: Waiting for parameterized extension.
-//public func combineMonomials<xn, A, R>(_ z: LinearCombination<TensorGenerator<MultivariatePolynomialGenerator<xn>, A>, R>) -> LinearCombination<A, MultivariatePolynomial<xn, R>> {
-//    return z.elements.sum { (x, r) in
-//        let (m, a) = x.factors
-//        let p = r * MultivariatePolynomial<xn, R>.wrap(m)
-//        return LinearCombination(elements: [a : p])
-//    }
-//}

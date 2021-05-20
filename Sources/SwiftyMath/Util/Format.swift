@@ -90,19 +90,29 @@ public struct Format {
     }
     
     public static func linearCombination<S: Sequence, X: CustomStringConvertible, R: Ring>(_ terms: S) -> String where S.Element == (X, R) {
-        let termsStr = terms.compactMap{ (x, r) -> String? in
+        func parenthesize(_ x: String) -> Bool {
+            x.contains(" ")
+        }
+        let termsStr = terms.compactMap{ (x, a) -> String? in
+            let aStr = a.description
             let xStr = x.description
-            switch (r, xStr) {
-            case (.zero, _):
+            switch (aStr, parenthesize(aStr), xStr, parenthesize(xStr)) {
+            case ("0", _, _, _):
                 return nil
-            case (_, "1"):
-                return "\(r)"
-            case (.identity, _):
+            case (_, _, "1", _):
+                return aStr
+            case ("1", _, _, _):
                 return xStr
-            case (-.identity, _):
+            case ("-1", _, _, false):
                 return "-\(xStr)"
+            case ("-1", _, _, true):
+                return "-(\(xStr))"
+            case (_, false, _, false):
+                return "\(aStr)\(xStr)"
+            case (_, true, _, false):
+                return "(\(aStr))\(xStr)"
             default:
-                return "\(r)\(xStr)"
+                return "(\(aStr))(\(xStr))"
             }
         }
         

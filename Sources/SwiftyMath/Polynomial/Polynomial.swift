@@ -5,30 +5,30 @@
 //  Created by Taketo Sano on 2021/05/18.
 //
 
-public protocol PolynomialIndeterminate {
+public protocol PolynomialIndeterminate: GenericPolynomialIndeterminate where Exponent == Int {
     static var symbol: String { get }
     static var degree: Int { get }
 }
 
-public extension PolynomialIndeterminate {
-    static var degree: Int {
+extension PolynomialIndeterminate {
+    public static var degree: Int {
         1
+    }
+    
+    public static func degreeOfMonomial(withExponent e: Exponent) -> Int {
+        degree * e
+    }
+    
+    public static func descriptionOfMonomial(withExponent e: Exponent) -> String {
+        Format.power(symbol, e)
     }
 }
 
-public protocol UnivariatePolynomialType: PolynomialType where Exponent == Int, Indeterminate: PolynomialIndeterminate {}
+public protocol PolynomialType: GenericPolynomialType where Indeterminate: PolynomialIndeterminate {}
 
-extension UnivariatePolynomialType {
+extension PolynomialType {
     public static var indeterminate: Self {
         Self(coeffs: [1: .identity])
-    }
-    
-    public var degree: Int {
-        Indeterminate.degree * leadExponent
-    }
-    
-    public var leadExponent: Int {
-        coeffs.keys.max() ?? 0
     }
     
     public var derivative: Self {
@@ -41,27 +41,11 @@ extension UnivariatePolynomialType {
     public func evaluate(by x: BaseRing) -> BaseRing {
         coeffs.sum { (n, a) in a * x.pow(n) }
     }
-
-    
-//    public var asLinearCombination: LinearCombination<UnivariatePolynomialGenerator<Indeterminate>, BaseRing> {
-//        .init(elements: coeffs.mapKeys{ d in .init(d) })
-//    }
-    
-    public var description: String {
-        Format.linearCombination(
-            coeffs
-                .sorted{ $0.key > $1.key }
-                .map { (n, a) in
-                    (Format.power(Indeterminate.symbol, n), a)
-                }
-        )
-    }
 }
 
-public struct Polynomial<R: Ring, X: PolynomialIndeterminate>: UnivariatePolynomialType {
+public struct Polynomial<R: Ring, X: PolynomialIndeterminate>: PolynomialType {
     public typealias BaseRing = R
     public typealias Indeterminate = X
-    public typealias Exponent = Int
 
     public let coeffs: [Int: R]
     public init(coeffs: [Int : R]) {
@@ -119,7 +103,7 @@ extension Polynomial: ExpressibleByIntegerLiteral where R: ExpressibleByIntegerL
     }
 }
 
-public struct LaurentPolynomial<R: Ring, X: PolynomialIndeterminate>: UnivariatePolynomialType {
+public struct LaurentPolynomial<R: Ring, X: PolynomialIndeterminate>: PolynomialType {
     public typealias BaseRing = R
     public typealias Indeterminate = X
     public typealias Exponent = Int
@@ -145,4 +129,3 @@ extension LaurentPolynomial: ExpressibleByIntegerLiteral where R: ExpressibleByI
         self.init(BaseRing(integerLiteral: value))
     }
 }
-
