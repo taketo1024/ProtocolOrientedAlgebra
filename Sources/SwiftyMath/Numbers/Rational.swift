@@ -1,6 +1,6 @@
 public typealias 𝐐 = RationalNumber
 
-public struct RationalNumber: Field, Comparable, Hashable, Codable {
+public struct RationalNumber: Field, ExpressibleByIntegerLiteral, Comparable, Hashable, Codable {
     internal let p, q: 𝐙  // memo: (p, q) coprime, q > 0.
     
     public init(from n: 𝐙) {
@@ -30,6 +30,18 @@ public struct RationalNumber: Field, Comparable, Hashable, Codable {
         }
     }
     
+    public init(integerLiteral value: Int) {
+        self.init(value)
+    }
+    
+    public var numerator: 𝐙 {
+        p
+    }
+    
+    public var denominator: 𝐙 {
+        q
+    }
+    
     public var sign: 𝐙 {
         p.sign
     }
@@ -40,14 +52,6 @@ public struct RationalNumber: Field, Comparable, Hashable, Codable {
     
     public var inverse: 𝐐? {
         (p != 0) ? 𝐐(q, p) : nil
-    }
-    
-    public var numerator: 𝐙 {
-        p
-    }
-    
-    public var denominator: 𝐙 {
-        q
     }
     
     public static func + (a: 𝐐, b: 𝐐) -> 𝐐 {
@@ -76,16 +80,6 @@ public struct RationalNumber: Field, Comparable, Hashable, Codable {
         default: return "\(p)/\(q)"
         }
     }
-    
-    public static var symbol: String {
-        "𝐐"
-    }
-}
-
-extension 𝐐: ExpressibleByIntegerLiteral {
-    public init(integerLiteral value: Int) {
-        self.init(value)
-    }
 }
 
 extension 𝐐: Randomable {
@@ -107,8 +101,14 @@ extension 𝐐: Randomable {
     }
 }
 
-extension 𝐙 {
-    public static func ./(a: 𝐙, b: 𝐙) -> 𝐐 {
-        .init(a, b)
+extension 𝐐: RealSubset {
+    public var asReal: 𝐑 {
+        .init(self)
+    }
+}
+
+extension 𝐐: ComplexSubset {
+    public var asComplex: 𝐂 {
+        self.asReal.asComplex
     }
 }

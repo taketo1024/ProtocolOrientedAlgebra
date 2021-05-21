@@ -11,7 +11,7 @@
 
 public typealias 𝐇 = Quaternion<𝐑>
 
-public struct Quaternion<Base: Ring>: Ring, Module {
+public struct Quaternion<Base: Ring>: Ring {
     public typealias BaseRing = Base
     
     private let x: Base
@@ -69,7 +69,7 @@ public struct Quaternion<Base: Ring>: Ring, Module {
     public var inverse: Self? {
         let r2 = components.map{ $0 * $0 }.sumAll()
         if let r2Inv = r2.inverse {
-            return conjugate * r2Inv
+            return Self(r2Inv) * conjugate
         } else {
             return nil
         }
@@ -81,14 +81,6 @@ public struct Quaternion<Base: Ring>: Ring, Module {
     
     public static prefix func -(a: Self) -> Self {
         .init(-a.x, -a.y, -a.z, -a.w)
-    }
-    
-    public static func *(a: Base, b: Self) -> Self {
-        Self(a * b.x, a * b.y, a * b.z, a * b.w)
-    }
-    
-    public static func *(a: Self, b: Base) -> Self {
-        Self(a.x * b, a.y * b, a.z * b, a.w * b)
     }
     
     public static func *(a: Self, b: Self) -> Self {
@@ -110,9 +102,17 @@ public struct Quaternion<Base: Ring>: Ring, Module {
     public var description: String {
         Format.linearCombination([("1", x), ("i", y), ("j", z), ("k", w)])
     }
-    
-    public static var symbol: String {
-        (Base.self == 𝐑.self) ? "𝐇" : "\(Base.symbol)[i, j, k]"
+}
+
+extension Quaternion: ExpressibleByIntegerLiteral where Base: ExpressibleByIntegerLiteral {
+    public init(integerLiteral value: Base.IntegerLiteralType) {
+        self.init(Base(integerLiteral: value))
+    }
+}
+
+extension Quaternion: ExpressibleByFloatLiteral where Base: ExpressibleByFloatLiteral {
+    public init(floatLiteral value: Base.FloatLiteralType) {
+        self.init(Base(floatLiteral: value))
     }
 }
 

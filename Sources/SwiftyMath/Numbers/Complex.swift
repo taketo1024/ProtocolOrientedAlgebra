@@ -11,7 +11,7 @@ import Foundation
 public typealias ComplexNumber = Complex<RealNumber>
 public typealias 𝐂 = ComplexNumber
 
-public struct Complex<Base: Ring>: Ring, Module {
+public struct Complex<Base: Ring>: Ring {
     public typealias BaseRing = Base
     
     private let x: Base
@@ -49,7 +49,7 @@ public struct Complex<Base: Ring>: Ring, Module {
     public var inverse: Self? {
         let r2 = x * x + y * y
         if let r2Inv = r2.inverse {
-            return r2Inv * conjugate
+            return Self(r2Inv) * conjugate
         } else {
             return nil
         }
@@ -63,14 +63,6 @@ public struct Complex<Base: Ring>: Ring, Module {
         .init(-a.x, -a.y)
     }
     
-    public static func *(a: Base, b: Self) -> Self {
-        .init(a * b.x, a * b.y)
-    }
-    
-    public static func *(a: Self, b: Base) -> Self {
-        .init(a.x * b, a.y * b)
-    }
-    
     public static func *(a: Self, b: Self) -> Self {
         let x = a.x * b.x - a.y * b.y
         let y = a.x * b.y + a.y * b.x
@@ -80,23 +72,25 @@ public struct Complex<Base: Ring>: Ring, Module {
     public var description: String {
         Format.linearCombination([("1", x), ("i", y)])
     }
+}
 
-    public static var symbol: String {
-        (Base.self == 𝐑.self) ? "𝐂" : "\(Base.symbol)[i]"
+// MEMO: This is false,
+//       e.g. Complex<F_2> has (i + 1)^2 = 0.
+extension Complex: EuclideanRing, Field where Base: Field {}
+
+extension Complex: ExpressibleByIntegerLiteral where Base: ExpressibleByIntegerLiteral {
+    public init(integerLiteral value: Base.IntegerLiteralType) {
+        self.init(Base(integerLiteral: value))
     }
 }
 
-extension Complex: EuclideanRing, Field where Base: Field {}
-
-extension Complex: ExpressibleByIntegerLiteral, ExpressibleByFloatLiteral where Base == 𝐑 {
-    public init(integerLiteral n: Base.IntegerLiteralType) {
-        self.init(Base(integerLiteral: n))
+extension Complex: ExpressibleByFloatLiteral where Base: ExpressibleByFloatLiteral {
+    public init(floatLiteral value: Base.FloatLiteralType) {
+        self.init(Base(floatLiteral: value))
     }
-    
-    public init(floatLiteral x: Base.FloatLiteralType) {
-        self.init(Base(floatLiteral: x))
-    }
+}
 
+extension Complex where Base == 𝐑 {
     public init(r: Base, θ: Base) {
         self.init(r * cos(θ), r * sin(θ))
     }
@@ -143,22 +137,4 @@ extension Complex: Hashable where Base: Hashable {}
 
 public protocol ComplexSubset {
     var asComplex: 𝐂 { get }
-}
-
-extension 𝐙: ComplexSubset {
-    public var asComplex: 𝐂 {
-        self.asReal.asComplex
-    }
-}
-
-extension 𝐐: ComplexSubset {
-    public var asComplex: 𝐂 {
-        self.asReal.asComplex
-    }
-}
-
-extension 𝐑: ComplexSubset {
-    public var asComplex: 𝐂 {
-        .init(self)
-    }
 }

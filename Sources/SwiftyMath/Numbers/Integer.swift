@@ -58,8 +58,8 @@ extension 𝐙: EuclideanRing, Randomable {
         return (q, a - q * b)
     }
     
-    public static var symbol: String {
-        "𝐙"
+    public static func ./(a: 𝐙, b: 𝐙) -> 𝐐 {
+        .init(a, b)
     }
 }
 
@@ -145,5 +145,17 @@ extension 𝐙 {
                 return ps.map { I in [i] + I }
             } + [[n]]
         }
+    }
+}
+
+extension 𝐙: RealSubset {
+    public var asReal: 𝐑 {
+        .init(self)
+    }
+}
+
+extension 𝐙: ComplexSubset {
+    public var asComplex: 𝐂 {
+        self.asReal.asComplex
     }
 }

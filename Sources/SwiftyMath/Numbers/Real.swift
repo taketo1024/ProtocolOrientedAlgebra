@@ -1,6 +1,8 @@
 public typealias RealNumber = Double
 public typealias 𝐑 = RealNumber
 
+public let π = 𝐑(Double.pi)
+
 extension RealNumber: Field {
     public init(from x: 𝐙) {
         self.init(x)
@@ -58,20 +60,12 @@ extension RealNumber: Field {
     }
 }
 
-public let π = 𝐑(Double.pi)
+extension 𝐑: ComplexSubset {
+    public var asComplex: 𝐂 {
+        .init(self)
+    }
+}
 
 public protocol RealSubset {
     var asReal: 𝐑 { get }
-}
-
-extension 𝐙: RealSubset {
-    public var asReal: 𝐑 {
-        .init(self)
-    }
-}
-
-extension 𝐐: RealSubset {
-    public var asReal: 𝐑 {
-        .init(self)
-    }
 }
