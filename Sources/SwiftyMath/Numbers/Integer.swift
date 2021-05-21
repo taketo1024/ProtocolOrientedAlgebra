@@ -53,9 +53,9 @@ extension 𝐙: EuclideanRing, Randomable {
         Swift.abs(self)
     }
     
-    public static func /%(a: 𝐙, b: 𝐙) -> (q: 𝐙, r: 𝐙) {
+    public static func /%(a: 𝐙, b: 𝐙) -> (quotient: 𝐙, remainder: 𝐙) {
         let q = a / b
-        return (q: q, r: a - q * b)
+        return (q, a - q * b)
     }
     
     public static var symbol: String {

@@ -9,7 +9,7 @@ public extension Field {
         isZero ? 0 : 1
     }
     
-    static func /%(a: Self, b: Self) -> (q: Self, r: Self) {
+    static func /%(a: Self, b: Self) -> (quotient: Self, remainder: Self) {
         (a / b, .zero)
     }
     

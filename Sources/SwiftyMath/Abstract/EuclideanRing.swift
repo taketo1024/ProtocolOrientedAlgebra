@@ -3,18 +3,18 @@ public protocol EuclideanRing: Ring {
     func divides(_ a: Self) -> Bool
     func isDivible(by a: Self) -> Bool
     
-    static func /% (a: Self, b: Self) -> (q: Self, r: Self)
+    static func /% (a: Self, b: Self) -> (quotient: Self, remainder: Self)
     static func / (a: Self, b: Self) -> Self
     static func % (a: Self, b: Self) -> Self
 }
 
 public extension EuclideanRing {
     static func / (_ a: Self, b: Self) -> Self {
-        (a /% b).q
+        (a /% b).quotient
     }
     
     static func % (_ a: Self, b: Self) -> Self {
-        (a /% b).r
+        (a /% b).remainder
     }
     
     func divides(_ b: Self) -> Bool {
