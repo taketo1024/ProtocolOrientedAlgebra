@@ -35,12 +35,12 @@ public final class Cache<Key, Value>: ExpressibleByDictionaryLiteral, CustomStri
     
     public func getOrSet(key: Key, _ initializer: () -> Value) -> Value {
         queue.sync {
-            if let value = self[key] {
+            if let value = storage[key] {
                 return value
             }
             
             let value = initializer()
-            self[key] = value
+            storage[key] = value
             return value
         }
     }
