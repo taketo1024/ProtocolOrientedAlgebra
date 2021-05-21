@@ -1,8 +1,6 @@
 import XCTest
-@testable import SwiftyAlgebraTests
-@testable import SwiftyTopologyTests
+@testable import SwiftyMathTests
 
 XCTMain([
-    testCase(SwiftyAlgebraTests.allTests),
-    testCase(SwiftyTopologyTests.allTests),
+    testCase(SwiftyMathTests.allTests)
 ])

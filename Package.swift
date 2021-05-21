@@ -1,4 +1,4 @@
-// swift-tools-version:5.2
+// swift-tools-version:5.3
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -15,14 +15,9 @@ let package = Package(
     targets: [
         .target(
             name: "SwiftyMath",
-            dependencies: [],
-            path: "Sources/SwiftyMath"),
+            dependencies: []),
         .testTarget(
             name: "SwiftyMathTests",
             dependencies: ["SwiftyMath"]),
-        .target(
-            name: "SwiftyMath-Sample",
-            dependencies: ["SwiftyMath"],
-            path: "Sources/Sample"),
     ]
 )
