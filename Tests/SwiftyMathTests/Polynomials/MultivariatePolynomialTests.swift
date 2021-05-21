@@ -25,16 +25,10 @@ class MPolynomialTests: XCTestCase {
         }
     }
     
-    struct xn: MultivariatePolynomialIndeterminates {
-        typealias NumberOfIndeterminates = DynamicSize
-        static func symbolOfIndeterminate(at i: Int) -> String {
-            "x\(Format.sub(i))"
-        }
-        
-        static func degreeOfIndeterminate(at i: Int) -> Int {
-            i + 1
-        }
+    struct x: PolynomialIndeterminate {
+        static let symbol = "x"
     }
+    typealias xn = EnumeratedPolynomialIndeterminates<x, DynamicSize>
 
     typealias A = MultivariatePolynomial<𝐙, xyz>
     typealias B = MultivariatePolynomial<𝐙, xn>
@@ -56,9 +50,9 @@ class MPolynomialTests: XCTestCase {
     func testInfiniteVariateIndeterminates() {
         XCTAssertFalse(xn.isFinite)
         XCTAssertEqual(xn.degreeOfIndeterminate(at: 0), 1)
-        XCTAssertEqual(xn.degreeOfIndeterminate(at: 1), 2)
-        XCTAssertEqual(xn.degreeOfIndeterminate(at: 2), 3)
-        XCTAssertEqual(xn.degreeOfMonomial(withExponent: [0, 2, 2]), 10)
+        XCTAssertEqual(xn.degreeOfIndeterminate(at: 1), 1)
+        XCTAssertEqual(xn.degreeOfIndeterminate(at: 2), 1)
+        XCTAssertEqual(xn.degreeOfMonomial(withExponent: [0, 2, 2]), 4)
 
         XCTAssertEqual(xn.symbolOfIndeterminate(at: 0), "x₀")
         XCTAssertEqual(xn.symbolOfIndeterminate(at: 1), "x₁")

@@ -41,6 +41,34 @@ extension MultivariatePolynomialIndeterminates {
     }
 }
 
+public struct BivariatePolynomialIndeterminates<x: PolynomialIndeterminate, y: PolynomialIndeterminate>: MultivariatePolynomialIndeterminates {
+    public typealias NumberOfIndeterminates = _2
+    public static func degreeOfIndeterminate(at i: Int) -> Int {
+        switch i {
+        case 0: return x.degree
+        case 1: return y.degree
+        default: fatalError()
+        }
+    }
+    public static func symbolOfIndeterminate(at i: Int) -> String {
+        switch i {
+        case 0: return x.symbol
+        case 1: return y.symbol
+        default: fatalError()
+        }
+    }
+}
+
+public struct EnumeratedPolynomialIndeterminates<x: PolynomialIndeterminate, n: SizeType>: MultivariatePolynomialIndeterminates {
+    public typealias NumberOfIndeterminates = n
+    public static func degreeOfIndeterminate(at i: Int) -> Int {
+        x.degree
+    }
+    public static func symbolOfIndeterminate(at i: Int) -> String {
+        "\(x.symbol)\(Format.sub(i))"
+    }
+}
+
 public protocol MultivariatePolynomialType: GenericPolynomialType where Indeterminate: MultivariatePolynomialIndeterminates {
     typealias NumberOfIndeterminates = Indeterminate.NumberOfIndeterminates
 }
