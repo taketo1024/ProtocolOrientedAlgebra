@@ -16,7 +16,7 @@ public extension Submodule where BaseRing == Super.BaseRing {
     }
 }
 
-public protocol ProductModuleType: AdditiveProductGroupType, Module where Left: Module, Right: Module, BaseRing == Left.BaseRing, BaseRing == Right.BaseRing {}
+public protocol ProductModuleType: AdditiveProductGroup, Module where Left: Module, Right: Module, BaseRing == Left.BaseRing, BaseRing == Right.BaseRing {}
 
 public extension ProductModuleType {
     static func * (r: BaseRing, a: Self) -> Self {
@@ -39,7 +39,7 @@ public struct ProductModule<X: Module, Y: Module>: ProductModuleType where X.Bas
     }
 }
 
-public protocol QuotientModuleType: AdditiveQuotientGroupType, Module where BaseRing == Base.BaseRing, Sub:Submodule {}
+public protocol QuotientModuleType: AdditiveQuotientGroup, Module where BaseRing == Base.BaseRing, Sub:Submodule {}
 
 public extension QuotientModuleType {
     static func * (r: BaseRing, a: Self) -> Self {

@@ -87,15 +87,15 @@ class AdditiveGroupTests: XCTestCase {
         XCTAssertEqual(-a, B(A(-3)))
     }
     
-    func testAdditiveProductGroupSum() {
-        typealias P = AdditiveProductGroup<A, A>
+    func testPairSum() {
+        typealias P = Pair<A, A>
         let a = P(A(1), A(2))
         let b = P(A(3), A(4))
         XCTAssertEqual(a + b, P(A(4), A(6)))
     }
     
-    func testAdditiveProductGroupZero() {
-        typealias P = AdditiveProductGroup<A, A>
+    func testPairZero() {
+        typealias P = Pair<A, A>
         let a = P(A(1), A(2))
         let e = P.zero
         XCTAssertEqual(e + e, e)
@@ -103,21 +103,28 @@ class AdditiveGroupTests: XCTestCase {
         XCTAssertEqual(e + a, a)
     }
     
-    func testAdditiveProductGroupNegative() {
-        typealias P = AdditiveProductGroup<A, A>
+    func testPairNegative() {
+        typealias P = Pair<A, A>
         let a = P(A(3), A(4))
         XCTAssertEqual(-a, P(A(-3), A(-4)))
     }
     
+    private struct Q: AdditiveQuotientGroup {
+        typealias Base = A
+        typealias Sub = B
+        let representative: AdditiveGroupTests.A
+        init(_ a: AdditiveGroupTests.A) {
+            self.representative = a
+        }
+    }
+    
     func testAdditiveQuotientGroupSum() {
-        typealias Q = AdditiveQuotientGroup<A, B>
         let a = Q(A(1))
         let b = Q(A(2))
         XCTAssertEqual(a + b, Q(A(0)))
     }
     
     func testAdditiveQuotientGroupZero() {
-        typealias Q = AdditiveQuotientGroup<A, B>
         let a = Q(A(1))
         let e = Q.zero
         XCTAssertEqual(e + e, e)
@@ -126,7 +133,6 @@ class AdditiveGroupTests: XCTestCase {
     }
     
     func testAdditiveQuotientGroupNegative() {
-        typealias Q = AdditiveQuotientGroup<A, B>
         let a = Q(A(1))
         XCTAssertEqual(-a, Q(A(2)))
     }
@@ -136,5 +142,6 @@ class AdditiveGroupTests: XCTestCase {
         let f = F { a in A(a.value * 2) }
         let a = A(3)
         XCTAssertEqual(f(a), A(6))
+        XCTAssertEqual((f + f)(a), A(12))
     }
 }

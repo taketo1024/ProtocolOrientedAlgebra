@@ -61,6 +61,8 @@ public extension Subring {
 public protocol Ideal: AdditiveSubgroup where Super: Ring {
     static func * (r: Super, a: Self) -> Self
     static func * (m: Self, r: Super) -> Self
+    
+    @available(*, deprecated)
     static func quotientInverse(of r: Super) -> Super?
 }
 
@@ -89,7 +91,7 @@ public extension Ideal {
 
 public protocol MaximalIdeal: Ideal {}
 
-public protocol ProductRingType: ProductMonoid, AdditiveProductGroupType, Ring where Left: Ring, Right: Ring {}
+public protocol ProductRingType: ProductMonoid, AdditiveProductGroup, Ring where Left: Ring, Right: Ring {}
 
 public extension ProductRingType {
     init(from a: 𝐙) {
@@ -114,7 +116,7 @@ public struct ProductRing<X: Ring, Y: Ring>: ProductRingType {
     }
 }
 
-public protocol QuotientRingType: AdditiveQuotientGroupType, Ring where Sub: Ideal {}
+public protocol QuotientRingType: AdditiveQuotientGroup, Ring where Sub: Ideal {}
 
 public extension QuotientRingType {
     init(from n: 𝐙) {

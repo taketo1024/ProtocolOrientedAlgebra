@@ -3,7 +3,7 @@ public protocol AdditiveGroup: MathSet {
     var isZero: Bool { get }
     
     static func + (a: Self, b: Self) -> Self
-    prefix static func - (x: Self) -> Self
+    prefix static func -(a: Self) -> Self
     static func -(a: Self, b: Self) -> Self
     static func sum(_ elements: [Self]) -> Self
 }
@@ -18,13 +18,17 @@ public extension AdditiveGroup {
     }
     
     static func sum(_ elements: [Self]) -> Self {
-        (elements.count == 1)
-            ? elements.first!
-            : elements.reduce(.zero){ (res, e) in res + e }
+        switch elements.count {
+        case 0: return .zero
+        case 1: return elements.first!
+        case 2: return elements[0] + elements[1]
+        default: return elements.reduce(.zero){ (res, e) in res + e }
+        }
     }
 }
 
 public protocol AdditiveSubgroup: AdditiveGroup, Subset where Super: AdditiveGroup {
+    @available(*, deprecated)
     static func quotientRepresentative(of a: Super) -> Super
 }
 
@@ -33,11 +37,11 @@ public extension AdditiveSubgroup {
         Self(Super.zero)
     }
     
-    static func + (a: Self, b: Self) -> Self {
+    static func +(a: Self, b: Self) -> Self {
         Self(a.asSuper + b.asSuper)
     }
     
-    prefix static func - (a: Self) -> Self {
+    prefix static func -(a: Self) -> Self {
         Self(-a.asSuper)
     }
     
@@ -46,36 +50,29 @@ public extension AdditiveSubgroup {
     }
 }
 
-public protocol AdditiveProductGroupType: ProductSet, AdditiveGroup where Left: AdditiveGroup, Right: AdditiveGroup {}
+public protocol AdditiveProductGroup: ProductSet, AdditiveGroup where Left: AdditiveGroup, Right: AdditiveGroup {}
 
-public extension AdditiveProductGroupType {
+public extension AdditiveProductGroup {
     static var zero: Self {
         Self(.zero, .zero)
     }
     
-    static func + (a: Self, b: Self) -> Self {
+    static func +(a: Self, b: Self) -> Self {
         Self(a.left + b.left, a.right + b.right)
     }
     
-    static prefix func - (a: Self) -> Self {
+    static prefix func -(a: Self) -> Self {
         Self(-a.left, -a.right)
     }
 }
 
-public struct AdditiveProductGroup<X: AdditiveGroup, Y: AdditiveGroup>: AdditiveProductGroupType {
-    public let left: X
-    public let right: Y
-    public init(_ x: X, _ y: Y) {
-        self.left = x
-        self.right = y
-    }
-}
+extension Pair: AdditiveGroup, AdditiveProductGroup where Left: AdditiveGroup, Right: AdditiveGroup {}
 
-public protocol AdditiveQuotientGroupType: QuotientSet, AdditiveGroup where Base == Sub.Super {
+public protocol AdditiveQuotientGroup: QuotientSet, AdditiveGroup where Base == Sub.Super {
     associatedtype Sub: AdditiveSubgroup
 }
 
-public extension AdditiveQuotientGroupType {
+public extension AdditiveQuotientGroup {
     static var zero: Self {
         Self(Base.zero)
     }
@@ -94,17 +91,6 @@ public extension AdditiveQuotientGroupType {
     
     static var symbol: String {
         "\(Base.symbol)/\(Sub.symbol)"
-    }
-}
-
-public struct AdditiveQuotientGroup<Base, Sub: AdditiveSubgroup>: AdditiveQuotientGroupType where Base == Sub.Super {
-    private let x: Base
-    public init(_ x: Base) {
-        self.x = Sub.quotientRepresentative(of: x)
-    }
-    
-    public var representative: Base {
-        return x
     }
 }
 
@@ -129,17 +115,9 @@ public extension AdditiveGroupHomType {
     }
 }
 
-public struct AdditiveGroupHom<X: AdditiveGroup, Y: AdditiveGroup>: AdditiveGroupHomType {
-    public let function: (X) -> Y
-    public init(_ f: @escaping (X) -> Y) {
-        self.function = f
-    }
-}
-
-public protocol AdditiveGroupEndType: AdditiveGroupHomType, EndType {}
-
-extension AdditiveGroupHom: EndType, AdditiveGroupEndType where X == Y {}
-public typealias AdditiveGroupEnd<X: AdditiveGroup> = AdditiveGroupHom<X, X>
+extension Map: AdditiveGroup, AdditiveGroupHomType where Domain: AdditiveGroup, Codomain: AdditiveGroup {}
+public typealias AdditiveGroupHom<X: AdditiveGroup, Y: AdditiveGroup> = Map<X, Y>
+public typealias AdditiveGroupEnd<X: AdditiveGroup> = End<X>
 
 public extension Sequence where Element: AdditiveGroup {
     func sumAll() -> Element {
