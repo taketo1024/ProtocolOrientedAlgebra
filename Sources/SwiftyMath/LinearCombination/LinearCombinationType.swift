@@ -166,14 +166,14 @@ extension LinearCombinationType where Generator: Multiplicative {
     }
 }
 
-extension ModuleHom where X: LinearCombinationType, Y: LinearCombinationType {
-    public static func linearlyExtend(_ f: @escaping (X.Generator) -> Codomain) -> ModuleHom<X, Y> {
+extension ModuleHom where Domain: LinearCombinationType, Codomain: LinearCombinationType, Domain.BaseRing == Codomain.BaseRing {
+    public static func linearlyExtend(_ f: @escaping (Domain.Generator) -> Codomain) -> Self {
         ModuleHom { (m: Domain) in
             m.isGenerator ? f(m.asGenerator!) : m.elements.sum { (a, r) in r * f(a) }
         }
     }
     
-    public func callAsFunction(_ x: X.Generator) -> Y {
+    public func callAsFunction(_ x: Domain.Generator) -> Codomain {
         callAsFunction(.init(x))
     }
 }

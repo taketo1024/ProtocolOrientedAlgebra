@@ -27,10 +27,7 @@ public extension AdditiveGroup {
     }
 }
 
-public protocol AdditiveSubgroup: AdditiveGroup, Subset where Super: AdditiveGroup {
-    @available(*, deprecated)
-    static func quotientRepresentative(of a: Super) -> Super
-}
+public protocol AdditiveSubgroup: AdditiveGroup, Subset where Super: AdditiveGroup {}
 
 public extension AdditiveSubgroup {
     static var zero: Self {
@@ -43,10 +40,6 @@ public extension AdditiveSubgroup {
     
     prefix static func -(a: Self) -> Self {
         Self(-a.asSuper)
-    }
-    
-    static func quotientRepresentative(of a: Super) -> Super {
-        a
     }
 }
 

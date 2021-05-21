@@ -28,10 +28,6 @@ class ModuleTests: XCTestCase {
         static func contains(_ a: A) -> Bool {
             return a.value % 4 == 0
         }
-        
-        static func quotientRepresentative(_ a: A) -> A {
-            return A(a.value % 4)
-        }
     }
     
     func testSum() {
@@ -78,14 +74,14 @@ class ModuleTests: XCTestCase {
     }
     
     func testProductModuleSum() {
-        typealias P = ProductModule<A, A>
+        typealias P = Pair<A, A>
         let a = P(A(1), A(2))
         let b = P(A(3), A(4))
         XCTAssertEqual(a + b, P(A(4), A(6)))
     }
     
     func testProductModuleZero() {
-        typealias P = ProductModule<A, A>
+        typealias P = Pair<A, A>
         let a = P(A(1), A(2))
         let z = P.zero
         XCTAssertEqual(z + z, z)
@@ -94,44 +90,16 @@ class ModuleTests: XCTestCase {
     }
     
     func testProductModuleNegative() {
-        typealias P = ProductModule<A, A>
+        typealias P = Pair<A, A>
         let a = P(A(3), A(4))
         XCTAssertEqual(-a, P(A(-3), A(-4)))
     }
     
     func testProductModuleScalarMul() {
-        typealias P = ProductModule<A, A>
+        typealias P = Pair<A, A>
         let a = P(A(1), A(2))
         XCTAssertEqual(3 * a, P(A(3), A(6)))
         XCTAssertEqual(a * 3, P(A(3), A(6)))
-    }
-    
-    func testQuotientModuleSum() {
-        typealias Q = QuotientModule<A, B>
-        let a = Q(A(1))
-        let b = Q(A(2))
-        XCTAssertEqual(a + b, Q(A(3)))
-    }
-    
-    func testQuotientModuleZero() {
-        typealias Q = QuotientModule<A, B>
-        let a = Q(A(1))
-        let z = Q.zero
-        XCTAssertEqual(z + z, z)
-        XCTAssertEqual(a + z, a)
-        XCTAssertEqual(z + a, a)
-    }
-    
-    func testQuotientModuleNegative() {
-        typealias Q = QuotientModule<A, B>
-        let a = Q(A(1))
-        XCTAssertEqual(-a, Q(A(3)))
-    }
-    
-    func testQuotientModuleScalarMul() {
-        typealias Q = QuotientModule<A, B>
-        let a = Q(A(2))
-        XCTAssertEqual(a * 3, Q(A(2)))
     }
     
     func testModuleHom() {
@@ -139,5 +107,8 @@ class ModuleTests: XCTestCase {
         let f = F { a in a * 2 }
         let a = A(3)
         XCTAssertEqual(f(a), A(6))
+        XCTAssertEqual((f + f)(a), A(12))
+        XCTAssertEqual((2 * f)(a), A(12))
+        XCTAssertEqual((f * 3)(a), A(18))
     }
 }

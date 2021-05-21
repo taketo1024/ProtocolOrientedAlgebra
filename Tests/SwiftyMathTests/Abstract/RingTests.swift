@@ -12,27 +12,6 @@ import XCTest
 class RingTests: XCTestCase {
     private typealias A = 𝐙
     
-    private struct B: Ideal {
-        typealias Super = A
-        
-        static func contains(_ a: A) -> Bool {
-            return a % 4 == 0
-        }
-        
-        static func quotientRepresentative(of a: A) -> A {
-            return a % 4
-        }
-        
-        static func quotientInverse(of a: A) -> A? {
-            switch a % 4 {
-            case 0, 2: return nil
-            case 1: return 1
-            case 3: return 3
-            default: fatalError()
-            }
-        }
-    }
-    
     func testSum() {
         let a = A(3)
         let b = A(4)
