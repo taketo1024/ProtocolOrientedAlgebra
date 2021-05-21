@@ -190,8 +190,4 @@ extension MultivariatePolynomial where Indeterminate.NumberOfIndeterminates: Fix
     }
 }
 
-extension MultivariatePolynomial: ExpressibleByIntegerLiteral where R: ExpressibleByIntegerLiteral {
-    public init(integerLiteral value: R.IntegerLiteralType) {
-        self.init(BaseRing(integerLiteral: value))
-    }
-}
+extension MultivariatePolynomial: ExpressibleByIntegerLiteral where R: ExpressibleByIntegerLiteral {}

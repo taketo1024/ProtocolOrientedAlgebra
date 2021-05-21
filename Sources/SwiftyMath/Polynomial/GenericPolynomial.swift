@@ -167,6 +167,13 @@ extension GenericPolynomialType {
     }
 }
 
+extension GenericPolynomialType where BaseRing: ExpressibleByIntegerLiteral {
+    public init(integerLiteral value: BaseRing.IntegerLiteralType) {
+        self.init(BaseRing(integerLiteral: value))
+    }
+}
+
+
 public struct MonomialAsGenerator<X: GenericPolynomialIndeterminate>: LinearCombinationGenerator {
     public let exponent: X.Exponent
     

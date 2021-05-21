@@ -70,7 +70,7 @@ extension Polynomial: EuclideanRing where R: Field {
         isZero ? 0 : 1 + leadExponent
     }
     
-    public static func /%(f: Self, g: Self) -> (q: Self, r: Self) {
+    public static func /%(f: Self, g: Self) -> (quotient: Self, remainder: Self) {
         assert(!g.isZero)
         
         let x = indeterminate
@@ -97,11 +97,7 @@ extension Polynomial: EuclideanRing where R: Field {
     }
 }
 
-extension Polynomial: ExpressibleByIntegerLiteral where R: ExpressibleByIntegerLiteral {
-    public init(integerLiteral value: R.IntegerLiteralType) {
-        self.init(BaseRing(integerLiteral: value))
-    }
-}
+extension Polynomial: ExpressibleByIntegerLiteral where R: ExpressibleByIntegerLiteral {}
 
 public struct LaurentPolynomial<R: Ring, X: PolynomialIndeterminate>: PolynomialType {
     public typealias BaseRing = R
@@ -124,8 +120,4 @@ public struct LaurentPolynomial<R: Ring, X: PolynomialIndeterminate>: Polynomial
     }
 }
 
-extension LaurentPolynomial: ExpressibleByIntegerLiteral where R: ExpressibleByIntegerLiteral {
-    public init(integerLiteral value: R.IntegerLiteralType) {
-        self.init(BaseRing(integerLiteral: value))
-    }
-}
+extension LaurentPolynomial: ExpressibleByIntegerLiteral where R: ExpressibleByIntegerLiteral {}
