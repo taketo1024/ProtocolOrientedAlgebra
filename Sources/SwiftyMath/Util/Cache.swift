@@ -8,122 +8,58 @@
 
 import Dispatch
 
-public final class Cache<T>: CustomStringConvertible {
-    private var _value: T?
-    private let queue: DispatchQueue
-    
-    public init(_ value: T? = nil) {
-        self._value = value
-        self.queue = DispatchQueue(label: "Cache", qos: .userInteractive)
+public final class Cache<Key, Value>: ExpressibleByDictionaryLiteral, CustomStringConvertible where Key: Hashable {
+    private var storage: [Key : Value]
+    private let queue = DispatchQueue(label: "Cache", qos: .userInteractive)
+
+    public init(_ storage: [Key : Value] = [:]) {
+        self.storage = storage
     }
     
-    public static var empty: Cache<T> {
-        Cache()
+    public convenience init(dictionaryLiteral elements: (Key, Value)...) {
+        self.init(Dictionary(elements))
     }
     
-    public var value: T? {
+    public static var empty: Cache<Key, Value> {
+        [:]
+    }
+    
+    public subscript (key: Key) -> Value? {
         get {
-            queue.sync{ _value }
+            queue.sync { storage[key] }
         }
         set {
-            queue.sync{ _value = newValue }
+            queue.sync { storage[key] = newValue }
         }
     }
     
-    public var hasValue: Bool {
-        value != nil
-    }
-    
-    public func useCacheOrSet(_ initializer: () -> T) -> T {
-        let cache = queue.sync { _value }
-        if let value = cache {
+    public func getOrSet(key: Key, _ initializer: () -> Value) -> Value {
+        queue.sync {
+            if let value = self[key] {
+                return value
+            }
+            
+            let value = initializer()
+            self[key] = value
             return value
         }
-        
-        let value = initializer()
-        
-        queue.sync {
-            if _value == nil {
-                _value = value
-            }
-        }
-        
-        return value
-    }
-    
-    public func clear() {
-        queue.sync {
-            _value = nil
-        }
-    }
-    
-    public func copy() -> Cache<T> {
-        queue.sync {
-            Cache(_value)
-        }
-    }
-    
-    public var description: String {
-        queue.sync {
-            "Cache(\(value.map{ "\($0)" } ?? "-"))"
-        }
-    }
-}
-
-public final class CacheDictionary<K, T>: CustomStringConvertible where K: Hashable {
-    private var dictionary: [K : T]
-    private let queue: DispatchQueue
-
-    public init(_ dictionary: [K : T] = [:]) {
-        self.dictionary = dictionary
-        self.queue = DispatchQueue(label: "CacheDictionary", qos: .userInteractive)
-    }
-    
-    public static var empty: CacheDictionary<K, T> {
-        CacheDictionary()
-    }
-    
-    public subscript (key: K) -> T? {
-        get {
-            queue.sync { dictionary[key] }
-        }
-        set {
-            queue.sync { dictionary[key] = newValue }
-        }
-    }
-    
-    public func useCacheOrSet(key: K, _ initializer: () -> T) -> T {
-        let cache = queue.sync { dictionary[key] }
-        if let value = cache {
-            return value
-        }
-        
-        let value = initializer()
-        
-        queue.sync {
-            if dictionary[key] == nil {
-                dictionary[key] = value
-            }
-        }
-        
-        return value
     }
 
-    public func remove(key: K) {
+    public func remove(key: Key) {
         queue.sync {
-            let _ = dictionary.removeValue(forKey: key)
+            let _ = storage.removeValue(forKey: key)
         }
     }
     
     public func clear() {
         queue.sync {
-            self.dictionary = [:]
+            self.storage = [:]
         }
     }
     
     public var description: String {
         queue.sync {
-            "Cache(\(dictionary))"
+            "Cache\(storage)"
         }
     }
 }

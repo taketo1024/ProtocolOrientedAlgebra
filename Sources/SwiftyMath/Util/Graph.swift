@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct SimpleDirectedGraph<VertexValue: CustomStringConvertible, EdgeValue: CustomStringConvertible> {
+public struct Graph<VertexValue: CustomStringConvertible, EdgeValue: CustomStringConvertible> {
     public typealias VertexId = Int
     public typealias Options = [String: Any]
     
@@ -143,13 +143,13 @@ public struct SimpleDirectedGraph<VertexValue: CustomStringConvertible, EdgeValu
     }
 }
 
-extension SimpleDirectedGraph where VertexValue: Hashable {
+extension Graph where VertexValue: Hashable {
     public func vertex(ofValue v: VertexValue) -> Vertex? {
         vertices.first { $0.value.value == v }?.value
     }
 }
 
-extension SimpleDirectedGraph {
+extension Graph {
     public func asHTML(title: String? = nil) -> String {
         let template =
 """
