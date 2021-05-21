@@ -51,7 +51,7 @@ public struct MultiTensorGenerator<A: LinearCombinationGenerator>: LinearCombina
         self.init(factors)
     }
     
-    public static var identity: Self {
+    public static var unit: Self {
         .init([])
     }
     

@@ -11,7 +11,7 @@ public protocol GenericPolynomialIndeterminate {
     static func descriptionOfMonomial(withExponent e: Exponent) -> String
 }
 
-public protocol GenericPolynomialType: Ring {
+public protocol GenericPolynomialType: Ring, ExpressibleByDictionaryLiteral {
     associatedtype BaseRing: Ring
     associatedtype Indeterminate: GenericPolynomialIndeterminate
     typealias Exponent = Indeterminate.Exponent
@@ -23,6 +23,10 @@ public protocol GenericPolynomialType: Ring {
 extension GenericPolynomialType {
     public init(from a: 𝐙) {
         self.init(BaseRing(from: a))
+    }
+    
+    public init(dictionaryLiteral elements: (Exponent, BaseRing)...) {
+        self.init(elements: Dictionary(pairs: elements))
     }
     
     public init(_ a: BaseRing) {
