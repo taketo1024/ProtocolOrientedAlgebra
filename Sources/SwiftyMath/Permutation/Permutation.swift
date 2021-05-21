@@ -122,7 +122,7 @@ public struct Permutation<n: SizeType>: Multiplicative, MathSet, Hashable {
     }
     
     public static var symbol: String {
-        "S_\(n.intValue)"
+        "𝔖\(n.isFixed ? Format.sub(n.intValue) : "")"
     }
 }
 

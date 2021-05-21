@@ -38,6 +38,10 @@ public struct IntegerQuotientRing<n: FixedSizeType>: EuclideanQuotientRing, Fini
     public static var countElements: Int {
         mod
     }
+    
+    public static var symbol: String {
+        "𝐙\(Format.sub(mod))"
+    }
 }
 
 extension IntegerQuotientRing: EuclideanRing, Field where n: PrimeSizeType {}

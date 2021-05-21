@@ -24,6 +24,13 @@ extension PolynomialIndeterminate {
     }
 }
 
+public struct StandardPolynomialIndeterminates {
+    public struct x: PolynomialIndeterminate { public static let symbol = "x" }
+    public struct y: PolynomialIndeterminate { public static let symbol = "y" }
+    public struct z: PolynomialIndeterminate { public static let symbol = "z" }
+    public struct w: PolynomialIndeterminate { public static let symbol = "w" }
+}
+
 public protocol PolynomialType: GenericPolynomialType where Indeterminate: PolynomialIndeterminate {}
 
 extension PolynomialType {
@@ -62,6 +69,10 @@ public struct Polynomial<R: Ring, X: PolynomialIndeterminate>: PolynomialType {
         (isConst && constCoeff.isInvertible)
             ? .init(constCoeff.inverse!)
             : nil
+    }
+    
+    public static var symbol: String {
+        "\(R.symbol)[\(X.symbol)]"
     }
 }
 
@@ -117,6 +128,10 @@ public struct LaurentPolynomial<R: Ring, X: PolynomialIndeterminate>: Polynomial
         } else {
             return nil
         }
+    }
+    
+    public static var symbol: String {
+        "\(R.symbol)[\(X.symbol), \(Format.power(X.symbol, -1))]"
     }
 }
 

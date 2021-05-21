@@ -178,6 +178,12 @@ public struct MultivariatePolynomial<R: Ring, xn: MultivariatePolynomialIndeterm
         
         return .init(elements: Dictionary(exponents.map{ (Exponent($0), .identity) } ))
     }
+    
+    public static var symbol: String {
+        Indeterminate.isFinite
+            ? "\(R.symbol)[\( (0 ..< numberOfIndeterminates).map{ i in Indeterminate.symbolOfIndeterminate(at: i)}.joined(separator: ", ") )]"
+            : "\(R.symbol)[\( (0 ..< 3).map{ i in Indeterminate.symbolOfIndeterminate(at: i)}.joined(separator: ", ") ), …]"
+    }
 }
 
 extension MultivariatePolynomial where Indeterminate.NumberOfIndeterminates: FixedSizeType {

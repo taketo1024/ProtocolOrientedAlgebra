@@ -146,8 +146,4 @@ public struct AsGroup<G: AdditiveGroup>: Group {
     public var description: String {
         entity.description
     }
-
-    public static var symbol: String {
-        G.symbol
-    }
 }

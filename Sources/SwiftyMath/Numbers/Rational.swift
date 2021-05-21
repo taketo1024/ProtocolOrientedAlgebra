@@ -80,6 +80,11 @@ public struct RationalNumber: Field, ExpressibleByIntegerLiteral, Comparable, Ha
         default: return "\(p)/\(q)"
         }
     }
+    
+    
+    public static var symbol: String {
+        "𝐐"
+    }
 }
 
 extension 𝐐: Randomable {

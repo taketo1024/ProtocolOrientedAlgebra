@@ -25,10 +25,6 @@ public extension QuotientGroup {
     static func * (a: Self, b: Self) -> Self {
         Self(a.representative * b.representative)
     }
-    
-    static var symbol: String {
-        "\(Base.symbol)/\(Sub.symbol)"
-    }
 }
 
 public protocol GroupHomType: MonoidHomType where Domain: Group, Codomain: Group {}

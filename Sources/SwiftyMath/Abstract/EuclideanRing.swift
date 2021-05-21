@@ -70,6 +70,10 @@ public extension EuclideanIdeal {
     static func contains(_ a: Super) -> Bool {
         a.isDivible(by: generator)
     }
+    
+    static var symbol: String {
+        "(\(generator))"
+    }
 }
 
 public protocol EuclideanQuotientRing: QuotientRing where Mod: EuclideanIdeal {

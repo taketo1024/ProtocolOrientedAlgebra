@@ -72,6 +72,10 @@ public struct Complex<Base: Ring>: Ring {
     public var description: String {
         Format.linearCombination([("1", x), ("i", y)])
     }
+    
+    public static var symbol: String {
+        (Base.self == 𝐑.self) ? "𝐂" : "\(Base.symbol)[i]"
+    }
 }
 
 // MEMO: This is false,

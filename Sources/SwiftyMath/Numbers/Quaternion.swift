@@ -102,6 +102,10 @@ public struct Quaternion<Base: Ring>: Ring {
     public var description: String {
         Format.linearCombination([("1", x), ("i", y), ("j", z), ("k", w)])
     }
+    
+    public static var symbol: String {
+        (Base.self == 𝐑.self) ? "𝐇" : "\(Base.symbol)[i, j, k]"
+    }
 }
 
 extension Quaternion: ExpressibleByIntegerLiteral where Base: ExpressibleByIntegerLiteral {

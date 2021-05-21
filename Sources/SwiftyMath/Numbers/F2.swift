@@ -60,4 +60,8 @@ public struct 𝐅₂: Field, FiniteSet, Hashable, ExpressibleByIntegerLiteral {
     public var description: String {
         representative.description
     }
+    
+    public static var symbol: String {
+        "𝐅₂"
+    }
 }

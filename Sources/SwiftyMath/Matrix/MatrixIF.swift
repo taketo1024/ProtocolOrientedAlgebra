@@ -186,12 +186,12 @@ public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: MathSet {
             t.isFixed ? "\(t.intValue)" : "any"
         }
         if m.intValue == 1 {
-            return "ColVec<\(str(n.self)); \(BaseRing.symbol)>"
+            return "ColVec<\(BaseRing.symbol); \(str(n.self))>"
         }
         if n.intValue == 1 {
-            return "RowVec<\(str(n.self)); \(BaseRing.symbol)>"
+            return "RowVec<\(BaseRing.symbol); \(str(n.self))>"
         }
-        return "Mat<\(str(n.self)), \(str(n.self)); \(BaseRing.symbol)>"
+        return "Mat<\(BaseRing.symbol); \(str(n.self)), \(str(n.self))>"
     }
 }
 

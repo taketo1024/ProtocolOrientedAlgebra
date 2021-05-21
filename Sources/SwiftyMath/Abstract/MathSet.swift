@@ -6,7 +6,9 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
-public protocol MathSet: Equatable, CustomStringConvertible {}
+public protocol MathSet: Equatable, CustomStringConvertible {
+    static var symbol: String { get }
+}
 
 extension MathSet {
     public func asSubset<S: Subset>(of: S.Type) -> S where S.Super == Self {
@@ -14,8 +16,9 @@ extension MathSet {
         return S.init(self)
     }
     
-    // TODO remove
-    public static var symbol: String { "" }
+    public static var symbol: String {
+        "\(Self.self)"
+    }
 }
 
 public protocol FiniteSet: MathSet {
@@ -57,6 +60,10 @@ public struct Pair<Left: MathSet, Right: MathSet>: ProductSet {
     public init(_ left: Left, _ right: Right) {
         self.left = left
         self.right = right
+    }
+    
+    public static var symbol: String {
+        "\(Left.symbol)×\(Right.symbol)"
     }
 }
 

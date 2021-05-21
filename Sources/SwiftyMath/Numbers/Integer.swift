@@ -61,6 +61,10 @@ extension 𝐙: EuclideanRing, Randomable {
     public static func ./(a: 𝐙, b: 𝐙) -> 𝐐 {
         .init(a, b)
     }
+    
+    public static var symbol: String {
+        "𝐙"
+    }
 }
 
 fileprivate var _primes: [𝐙] = []

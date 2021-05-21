@@ -15,7 +15,7 @@ public struct LinearCombination<R: Ring, A: LinearCombinationGenerator>: LinearC
     }
     
     public static var symbol: String {
-        "LinComb<\(R.symbol), \(A.self)>"
+        "\(R.symbol)<\(A.self)>"
     }
 }
 
