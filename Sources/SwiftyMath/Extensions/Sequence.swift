@@ -96,3 +96,13 @@ public extension Sequence where Element: Hashable {
         return { dict[$0] }
     }
 }
+
+public extension Sequence where Element: Comparable {
+    var closureRange: ClosedRange<Element>? {
+        if let m = self.min(), let M = self.max() {
+            return m ... M
+        } else {
+            return nil
+        }
+    }
+}

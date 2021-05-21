@@ -116,6 +116,12 @@ public extension Sequence where Element: AdditiveGroup {
     func sumAll() -> Element {
         sum{ $0 }
     }
+    
+    func accumulate() -> [Element] {
+        self.reduce(into: []) { (res, r) in
+            res.append( (res.last ?? .zero) + r)
+        }
+    }
 }
 
 public extension Sequence {
