@@ -28,7 +28,7 @@ class MPolynomialTests: XCTestCase {
     struct x: PolynomialIndeterminate {
         static let symbol = "x"
     }
-    typealias xn = EnumeratedPolynomialIndeterminates<x, DynamicSize>
+    typealias xn = EnumeratedPolynomialIndeterminates<x, anySize>
 
     typealias A = MultivariatePolynomial<𝐙, xyz>
     typealias B = MultivariatePolynomial<𝐙, xn>

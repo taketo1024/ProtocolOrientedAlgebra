@@ -70,8 +70,8 @@ public struct Permutation<n: SizeType>: Multiplicative, SetType, Hashable {
         Permutation<m>(length: length, table: self.table)
     }
     
-    public var asDynamic: Permutation<DynamicSize> {
-        self.as(Permutation<DynamicSize>.self)
+    public var asDynamic: Permutation<anySize> {
+        self.as(Permutation<anySize>.self)
     }
     
     public var asMatrix: Matrix<𝐙, n, n> {
@@ -126,7 +126,7 @@ public struct Permutation<n: SizeType>: Multiplicative, SetType, Hashable {
     }
 }
 
-extension Permutation: Monoid, Group, FiniteSetType where n: StaticSizeType {
+extension Permutation: Monoid, Group, FiniteSetType where n: FixedSizeType {
     public init(table: [Int : Int]) {
         self.init(length: n.intValue, table: table)
     }
@@ -170,7 +170,7 @@ extension Permutation: Monoid, Group, FiniteSetType where n: StaticSizeType {
     }
 }
 
-extension Permutation where n == DynamicSize {
+extension Permutation where n == anySize {
     public static func allPermutations(length n: Int) -> [Self] {
         (0 ..< n).permutations.map{ .init(length: n, indices: $0) }
     }

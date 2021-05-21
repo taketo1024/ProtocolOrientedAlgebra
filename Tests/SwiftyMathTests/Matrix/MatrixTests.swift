@@ -165,15 +165,15 @@ class MatrixTests: XCTestCase {
     }
     
     func testAsStatic() {
-        let a = MatrixDxD(size: (2, 3), grid: [1,2,3,4,5,6])
+        let a = AnySizeMatrix(size: (2, 3), grid: [1,2,3,4,5,6])
         let b = a.as(Matrix<R, _2, _3>.self)
         XCTAssertEqual(b, Matrix<R, _2, _3>(grid: [1,2,3,4,5,6]))
     }
     
     func testAsDynamic() {
         let a = Matrix<R, _2, _3>(grid: [1,2,3,4,5,6])
-        let b = a.as(MatrixDxD<R>.self)
-        XCTAssertEqual(b, MatrixDxD(size: (2, 3), grid: [1,2,3,4,5,6]))
+        let b = a.as(AnySizeMatrix<R>.self)
+        XCTAssertEqual(b, AnySizeMatrix(size: (2, 3), grid: [1,2,3,4,5,6]))
     }
     
     func testSubmatrixRow() {

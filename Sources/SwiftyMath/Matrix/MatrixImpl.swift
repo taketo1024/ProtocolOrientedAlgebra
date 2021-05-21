@@ -30,8 +30,8 @@ public protocol MatrixImpl: CustomStringConvertible {
     func submatrix(rowRange: CountableRange<Int>,  colRange: CountableRange<Int>) -> Self
     func concat(_ B: Self) -> Self
     func stack(_ B: Self) -> Self
-    func permuteRows(by σ: Permutation<DynamicSize>) -> Self
-    func permuteCols(by σ: Permutation<DynamicSize>) -> Self
+    func permuteRows(by σ: Permutation<anySize>) -> Self
+    func permuteCols(by σ: Permutation<anySize>) -> Self
     
     static func ==(a: Self, b: Self) -> Bool
     static func +(a: Self, b: Self) -> Self

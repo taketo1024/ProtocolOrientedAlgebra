@@ -12,8 +12,8 @@ public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: SetType {
     public var impl: Impl
     
     public init(_ impl: Impl) {
-        assert(n.isDynamic || n.intValue == impl.size.rows)
-        assert(m.isDynamic || m.intValue == impl.size.cols)
+        assert(n.isArbitrary || n.intValue == impl.size.rows)
+        assert(m.isArbitrary || m.intValue == impl.size.cols)
         self.impl = impl
     }
     
@@ -79,25 +79,25 @@ public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: SetType {
             .as(MatrixIF<Impl, n, _1>.self)
     }
     
-    public func submatrix(rowRange: CountableRange<Int>) -> MatrixIF<Impl, DynamicSize, m> {
+    public func submatrix(rowRange: CountableRange<Int>) -> MatrixIF<Impl, anySize, m> {
         submatrix(rowRange: rowRange, colRange: 0 ..< size.cols)
-            .as(MatrixIF<Impl, DynamicSize, m>.self)
+            .as(MatrixIF<Impl, anySize, m>.self)
     }
     
-    public func submatrix(colRange: CountableRange<Int>) -> MatrixIF<Impl, n, DynamicSize> {
+    public func submatrix(colRange: CountableRange<Int>) -> MatrixIF<Impl, n, anySize> {
         submatrix(rowRange: 0 ..< size.rows, colRange: colRange)
-            .as(MatrixIF<Impl, n, DynamicSize>.self)
+            .as(MatrixIF<Impl, n, anySize>.self)
     }
     
-    public func submatrix(rowRange: CountableRange<Int>,  colRange: CountableRange<Int>) -> MatrixIF<Impl, DynamicSize, DynamicSize> {
+    public func submatrix(rowRange: CountableRange<Int>,  colRange: CountableRange<Int>) -> MatrixIF<Impl, anySize, anySize> {
         .init(impl.submatrix(rowRange: rowRange, colRange: colRange))
     }
     
-    public func concat<m1>(_ B: MatrixIF<Impl, n, m1>) -> MatrixIF<Impl, n, DynamicSize> {
+    public func concat<m1>(_ B: MatrixIF<Impl, n, m1>) -> MatrixIF<Impl, n, anySize> {
         .init(impl.concat(B.impl))
     }
     
-    public func stack<n1>(_ B: MatrixIF<Impl, n1, m>) -> MatrixIF<Impl, DynamicSize, m> {
+    public func stack<n1>(_ B: MatrixIF<Impl, n1, m>) -> MatrixIF<Impl, anySize, m> {
         .init(impl.stack(B.impl))
     }
     
@@ -141,11 +141,11 @@ public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: SetType {
         .init(a.impl * b.impl)
     }
     
-    public static func ⊕ <n1, m1>(A: MatrixIF<Impl, n, m>, B: MatrixIF<Impl, n1, m1>) -> MatrixIF<Impl, DynamicSize, DynamicSize> {
+    public static func ⊕ <n1, m1>(A: MatrixIF<Impl, n, m>, B: MatrixIF<Impl, n1, m1>) -> MatrixIF<Impl, anySize, anySize> {
         .init(A.impl ⊕ B.impl)
     }
     
-    public static func ⊗ <n1, m1>(A: MatrixIF<Impl, n, m>, B: MatrixIF<Impl, n1, m1>) -> MatrixIF<Impl, DynamicSize, DynamicSize> {
+    public static func ⊗ <n1, m1>(A: MatrixIF<Impl, n, m>, B: MatrixIF<Impl, n1, m1>) -> MatrixIF<Impl, anySize, anySize> {
         .init(A.impl ⊗ B.impl)
     }
     
@@ -161,8 +161,8 @@ public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: SetType {
         MatrixIF<Impl, n1, m1>(impl)
     }
     
-    public var asDynamicMatrix: MatrixIF<Impl, DynamicSize, DynamicSize> {
-        self.as(MatrixIF<Impl, DynamicSize, DynamicSize>.self)
+    public var asDynamicMatrix: MatrixIF<Impl, anySize, anySize> {
+        self.as(MatrixIF<Impl, anySize, anySize>.self)
     }
     
     public var entries: AnySequence<MatrixEntry<BaseRing>> {
@@ -183,12 +183,12 @@ public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: SetType {
     
     public static var symbol: String {
         func str(_ t: SizeType.Type) -> String {
-            !t.isDynamic ? "\(t.intValue)" : "d"
+            t.isFixed ? "\(t.intValue)" : "any"
         }
-        if !m.isDynamic && m.intValue == 1 {
+        if m.intValue == 1 {
             return "ColVec<\(str(n.self)); \(BaseRing.symbol)>"
         }
-        if !n.isDynamic && n.intValue == 1 {
+        if n.intValue == 1 {
             return "RowVec<\(str(n.self)); \(BaseRing.symbol)>"
         }
         return "Mat<\(str(n.self)), \(str(n.self)); \(BaseRing.symbol)>"
@@ -210,7 +210,7 @@ extension MatrixIF where Impl: SparseMatrixImpl {
 
 // MARK: Square Matrix
 
-extension MatrixIF where n == m { // n, m: possibly dynamic
+extension MatrixIF where n == m { // n, m: possibly anySize
     public var isInvertible: Bool {
         isSquare && impl.isInvertible
     }
@@ -230,7 +230,7 @@ extension MatrixIF where n == m { // n, m: possibly dynamic
 
 // MARK: ColVector
 
-extension MatrixIF where m == _1 { // n: possibly dynamic
+extension MatrixIF where m == _1 { // n: possibly anySize
     public typealias ColInitializer = (Int, BaseRing) -> Void
     public init(size n: Int, initializer s: @escaping (ColInitializer) -> Void) {
         self.init(Impl(size: (n, 1)) { setEntry in
@@ -276,7 +276,7 @@ extension MatrixIF where m == _1 { // n: possibly dynamic
 
 // MARK: RowVector
 
-extension MatrixIF where n == _1 { // m: possibly dynamic
+extension MatrixIF where n == _1 { // m: possibly anySize
     public typealias RowInitializer = (Int, BaseRing) -> Void
     public init(size m: Int, initializer s: @escaping (RowInitializer) -> Void) {
         self.init(Impl(size: (1, m)) { setEntry in
@@ -322,7 +322,7 @@ extension MatrixIF where n == _1 { // m: possibly dynamic
 
 // MARK: Fixed-size Matrix
 
-extension MatrixIF: AdditiveGroup, Module, ExpressibleByArrayLiteral where n: StaticSizeType, m: StaticSizeType {
+extension MatrixIF: AdditiveGroup, Module, ExpressibleByArrayLiteral where n: FixedSizeType, m: FixedSizeType {
     public typealias ArrayLiteralElement = BaseRing
     
     public static var size: MatrixSize {
@@ -372,7 +372,7 @@ extension MatrixIF: AdditiveGroup, Module, ExpressibleByArrayLiteral where n: St
 
 // MARK: Fixed-size Square Matrix
 
-extension MatrixIF: Multiplicative, Monoid, Ring where n == m, n: StaticSizeType {
+extension MatrixIF: Multiplicative, Monoid, Ring where n == m, n: FixedSizeType {
     public init(from a : 𝐙) {
         self.init(Impl.scalar(size: Self.size, value: BaseRing.init(from: a)))
     }
@@ -396,7 +396,7 @@ extension MatrixIF: Multiplicative, Monoid, Ring where n == m, n: StaticSizeType
 
 // MARK: Fixed-size ColVector
 
-extension MatrixIF where n: StaticSizeType, m == _1 {
+extension MatrixIF where n: FixedSizeType, m == _1 {
     public init(initializer s: @escaping (ColInitializer) -> Void) {
         self.init { setEntry in
             s { (i, a) in
@@ -408,7 +408,7 @@ extension MatrixIF where n: StaticSizeType, m == _1 {
 
 // MARK: Fixed-size RowVector
 
-extension MatrixIF where n == _1, m: StaticSizeType {
+extension MatrixIF where n == _1, m: FixedSizeType {
     public init(initializer s: @escaping (RowInitializer) -> Void) {
         self.init { setEntry in
             s { (j, a) in

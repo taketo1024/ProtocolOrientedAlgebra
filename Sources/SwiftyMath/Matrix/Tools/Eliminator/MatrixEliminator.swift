@@ -178,7 +178,7 @@ public class MatrixEliminator<R: Ring> {
             return
         }
         
-        print("\n", resultAs(MatrixDxD.self).detailDescription, "\n")
+        print("\n", resultAs(AnySizeMatrix.self).detailDescription, "\n")
     }
 
     // MARK: Methods to be overridden

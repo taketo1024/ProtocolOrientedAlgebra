@@ -14,7 +14,6 @@ public typealias Matrix1x1<R: Ring> = Matrix<R, _1, _1>
 public typealias Matrix2x2<R: Ring> = Matrix<R, _2, _2>
 public typealias Matrix3x3<R: Ring> = Matrix<R, _3, _3>
 public typealias Matrix4x4<R: Ring> = Matrix<R, _4, _4>
-public typealias MatrixDxD<R: Ring> = Matrix<R, DynamicSize, DynamicSize>
 
 public typealias ColVector<R: Ring, n: SizeType> = Matrix<R, n, _1>
 public typealias RowVector<R: Ring, m: SizeType> = Matrix<R, _1, m>
@@ -23,7 +22,9 @@ public typealias Vector1<R: Ring> = ColVector<R, _1>
 public typealias Vector2<R: Ring> = ColVector<R, _2>
 public typealias Vector3<R: Ring> = ColVector<R, _3>
 public typealias Vector4<R: Ring> = ColVector<R, _4>
-public typealias VectorD<R: Ring> = ColVector<R, DynamicSize>
+
+public typealias AnySizeMatrix<R: Ring> = Matrix<R, anySize, anySize>
+public typealias AnySizeVector<R: Ring> = ColVector<R, anySize>
 
 public typealias MatrixSize = (rows: Int, cols: Int)
 public typealias MatrixEntry<R: Ring> = (row: Int, col: Int, value: R)

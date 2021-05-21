@@ -18,7 +18,7 @@ extension IntegerIdealType {
     }
 }
 
-public struct IntegerIdeal<n: StaticSizeType>: IntegerIdealType {
+public struct IntegerIdeal<n: FixedSizeType>: IntegerIdealType {
     public static var mod: 𝐙 {
         n.intValue
     }
@@ -26,7 +26,7 @@ public struct IntegerIdeal<n: StaticSizeType>: IntegerIdealType {
 
 extension IntegerIdeal: MaximalIdeal where n: PrimeSizeType {}
 
-public struct IntegerQuotientRing<n: StaticSizeType>: QuotientRingType, FiniteSetType, Hashable {
+public struct IntegerQuotientRing<n: FixedSizeType>: QuotientRingType, FiniteSetType, Hashable {
     public typealias Ideal = IntegerIdeal<n>
     public typealias Sub = Ideal
 

@@ -7,10 +7,10 @@
 
 public struct LUDecomposition<Impl: MatrixImpl_LU, n: SizeType, m: SizeType> {
     public typealias Matrix<n, m> = MatrixIF<Impl, n, m> where n: SizeType, m: SizeType
-    public typealias MatrixL = Matrix<n, DynamicSize>
-    public typealias MatrixU = Matrix<DynamicSize, m>
-    public typealias CodomainSub = Matrix<n, DynamicSize>
-    public typealias DomainSub   = Matrix<m, DynamicSize>
+    public typealias MatrixL = Matrix<n, anySize>
+    public typealias MatrixU = Matrix<anySize, m>
+    public typealias CodomainSub = Matrix<n, anySize>
+    public typealias DomainSub   = Matrix<m, anySize>
     public typealias LeftPermutation  = Permutation<n>
     public typealias RightPermutation = Permutation<m>
 
@@ -81,8 +81,8 @@ public struct LUDecomposition<Impl: MatrixImpl_LU, n: SizeType, m: SizeType> {
 public protocol MatrixImpl_LU: MatrixImpl {
     var L: Self { get }
     var U: Self { get }
-    var P: Permutation<DynamicSize> { get }
-    var Q: Permutation<DynamicSize> { get }
+    var P: Permutation<anySize> { get }
+    var Q: Permutation<anySize> { get }
     var rank: Int { get }
     var nullity: Int { get }
     var image: Self { get }

@@ -40,7 +40,7 @@ public struct MultiIndex<n: SizeType>: AdditiveGroup, ExpressibleByArrayLiteral,
     }
     
     public static var zero: MultiIndex<n> {
-        .init(.init(repeating: 0, count: n.isDynamic ? 0 : n.intValue))
+        .init([])
     }
     
     public static func ==(c1: Self, c2: Self) -> Bool {

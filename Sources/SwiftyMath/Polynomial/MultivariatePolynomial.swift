@@ -15,7 +15,7 @@ public protocol MultivariatePolynomialIndeterminates: GenericPolynomialIndetermi
 
 extension MultivariatePolynomialIndeterminates {
     public static var isFinite: Bool {
-        !NumberOfIndeterminates.isDynamic
+        NumberOfIndeterminates.isFixed
     }
     
     public static var numberOfIndeterminates: Int {
@@ -180,7 +180,7 @@ public struct MultivariatePolynomial<R: Ring, xn: MultivariatePolynomialIndeterm
     }
 }
 
-extension MultivariatePolynomial where Indeterminate.NumberOfIndeterminates: StaticSizeType {
+extension MultivariatePolynomial where Indeterminate.NumberOfIndeterminates: FixedSizeType {
     public static func monomials(ofDegree deg: Int) -> [Self] {
         monomials(ofDegree: deg, usingIndeterminates: 0 ..< numberOfIndeterminates)
     }

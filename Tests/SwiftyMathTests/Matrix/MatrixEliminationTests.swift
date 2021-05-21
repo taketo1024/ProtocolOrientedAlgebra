@@ -207,20 +207,20 @@ class MatrixEliminationTests: XCTestCase {
         XCTAssertTrue((A * K).isZero)
 
         let T = E.kernelTransitionMatrix
-        XCTAssertEqual(T * K, MatrixDxD(size:(1, 1), grid: [1]))
+        XCTAssertEqual(T * K, AnySizeMatrix(size:(1, 1), grid: [1]))
     }
     
     func testKernel2() {
-        let A = MatrixDxD(size: (6, 15), grid: [-1, -1, 0, 0, 0, 0, 0, -1, -1, 0, -1, 0, 0, 0, 0, 1, 0, -1, -1, 0, -1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 1, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, 0, 1, 1, 0, 1, 1, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 1, 0, 0, 0, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1] )
+        let A = AnySizeMatrix(size: (6, 15), grid: [-1, -1, 0, 0, 0, 0, 0, -1, -1, 0, -1, 0, 0, 0, 0, 1, 0, -1, -1, 0, -1, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 1, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 0, 0, 1, 1, 0, 1, 1, 0, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, -1, 0, 1, 0, 0, 0, -1, -1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1] )
         let E = A.eliminate()
         let K = E.kernelMatrix
         
         XCTAssertTrue(K.size == (15, 10))
-        XCTAssertEqual(A * K, MatrixDxD.zero(size: (6, 10)))
+        XCTAssertEqual(A * K, AnySizeMatrix.zero(size: (6, 10)))
         
         let T = E.kernelTransitionMatrix
         XCTAssertTrue(T.size == (10, 15))
-        XCTAssertEqual(T * K, MatrixDxD.identity(size: (10, 10)))
+        XCTAssertEqual(T * K, AnySizeMatrix.identity(size: (10, 10)))
     }
 
     public func testImage() {
@@ -233,7 +233,7 @@ class MatrixEliminationTests: XCTestCase {
         
         let T = E.imageTransitionMatrix
         XCTAssertTrue(T.size == (1, 2))
-        XCTAssertEqual(T * I, MatrixDxD(size:(1, 1), grid: [2]))
+        XCTAssertEqual(T * I, AnySizeMatrix(size:(1, 1), grid: [2]))
     }
     
     public func testDet() {

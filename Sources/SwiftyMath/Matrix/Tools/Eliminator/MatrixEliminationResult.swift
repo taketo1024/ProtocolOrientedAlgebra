@@ -71,7 +71,7 @@ public struct MatrixEliminationResult<Impl: MatrixImpl, n: SizeType, m: SizeType
         composeRowOps(rowOps, restrictedToRows: 0 ..< size.rows)
     }
     
-    public func left(restrictedToRows rowRange: Range<Int>) -> MatrixIF<Impl, DynamicSize, n> {
+    public func left(restrictedToRows rowRange: Range<Int>) -> MatrixIF<Impl, anySize, n> {
         composeRowOps(rowOps, restrictedToRows: rowRange)
     }
     
@@ -81,7 +81,7 @@ public struct MatrixEliminationResult<Impl: MatrixImpl, n: SizeType, m: SizeType
         composeRowOps(rowOpsInverse, restrictedToCols: 0 ..< size.rows)
     }
     
-    public func leftInverse(restrictedToCols colRange: Range<Int>) -> MatrixIF<Impl, n, DynamicSize> {
+    public func leftInverse(restrictedToCols colRange: Range<Int>) -> MatrixIF<Impl, n, anySize> {
         composeRowOps(rowOpsInverse, restrictedToCols: colRange)
     }
     
@@ -91,7 +91,7 @@ public struct MatrixEliminationResult<Impl: MatrixImpl, n: SizeType, m: SizeType
         composeColOps(colOps, restrictedToRows: 0 ..< size.cols)
     }
     
-    public func right(restrictedToCols colRange: Range<Int>) -> MatrixIF<Impl, m, DynamicSize> {
+    public func right(restrictedToCols colRange: Range<Int>) -> MatrixIF<Impl, m, anySize> {
         composeColOps(colOps, restrictedToCols: colRange)
     }
     
@@ -101,7 +101,7 @@ public struct MatrixEliminationResult<Impl: MatrixImpl, n: SizeType, m: SizeType
         composeColOps(colOpsInverse, restrictedToRows: 0 ..< size.cols)
     }
     
-    public func rightInverse(restrictedToRows rowRange: Range<Int>) -> MatrixIF<Impl, DynamicSize, m> {
+    public func rightInverse(restrictedToRows rowRange: Range<Int>) -> MatrixIF<Impl, anySize, m> {
         composeColOps(colOpsInverse, restrictedToRows: rowRange)
     }
     
@@ -121,7 +121,7 @@ public struct MatrixEliminationResult<Impl: MatrixImpl, n: SizeType, m: SizeType
     //            = Q[-, r ..< m]
     //
     
-    public var kernelMatrix: MatrixIF<Impl, m, DynamicSize>  {
+    public var kernelMatrix: MatrixIF<Impl, m, anySize>  {
         assert(isDiagonal)
         return right(restrictedToCols: rank ..< size.cols)
     }
@@ -139,7 +139,7 @@ public struct MatrixEliminationResult<Impl: MatrixImpl, n: SizeType, m: SizeType
     //
     // satisfies the desired equation.
     
-    public var kernelTransitionMatrix: MatrixIF<Impl, DynamicSize, m> {
+    public var kernelTransitionMatrix: MatrixIF<Impl, anySize, m> {
         assert(isDiagonal)
         return rightInverse(restrictedToRows: rank ..< size.cols)
     }
@@ -160,7 +160,7 @@ public struct MatrixEliminationResult<Impl: MatrixImpl, n: SizeType, m: SizeType
     //    Im(A) = P^{-1} [D_r; O]
     //          = P^{-1}[-, 0 ..< r] * D_r.
     
-    public var imageMatrix: MatrixIF<Impl, n, DynamicSize> {
+    public var imageMatrix: MatrixIF<Impl, n, anySize> {
         assert(isDiagonal)
         let r = rank
         return leftInverse(restrictedToCols: 0 ..< r) * result.submatrix(rowRange: 0 ..< r, colRange: 0 ..< r)
@@ -178,7 +178,7 @@ public struct MatrixEliminationResult<Impl: MatrixImpl, n: SizeType, m: SizeType
     //     T = [I_r, O] * P
     //       = P[0 ..< r, -].
 
-    public var imageTransitionMatrix: MatrixIF<Impl, DynamicSize, n> {
+    public var imageTransitionMatrix: MatrixIF<Impl, anySize, n> {
         assert(isDiagonal)
         return left(restrictedToRows: 0 ..< rank)
     }

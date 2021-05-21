@@ -138,7 +138,7 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
         }
     }
     
-    public func permuteRows(by σ: Permutation<DynamicSize>) -> Self {
+    public func permuteRows(by σ: Permutation<anySize>) -> Self {
         .init(size: size) { setEntry in
             nonZeroEntries.forEach{ (i, j, a) in
                 setEntry(σ[i], j, a)
@@ -146,7 +146,7 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
         }
     }
     
-    public func permuteCols(by σ: Permutation<DynamicSize>) -> Self {
+    public func permuteCols(by σ: Permutation<anySize>) -> Self {
         .init(size: size) { setEntry in
             nonZeroEntries.forEach{ (i, j, a) in
                 setEntry(i, σ[j], a)
