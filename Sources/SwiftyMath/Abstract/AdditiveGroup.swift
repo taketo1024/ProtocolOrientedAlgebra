@@ -110,7 +110,7 @@ public extension AdditiveGroupHomType {
 
 extension Map: AdditiveGroup, AdditiveGroupHomType where Domain: AdditiveGroup, Codomain: AdditiveGroup {}
 public typealias AdditiveGroupHom<X: AdditiveGroup, Y: AdditiveGroup> = Map<X, Y>
-public typealias AdditiveGroupEnd<X: AdditiveGroup> = End<X>
+public typealias AdditiveGroupEnd<X: AdditiveGroup> = AdditiveGroupHom<X, X>
 
 public extension Sequence where Element: AdditiveGroup {
     func sumAll() -> Element {

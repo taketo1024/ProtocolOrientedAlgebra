@@ -79,21 +79,4 @@ class SetTests: XCTestCase {
         XCTAssertEqual(a1, a1)
         XCTAssertNotEqual(a1, a2)
     }
-    
-    private struct E: EquivalenceRelation {
-        static func isEquivalent(_ x: A, _ y: A) -> Bool {
-            [x, y].allSatisfy { (0 ... 10).contains($0.value) } || x == y
-        }
-    }
-    
-    func testEquivalenceRelation() {
-        typealias Q = EquivalenceClass<A, E>
-        let a = Q(A(-1))
-        let b = Q(A(3))
-        let c = Q(A(5))
-        let d = Q(A(11))
-        XCTAssertNotEqual(a, b)
-        XCTAssertEqual(b, c)
-        XCTAssertNotEqual(c, d)
-    }
 }

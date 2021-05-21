@@ -75,7 +75,7 @@ public protocol MonoidHomType: MapType where Domain: Monoid, Codomain: Monoid {}
 extension Map: MonoidHomType where Domain: Monoid, Codomain: Monoid {}
 
 public typealias MonoidHom<Domain: Monoid, Codomain: Monoid> = Map<Domain, Codomain>
-public typealias MonoidEnd<Domain: Monoid> = Map<Domain, Domain>
+public typealias MonoidEnd<Domain: Monoid> = MonoidHom<Domain, Domain>
 
 public extension Sequence where Element: Monoid {
     func multiplyAll() -> Element {

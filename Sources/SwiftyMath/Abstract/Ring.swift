@@ -140,10 +140,6 @@ public struct AsModule<R: Ring>: Module {
         self.value = x
     }
     
-    public static func wrap(_ r: R) -> Self {
-        .init(r)
-    }
-    
     public static var zero: Self {
         .init(.zero)
     }

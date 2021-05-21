@@ -83,23 +83,6 @@ extension QuotientSet where Base: ExpressibleByIntegerLiteral {
     }
 }
 
-public protocol EquivalenceRelation {
-    associatedtype Base: MathSet
-    static func isEquivalent(_ a: Base, _ b: Base) -> Bool
-}
-
-public struct EquivalenceClass<X, E: EquivalenceRelation>: QuotientSet where X == E.Base {
-    public let representative: X
-    
-    public init(_ a: Base) {
-        self.representative = a
-    }
-    
-    public static func isEquivalent(_ a: X, _ b: X) -> Bool {
-        E.isEquivalent(a, b)
-    }
-}
-
 public protocol MapType: MathSet {
     associatedtype Domain: MathSet
     associatedtype Codomain: MathSet
@@ -126,16 +109,6 @@ public extension MapType {
     static func ∘<G: MapType>(g: G, f: Self) -> Map<Self.Domain, G.Codomain> where Self.Codomain == G.Domain {
         Map<Self.Domain, G.Codomain>{ x in g(f(x)) }
     }
-    
-    // TODO remove
-    static func == (lhs: Self, rhs: Self) -> Bool {
-        fatalError("MapType is not equatable.")
-    }
-
-    // TODO remove
-    var description: String {
-        "map"
-    }
 }
 
 public struct Map<Domain: MathSet, Codomain: MathSet>: MapType {
@@ -149,7 +122,7 @@ public struct Map<Domain: MathSet, Codomain: MathSet>: MapType {
     }
 
     public var description: String {
-        "map"
+        "map: \(Domain.self) -> \(Codomain.self)"
     }
 }
 

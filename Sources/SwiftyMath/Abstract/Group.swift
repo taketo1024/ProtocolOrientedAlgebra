@@ -35,4 +35,4 @@ public protocol GroupHomType: MonoidHomType where Domain: Group, Codomain: Group
 extension Map: GroupHomType where Domain: Group, Codomain: Group {}
 
 public typealias GroupHom<X: Group, Y: Group> = Map<X, Y>
-public typealias GroupEnd<X: Group> = Map<X, X>
+public typealias GroupEnd<X: Group> = GroupHom<X, X>
