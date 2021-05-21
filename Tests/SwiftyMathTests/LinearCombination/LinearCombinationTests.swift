@@ -8,10 +8,10 @@
 import XCTest
 import SwiftyMath
 
-private extension String: LinearCombinationGenerator {}
+extension String: LinearCombinationGenerator {}
 
 class LinearCombinationTypeTests: XCTestCase {
-    typealias M = LinearCombination<String, 𝐙>
+    typealias M = LinearCombination<𝐙, String>
     
     func testInitByGenerator() {
         let z = M("a")

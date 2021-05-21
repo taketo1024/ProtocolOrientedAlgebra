@@ -44,7 +44,7 @@ extension LinearCombinationType {
         self.init(elements: [a : .identity])
     }
     
-    public init(_ z: LinearCombination<Generator, BaseRing>) {
+    public init(_ z: LinearCombination<BaseRing, Generator>) {
         self.init(elements: z.elements)
     }
 
@@ -134,19 +134,19 @@ extension LinearCombinationType {
         .init(elements: elements.filter{ (a, _) in f(a) })
     }
     
-    public func mapGenerators<A>(_ f: (Generator) -> A) -> LinearCombination<A, BaseRing> {
+    public func mapGenerators<A>(_ f: (Generator) -> A) -> LinearCombination<BaseRing, A> {
         mapElements{ (a, r) in (f(a), r) }
     }
     
-    public func mapCoefficients<R>(_ f: (BaseRing) -> R) -> LinearCombination<Generator, R> {
+    public func mapCoefficients<R>(_ f: (BaseRing) -> R) -> LinearCombination<R, Generator> {
         mapElements{ (a, r) in (a, f(r)) }
     }
     
-    public func mapElements<A, R>(_ f: (Generator, BaseRing) -> (A, R)) -> LinearCombination<A, R> {
-        LinearCombination<A, R>(elements: elements.map{ (a, r) in f(a, r) }, generatorsAreUnique: false)
+    public func mapElements<A, R>(_ f: (Generator, BaseRing) -> (A, R)) -> LinearCombination<R, A> {
+        LinearCombination<R, A>(elements: elements.map{ (a, r) in f(a, r) }, generatorsAreUnique: false)
     }
     
-    public var asLinearCombination: LinearCombination<Generator, BaseRing> {
+    public var asLinearCombination: LinearCombination<BaseRing, Generator> {
         LinearCombination(elements: elements)
     }
     

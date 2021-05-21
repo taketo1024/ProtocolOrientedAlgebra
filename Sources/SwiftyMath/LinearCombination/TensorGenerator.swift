@@ -86,7 +86,7 @@ extension LinearCombinationType where Generator: TensorMonoid {
 
 extension LinearCombination: TensorMonoid where A: TensorMonoid {}
 
-public func MultiTensorHom<A, R>(from f: ModuleEnd<LinearCombination<A, R>>, inputIndex: Int, outputIndex: Int) -> ModuleEnd<LinearCombination<MultiTensorGenerator<A>, R>> {
+public func MultiTensorHom<A, R>(from f: ModuleEnd<LinearCombination<R, A>>, inputIndex: Int, outputIndex: Int) -> ModuleEnd<LinearCombination<R, MultiTensorGenerator<A>>> {
     .linearlyExtend { t in
         let x = t.factors[inputIndex]
         return f(x).mapGenerators { y in
@@ -98,7 +98,7 @@ public func MultiTensorHom<A, R>(from f: ModuleEnd<LinearCombination<A, R>>, inp
     }
 }
 
-public func MultiTensorHom<A, R>(from f: ModuleHom<LinearCombination<TensorGenerator<A, A>, R>, LinearCombination<A, R>>, inputIndices: (Int, Int), outputIndex: Int) -> ModuleEnd<LinearCombination<MultiTensorGenerator<A>, R>> {
+public func MultiTensorHom<A, R>(from f: ModuleHom<LinearCombination<R, TensorGenerator<A, A>>, LinearCombination<R, A>>, inputIndices: (Int, Int), outputIndex: Int) -> ModuleEnd<LinearCombination<R, MultiTensorGenerator<A>>> {
     .linearlyExtend { t in
         let (x1, x2) = (t.factors[inputIndices.0], t.factors[inputIndices.1])
         return f(x1 ⊗ x2).mapGenerators { y in
@@ -111,7 +111,7 @@ public func MultiTensorHom<A, R>(from f: ModuleHom<LinearCombination<TensorGener
     }
 }
 
-public func MultiTensorHom<A, R>(from f: ModuleHom<LinearCombination<A, R>, LinearCombination<TensorGenerator<A, A>, R>>, inputIndex: Int, outputIndices: (Int, Int)) -> ModuleEnd<LinearCombination<MultiTensorGenerator<A>, R>> {
+public func MultiTensorHom<A, R>(from f: ModuleHom<LinearCombination<R, A>, LinearCombination<R, TensorGenerator<A, A>>>, inputIndex: Int, outputIndices: (Int, Int)) -> ModuleEnd<LinearCombination<R, MultiTensorGenerator<A>>> {
     .linearlyExtend { t in
         let x = t.factors[inputIndex]
         return f(x).mapGenerators { y in

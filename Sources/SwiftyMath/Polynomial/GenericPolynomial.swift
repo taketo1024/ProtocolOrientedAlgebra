@@ -29,7 +29,7 @@ extension GenericPolynomialType {
         self.init(elements: [.zero: a])
     }
     
-    public init(_ p: LinearCombination<MonomialAsGenerator<Indeterminate>, BaseRing>) {
+    public init(_ p: LinearCombination<BaseRing, MonomialAsGenerator<Indeterminate>>) {
         self.init(elements: p.elements.mapPairs{ (x, a) in
             (x.exponent, a)
         })
@@ -123,7 +123,7 @@ extension GenericPolynomialType {
         elements.keys.map { e in degree(of: e) }.isUnique
     }
     
-    public var asLinearCombination: LinearCombination<MonomialAsGenerator<Indeterminate>, BaseRing> {
+    public var asLinearCombination: LinearCombination<BaseRing, MonomialAsGenerator<Indeterminate>> {
         .init(elements: elements.mapPairs{ (e, a) in (.init(exponent: e), a) })
     }
     
@@ -199,13 +199,13 @@ extension MonomialAsGenerator where X: MultivariatePolynomialIndeterminates {
 
 // R[X]<A> -> R<A, XA, X^2A, ... >
 extension LinearCombination where R: GenericPolynomialType {
-    public func flatten() -> LinearCombination<TensorGenerator<MonomialAsGenerator<R.Indeterminate>, A>, R.BaseRing> {
+    public func flatten() -> LinearCombination<R.BaseRing, TensorGenerator<MonomialAsGenerator<R.Indeterminate>, A>> {
         typealias T = TensorGenerator<MonomialAsGenerator<R.Indeterminate>, A>
         let inflated = elements.flatMap { (a, p) in
             p.elements.map { (e, r) -> (T, R.BaseRing) in
                 (.init(exponent: e) ⊗ a, r)
             }
         }
-        return LinearCombination<T, R.BaseRing>(elements: inflated)
+        return LinearCombination<R.BaseRing, T>(elements: inflated)
     }
 }
