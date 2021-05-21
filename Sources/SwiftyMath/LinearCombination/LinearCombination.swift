@@ -5,18 +5,17 @@
 //  Created by Taketo Sano on 2019/10/21.
 //
 
-public struct LinearCombination<A: FreeModuleGenerator, R: Ring>: FreeModule {
+public struct LinearCombination<A: LinearCombinationGenerator, R: Ring>: LinearCombinationType {
     public typealias BaseRing = R
     public typealias Generator = A
     
     public let elements: [A : R]
-    
     public init(elements: [A : R]) {
         self.elements = elements.exclude{ $0.value.isZero }
     }
     
     public static var symbol: String {
-        "FreeMod(\(R.symbol))"
+        "LinComb<\(R.symbol), \(A.self)>"
     }
 }
 
@@ -32,9 +31,4 @@ extension LinearCombination where R: ComplexSubset {
     }
 }
 
-extension LinearCombination: TensorMonoid where A: TensorMonoid {}
-
 extension LinearCombination: Codable where A: Codable, R: Codable {}
-
-public typealias MonoidRing<M: Monoid & FreeModuleGenerator, R: Ring> = LinearCombination<M, R>
-public typealias  GroupRing<G:  Group & FreeModuleGenerator, R: Ring> = LinearCombination<G, R>

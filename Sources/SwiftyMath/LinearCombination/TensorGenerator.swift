@@ -1,19 +1,11 @@
 //
-//  FreeModuleGenerator.swift
+//  TensorGenerator.swift
 //  SwiftyMath
 //
 //  Created by Taketo Sano on 2019/07/09.
 //
 
-public protocol FreeModuleGenerator: Hashable, Comparable, CustomStringConvertible {
-    var degree: Int { get }
-}
-
-public extension FreeModuleGenerator {
-    var degree: Int { 1 }
-}
-
-public struct TensorGenerator<A, B>: FreeModuleGenerator where A: FreeModuleGenerator, B: FreeModuleGenerator {
+public struct TensorGenerator<A, B>: LinearCombinationGenerator where A: LinearCombinationGenerator, B: LinearCombinationGenerator {
     public let left : A
     public let right: B
     
@@ -39,15 +31,17 @@ public struct TensorGenerator<A, B>: FreeModuleGenerator where A: FreeModuleGene
     }
 }
 
-public func ⊗<A: FreeModuleGenerator, B: FreeModuleGenerator>(_ a: A, _ b: B) -> TensorGenerator<A, B> {
-    .init(a, b)
+extension LinearCombinationGenerator {
+    public static func ⊗<Other: LinearCombinationGenerator>(_ a: Self, _ b: Other) -> TensorGenerator<Self, Other> {
+        .init(a, b)
+    }
 }
 
 public protocol TensorMonoid {
     static func ⊗(lhs: Self, rhs: Self) -> Self
 }
 
-public struct MultiTensorGenerator<A: FreeModuleGenerator>: FreeModuleGenerator, TensorMonoid {
+public struct MultiTensorGenerator<A: LinearCombinationGenerator>: LinearCombinationGenerator, TensorMonoid {
     public let factors: [A]
     public init(_ factors: [A]) {
         self.factors = factors
@@ -78,17 +72,19 @@ public struct MultiTensorGenerator<A: FreeModuleGenerator>: FreeModuleGenerator,
     }
 }
 
-extension FreeModule where Generator: TensorMonoid {
+extension LinearCombinationType where Generator: TensorMonoid {
     public static func ⊗(lhs: Self, rhs: Self) -> Self {
         return lhs.elements.sum { (t1, r1) in
             rhs.elements.sum { (t2, r2) in
                 let r = r1 * r2
                 let t = t1 ⊗ t2
-                return r * .wrap(t)
+                return r * .init(t)
             }
         }
     }
 }
+
+extension LinearCombination: TensorMonoid where A: TensorMonoid {}
 
 public func MultiTensorHom<A, R>(from f: ModuleEnd<LinearCombination<A, R>>, inputIndex: Int, outputIndex: Int) -> ModuleEnd<LinearCombination<MultiTensorGenerator<A>, R>> {
     .linearlyExtend { t in
