@@ -156,11 +156,11 @@ do {
 // MARK: Algebraic extension
 
 do {
+    typealias P = Polynomial<𝐐, StandardPolynomialIndeterminates.x>
     struct p: IrrPolynomialTP {
-        typealias P = Polynomial<_x, 𝐐>
         static let value = P(coeffs: -2, 0, 1) // x^2 - 2
     }
-    typealias A = AlgebraicExtension<𝐐, p> // 𝐐[x]/(x^2 - 2) = 𝐐(√2)
+    typealias A = PolynomialQuotientRing<P, p> // 𝐐[x]/(x^2 - 2) = 𝐐(√2)
     
     let x = A(.indeterminate)  // x ∈ 𝐐[x]/(x^2 - 2)
     x * x == 2                 // x = √2

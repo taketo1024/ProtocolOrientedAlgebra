@@ -217,19 +217,20 @@ extension Graph {
     }
     
     public func showHTML(title: String? = nil) {
-        let html = asHTML(title: title)
-
-        if #available(OSX 10.12, *) {
-            let file = FileManager().temporaryDirectory.appendingPathComponent("\(title ?? "tmp").html")
-            try! html.write(to: file, atomically: true, encoding: .utf8)
-            print(file)
-
-            let task = Process()
-            task.launchPath = "/usr/bin/open"
-            task.arguments = [file.absoluteString]
-            task.launch()
-        } else {
-            // Fallback on earlier versions
+        guard #available(OSX 10.12, *) else {
+            return
         }
+        
+        #if os(macOS)
+        let html = asHTML(title: title)
+        let file = FileManager().temporaryDirectory.appendingPathComponent("\(title ?? "tmp").html")
+        try! html.write(to: file, atomically: true, encoding: .utf8)
+        print(file)
+        
+        let task = Process()
+        task.launchPath = "/usr/bin/open"
+        task.arguments = [file.absoluteString]
+        task.launch()
+        #endif
     }
 }

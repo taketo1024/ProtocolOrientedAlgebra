@@ -108,6 +108,8 @@ public struct Quaternion<Base: Ring>: Ring {
     }
 }
 
+extension Quaternion: EuclideanRing, Field where Base: Field {}
+
 extension Quaternion: ExpressibleByIntegerLiteral where Base: ExpressibleByIntegerLiteral {
     public init(integerLiteral value: Base.IntegerLiteralType) {
         self.init(Base(integerLiteral: value))

@@ -127,6 +127,12 @@ extension Complex where Base == 𝐑 {
     }
 }
 
+public func exp(_ z: ComplexNumber) -> ComplexNumber {
+    let (x, y) = (z.realPart, z.imaginaryPart)
+    let R = exp(x)
+    return ComplexNumber(R * cos(y), R * sin(y))
+}
+
 extension Complex where Base: Randomable & Comparable {
     public static func random(in real: Range<Base>, _ imaginary: Range<Base>) -> Self {
         .init(.random(in: real), .random(in: imaginary))
