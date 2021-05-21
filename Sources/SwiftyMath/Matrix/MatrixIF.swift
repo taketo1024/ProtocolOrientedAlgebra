@@ -5,7 +5,7 @@
 //  Created by Taketo Sano.
 //
 
-public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: SetType {
+public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: MathSet {
     public typealias BaseRing = Impl.BaseRing
     public typealias Initializer = Impl.Initializer
     

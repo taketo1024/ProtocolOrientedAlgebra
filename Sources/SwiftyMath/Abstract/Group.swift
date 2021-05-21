@@ -14,7 +14,7 @@ public struct ProductGroup<X: Group, Y: Group>: ProductGroupType {
     }
 }
 
-public protocol QuotientGroupType: QuotientSetType, Group where Base == Sub.Super {
+public protocol QuotientGroupType: QuotientSet, Group where Base == Sub.Super {
     associatedtype Sub: NormalSubgroup
 }
 

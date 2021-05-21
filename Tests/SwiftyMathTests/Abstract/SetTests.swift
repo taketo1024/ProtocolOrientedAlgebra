@@ -11,7 +11,7 @@ import XCTest
 
 class SetTests: XCTestCase {
     
-    private struct A: SetType {
+    private struct A: MathSet {
         let value: Int
         init(_ a: Int) {
             self.value = a
@@ -21,7 +21,7 @@ class SetTests: XCTestCase {
         }
     }
     
-    private struct B: SubsetType {
+    private struct B: Subset {
         typealias Super = A
         
         let a: A
@@ -38,7 +38,7 @@ class SetTests: XCTestCase {
         }
     }
     
-    private struct C: FiniteSetType {
+    private struct C: FiniteSet {
         static var allElements: [C] {
             return [C()]
         }
@@ -50,10 +50,6 @@ class SetTests: XCTestCase {
         var description: String {
             return ""
         }
-    }
-
-    func testSymbol() {
-        XCTAssertEqual(A.symbol, "A")
     }
     
     func testEquality() {
@@ -76,12 +72,28 @@ class SetTests: XCTestCase {
     }
     
     func testProductSet() {
-        typealias P = ProductSet<A, A>
+        typealias P = Pair<A, A>
         let a1 = P(A(1), A(2))
         let a2 = P(A(3), A(4))
-        XCTAssertEqual(P.symbol, "A×A")
         XCTAssertEqual(a1.description, "(1, 2)")
         XCTAssertEqual(a1, a1)
         XCTAssertNotEqual(a1, a2)
+    }
+    
+    private struct E: EquivalenceRelation {
+        static func isEquivalent(_ x: A, _ y: A) -> Bool {
+            [x, y].allSatisfy { (0 ... 10).contains($0.value) } || x == y
+        }
+    }
+    
+    func testEquivalenceRelation() {
+        typealias Q = EquivalenceClass<A, E>
+        let a = Q(A(-1))
+        let b = Q(A(3))
+        let c = Q(A(5))
+        let d = Q(A(11))
+        XCTAssertNotEqual(a, b)
+        XCTAssertEqual(b, c)
+        XCTAssertNotEqual(c, d)
     }
 }

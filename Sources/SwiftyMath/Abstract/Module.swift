@@ -102,7 +102,7 @@ public func pair<M: Module>(f: Dual<M>, x: M) -> M.BaseRing {
 }
 
 public protocol BilinearMapType: MapType, Module
-    where Domain: ProductSetType,
+    where Domain: ProductSet,
     Domain.Left: Module,
     Domain.Right: Module,
     Codomain: Module,
@@ -160,7 +160,7 @@ public struct BilinearMap<V1: Module, V2: Module, W: Module>: BilinearMapType wh
 }
 
 public protocol BilinearFormType: MapType, Module
-    where Domain: ProductSetType,
+    where Domain: ProductSet,
     Domain.Left: Module,
     Domain.Right: Module,
     Codomain == BaseRing,

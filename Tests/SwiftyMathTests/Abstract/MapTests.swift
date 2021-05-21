@@ -10,7 +10,7 @@ import XCTest
 @testable import SwiftyMath
 
 class MapTests: XCTestCase {
-    private struct A: SetType {
+    private struct A: MathSet {
         let value: Int
         init(_ a: Int) {
             self.value = a
@@ -21,7 +21,7 @@ class MapTests: XCTestCase {
         }
     }
     
-    private struct B: SetType {
+    private struct B: MathSet {
         let value: Int
         init(_ a: Int) {
             self.value = a
@@ -31,7 +31,7 @@ class MapTests: XCTestCase {
         }
     }
     
-    private struct C: SetType {
+    private struct C: MathSet {
         let value: Int
         init(_ a: Int) {
             self.value = a

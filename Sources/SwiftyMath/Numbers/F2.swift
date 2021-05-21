@@ -5,7 +5,7 @@
 //  Created by Taketo Sano on 2019/10/30.
 //
 
-public struct 𝐅₂: Field, FiniteSetType, Hashable {
+public struct 𝐅₂: Field, FiniteSet, Hashable {
     public let representative: UInt8
     
     private init(_ a: UInt8) {

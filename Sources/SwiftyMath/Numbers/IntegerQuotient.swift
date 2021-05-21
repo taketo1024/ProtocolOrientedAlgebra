@@ -26,7 +26,7 @@ public struct IntegerIdeal<n: FixedSizeType>: IntegerIdealType {
 
 extension IntegerIdeal: MaximalIdeal where n: PrimeSizeType {}
 
-public struct IntegerQuotientRing<n: FixedSizeType>: QuotientRingType, FiniteSetType, Hashable {
+public struct IntegerQuotientRing<n: FixedSizeType>: QuotientRingType, FiniteSet, Hashable {
     public typealias Ideal = IntegerIdeal<n>
     public typealias Sub = Ideal
 

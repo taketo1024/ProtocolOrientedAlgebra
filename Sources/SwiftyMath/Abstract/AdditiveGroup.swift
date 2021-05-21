@@ -1,4 +1,4 @@
-public protocol AdditiveGroup: SetType {
+public protocol AdditiveGroup: MathSet {
     static var zero: Self { get }
     var isZero: Bool { get }
     
@@ -24,7 +24,7 @@ public extension AdditiveGroup {
     }
 }
 
-public protocol AdditiveSubgroup: AdditiveGroup, SubsetType where Super: AdditiveGroup {
+public protocol AdditiveSubgroup: AdditiveGroup, Subset where Super: AdditiveGroup {
     static func quotientRepresentative(of a: Super) -> Super
 }
 
@@ -46,7 +46,7 @@ public extension AdditiveSubgroup {
     }
 }
 
-public protocol AdditiveProductGroupType: ProductSetType, AdditiveGroup where Left: AdditiveGroup, Right: AdditiveGroup {}
+public protocol AdditiveProductGroupType: ProductSet, AdditiveGroup where Left: AdditiveGroup, Right: AdditiveGroup {}
 
 public extension AdditiveProductGroupType {
     static var zero: Self {
@@ -71,7 +71,7 @@ public struct AdditiveProductGroup<X: AdditiveGroup, Y: AdditiveGroup>: Additive
     }
 }
 
-public protocol AdditiveQuotientGroupType: QuotientSetType, AdditiveGroup where Base == Sub.Super {
+public protocol AdditiveQuotientGroupType: QuotientSet, AdditiveGroup where Base == Sub.Super {
     associatedtype Sub: AdditiveSubgroup
 }
 

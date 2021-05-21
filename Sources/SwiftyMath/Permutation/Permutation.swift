@@ -6,7 +6,7 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
-public struct Permutation<n: SizeType>: Multiplicative, SetType, Hashable {
+public struct Permutation<n: SizeType>: Multiplicative, MathSet, Hashable {
     public let length: Int
     private let table: [Int : Int]
     
@@ -126,7 +126,7 @@ public struct Permutation<n: SizeType>: Multiplicative, SetType, Hashable {
     }
 }
 
-extension Permutation: Monoid, Group, FiniteSetType where n: FixedSizeType {
+extension Permutation: Monoid, Group, FiniteSet where n: FixedSizeType {
     public init(table: [Int : Int]) {
         self.init(length: n.intValue, table: table)
     }

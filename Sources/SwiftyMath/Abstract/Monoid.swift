@@ -2,7 +2,7 @@ public protocol Multiplicative {
     static func * (a: Self, b: Self) -> Self
 }
 
-public protocol Monoid: SetType, Multiplicative {
+public protocol Monoid: MathSet, Multiplicative {
     static var identity: Self { get }
     var isIdentity: Bool { get }
     var inverse: Self? { get }
@@ -30,7 +30,7 @@ public extension Monoid {
     }
 }
 
-public protocol Submonoid: Monoid, SubsetType where Super: Monoid {}
+public protocol Submonoid: Monoid, Subset where Super: Monoid {}
 
 public extension Submonoid {
     static var identity: Self {
@@ -46,7 +46,7 @@ public extension Submonoid {
     }
 }
 
-public protocol ProductMonoidType: ProductSetType, Monoid where Left: Monoid, Right: Monoid {}
+public protocol ProductMonoidType: ProductSet, Monoid where Left: Monoid, Right: Monoid {}
 
 public extension ProductMonoidType {
     static func * (a: Self, b: Self) -> Self {
