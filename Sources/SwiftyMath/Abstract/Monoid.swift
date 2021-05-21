@@ -6,7 +6,9 @@ public protocol Monoid: MathSet, Multiplicative {
     static var identity: Self { get }
     var isIdentity: Bool { get }
     var inverse: Self? { get }
-    var isInvertible: Bool { get }    
+    var isInvertible: Bool { get }
+    func pow(_ n: Int) -> Self
+    static func multiply<S: Sequence>(_ elements: S) -> Self where S.Element == Self
 }
 
 public extension Monoid {
@@ -27,6 +29,22 @@ public extension Monoid {
             }
             return (0 ..< -n).reduce(.identity){ (res, _) in inv * res }
         }
+    }
+    
+    static func multiply<S: Sequence>(_ elements: S) -> Self where S.Element == Self {
+        elements.reduce(.identity){ (res, e) in res * e }
+    }
+}
+
+public extension Sequence where Element: Monoid {
+    func multiply() -> Element {
+        Element.multiply(self)
+    }
+}
+
+public extension Sequence {
+    func multiply<M: Monoid>(mapping f: (Element) -> M) -> M {
+        M.multiply( map(f) )
     }
 }
 
@@ -76,15 +94,3 @@ extension Map: MonoidHomType where Domain: Monoid, Codomain: Monoid {}
 
 public typealias MonoidHom<Domain: Monoid, Codomain: Monoid> = Map<Domain, Codomain>
 public typealias MonoidEnd<Domain: Monoid> = MonoidHom<Domain, Domain>
-
-public extension Sequence where Element: Monoid {
-    func multiplyAll() -> Element {
-        multiply{ $0 }
-    }
-}
-
-public extension Sequence {
-    func multiply<G: Monoid>(mapping f: (Element) -> G) -> G {
-        self.reduce(.identity){ $0 * f($1) }
-    }
-}

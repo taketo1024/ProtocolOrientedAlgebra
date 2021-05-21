@@ -108,26 +108,20 @@ extension LinearCombinationType {
         .init(elements: a.elements.mapValues{ $0 * r } )
     }
     
-    public static func sum(_ summands: [Self]) -> Self {
-        switch summands.count {
-        case 0: return .zero
-        case 1: return summands.first!
-        case 2: return summands[0] + summands[1]
-        default:
-            var sum = Dictionary(
-                summands.reduce(into: Set()) { (res, summand) in
-                    res.formUnion(summand.elements.keys)
-                }.map { a in
-                    (a, BaseRing.zero)
-                }
-            )
-            for z in summands {
-                for (a, r) in z.elements {
-                    sum[a] = sum[a]! + r
-                }
+    public static func sum<S: Sequence>(_ summands: S) -> Self where S.Element == Self {
+        var sum = Dictionary(
+            summands.reduce(into: Set()) { (res, summand) in
+                res.formUnion(summand.elements.keys)
+            }.map { a in
+                (a, BaseRing.zero)
             }
-            return .init(elements: sum)
+        )
+        for z in summands {
+            for (a, r) in z.elements {
+                sum[a] = sum[a]! + r
+            }
         }
+        return .init(elements: sum)
     }
     
     public func filter(_ f: (Generator) -> Bool) -> Self {

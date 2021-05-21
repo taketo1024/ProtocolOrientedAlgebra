@@ -67,7 +67,7 @@ public struct Quaternion<Base: Ring>: Ring {
     }
 
     public var inverse: Self? {
-        let r2 = components.map{ $0 * $0 }.sumAll()
+        let r2 = components.map{ $0 * $0 }.sum()
         if let r2Inv = r2.inverse {
             return Self(r2Inv) * conjugate
         } else {

@@ -45,7 +45,7 @@ public struct 𝐅₂: Field, FiniteSet, Hashable, ExpressibleByIntegerLiteral {
         .init(a.representative & b.representative)
     }
     
-    public static func sum(_ elements: [Self]) -> Self {
+    public static func sum<S: Sequence>(_ elements: S) -> Self where S.Element == Self {
         elements.count { $0.representative == 1 }.isEven ? .zero : .identity
     }
     

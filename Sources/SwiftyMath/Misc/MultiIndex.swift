@@ -31,7 +31,7 @@ public struct MultiIndex<n: SizeType>: AdditiveGroup, ExpressibleByArrayLiteral,
     }
     
     public var total: Int {
-        indices.sumAll()
+        indices.sum()
     }
     
     public subscript(_ i: Int) -> Int {

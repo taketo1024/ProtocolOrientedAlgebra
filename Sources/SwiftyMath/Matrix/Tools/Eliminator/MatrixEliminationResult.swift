@@ -227,7 +227,7 @@ extension MatrixEliminationResult where n == m {
         if rank == size.rows {
             return rowOps.multiply { $0.determinant }.inverse!
                 * colOps.multiply { $0.determinant }.inverse!
-                * diagonalEntries.multiplyAll()
+                * diagonalEntries.multiply()
         } else {
             return .zero
         }

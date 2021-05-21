@@ -5,7 +5,7 @@ public protocol AdditiveGroup: MathSet {
     static func + (a: Self, b: Self) -> Self
     prefix static func -(a: Self) -> Self
     static func -(a: Self, b: Self) -> Self
-    static func sum(_ elements: [Self]) -> Self
+    static func sum<S: Sequence>(_ elements: S) -> Self where S.Element == Self
 }
 
 public extension AdditiveGroup {
@@ -17,13 +17,26 @@ public extension AdditiveGroup {
         a + (-b)
     }
     
-    static func sum(_ elements: [Self]) -> Self {
-        switch elements.count {
-        case 0: return .zero
-        case 1: return elements.first!
-        case 2: return elements[0] + elements[1]
-        default: return elements.reduce(.zero){ (res, e) in res + e }
+    static func sum<S: Sequence>(_ elements: S) -> Self where S.Element == Self {
+        elements.reduce(.zero){ (res, e) in res + e }
+    }
+}
+
+public extension Sequence where Element: AdditiveGroup {
+    func sum() -> Element {
+        Element.sum(self)
+    }
+    
+    func accumulate() -> [Element] {
+        self.reduce(into: []) { (res, r) in
+            res.append( (res.last ?? .zero) + r)
         }
+    }
+}
+
+public extension Sequence {
+    func sum<G: AdditiveGroup>(mapping f: (Element) -> G) -> G {
+        G.sum( self.map(f) )
     }
 }
 
@@ -93,6 +106,7 @@ public extension AdditiveGroupHomType {
     static var zero: Self {
         Self { x in .zero }
     }
+    
     static func + (f: Self, g: Self) -> Self {
         Self { x in f(x) + g(x) }
     }
@@ -101,9 +115,9 @@ public extension AdditiveGroupHomType {
         Self { x in -f(x) }
     }
     
-    static func sum(_ elements: [Self]) -> Self {
+    static func sum<S: Sequence>(_ elements: S) -> Self where S.Element == Self {
         Self { x in
-            elements.map{ f in f(x) }.sumAll()
+            elements.map{ f in f(x) }.sum()
         }
     }
 }
@@ -111,24 +125,6 @@ public extension AdditiveGroupHomType {
 extension Map: AdditiveGroup, AdditiveGroupHomType where Domain: AdditiveGroup, Codomain: AdditiveGroup {}
 public typealias AdditiveGroupHom<X: AdditiveGroup, Y: AdditiveGroup> = Map<X, Y>
 public typealias AdditiveGroupEnd<X: AdditiveGroup> = AdditiveGroupHom<X, X>
-
-public extension Sequence where Element: AdditiveGroup {
-    func sumAll() -> Element {
-        sum{ $0 }
-    }
-    
-    func accumulate() -> [Element] {
-        self.reduce(into: []) { (res, r) in
-            res.append( (res.last ?? .zero) + r)
-        }
-    }
-}
-
-public extension Sequence {
-    func sum<G: AdditiveGroup>(mapping f: (Element) -> G) -> G {
-        G.sum( self.map(f) )
-    }
-}
 
 public struct AsGroup<G: AdditiveGroup>: Group {
     public let entity: G

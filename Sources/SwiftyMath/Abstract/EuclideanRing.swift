@@ -54,10 +54,10 @@ public func extendedGcd<R: EuclideanRing>(_ a: R, _ b: R) -> (x: R, y: R, gcd: R
     
     let (qs, r) = euclid(a, b, [])
     
-    let m = qs.reversed().map { q -> M in
+    let m = qs.reversed().multiply { q -> M in
         [.zero, .identity,
          .identity, -q]
-    }.multiplyAll()
+    }
     
     return (x: m[0, 0], y: m[0, 1], gcd: r)
 }
