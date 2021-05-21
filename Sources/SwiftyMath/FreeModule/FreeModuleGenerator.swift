@@ -14,8 +14,8 @@ public extension FreeModuleGenerator {
 }
 
 public struct TensorGenerator<A, B>: FreeModuleGenerator where A: FreeModuleGenerator, B: FreeModuleGenerator {
-    private let left: A
-    private let right: B
+    public let left : A
+    public let right: B
     
     public init(_ a: A, _ b: B) {
         self.left = a

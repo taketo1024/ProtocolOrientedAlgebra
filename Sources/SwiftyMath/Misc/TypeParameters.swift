@@ -1,11 +1,16 @@
 public protocol SizeType {
+    static var isFixed: Bool { get }
     static var intValue: Int { get }
-    static var isDynamic: Bool { get }
+}
+
+extension SizeType {
+    // TODO remove this.
+    static var isDynamic: Bool { !isFixed }
 }
 
 public protocol StaticSizeType: SizeType {}
 public extension StaticSizeType {
-    static var isDynamic: Bool { return false }
+    static var isFixed: Bool { true }
 }
 
 public struct _0 : StaticSizeType { public static let intValue = 0 }
@@ -27,7 +32,8 @@ extension _5: PrimeSizeType {}
 extension _7: PrimeSizeType {}
 // add more if necessary
 
+// TODO rename to anySize
 public struct DynamicSize : SizeType {
-    public static var intValue: Int { fatalError() }
-    public static var isDynamic: Bool { return true }
+    public static var isFixed: Bool { false }
+    public static var intValue: Int { Int.max }
 }

@@ -22,8 +22,12 @@ public struct MultiIndex<n: SizeType>: AdditiveGroup, ExpressibleByArrayLiteral,
         self.init(elements)
     }
     
-    public var length: Int {
-        indices.count
+    public static var isFixed: Bool {
+        n.isFixed
+    }
+    
+    public static var length: Int {
+        n.intValue
     }
     
     public var total: Int {
@@ -31,7 +35,8 @@ public struct MultiIndex<n: SizeType>: AdditiveGroup, ExpressibleByArrayLiteral,
     }
     
     public subscript(_ i: Int) -> Int {
-        indices[i]
+        assert(0 <= i && i <= Self.length)
+        return indices.indices.contains(i) ? indices[i] : 0
     }
     
     public static var zero: MultiIndex<n> {

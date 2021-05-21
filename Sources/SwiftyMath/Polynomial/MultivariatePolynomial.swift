@@ -27,7 +27,7 @@ extension MultivariatePolynomialIndeterminates {
     }
     
     public static func degreeOfMonomial(withExponent e: Exponent) -> Int {
-        assert(!isFinite || e.length <= numberOfIndeterminates)
+        assert(!isFinite || Exponent.length <= numberOfIndeterminates)
         return e.indices.enumerated().sum { (i, k) in
             k * degreeOfIndeterminate(at: i)
         }

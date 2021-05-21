@@ -87,6 +87,18 @@ extension GenericPolynomialType {
         term(leadExponent)
     }
     
+    public var tailExponent: Exponent {
+        coeffs.keys.min{ (e1, e2) in degree(of: e1) < degree(of: e2) } ?? .zero
+    }
+    
+    public var tailCoeff: BaseRing {
+        coeff(tailExponent)
+    }
+    
+    public var tailTerm: Self {
+        term(tailExponent)
+    }
+    
     public var constCoeff: BaseRing {
         coeff(.zero)
     }
@@ -154,14 +166,22 @@ extension GenericPolynomialType {
 public struct MonomialAsGenerator<X: GenericPolynomialIndeterminate>: FreeModuleGenerator {
     public let exponent: X.Exponent
     
-    public static func wrap(_ e: X.Exponent) -> Self {
-        .init(exponent: e)
+    public init(exponent e: X.Exponent) {
+        self.exponent = e
+    }
+    
+    public static var unit: Self {
+        .init(exponent: .zero)
     }
     
     public var degree: Int {
         X.degreeOfMonomial(withExponent: exponent)
     }
     
+    public static func * (a: Self, b: Self) -> Self {
+        .init(exponent: a.exponent + b.exponent)
+    }
+
     public static func < (a: Self, b: Self) -> Bool {
         a.exponent < b.exponent
     }
@@ -171,13 +191,19 @@ public struct MonomialAsGenerator<X: GenericPolynomialIndeterminate>: FreeModule
     }
 }
 
+extension MonomialAsGenerator where X: MultivariatePolynomialIndeterminates {
+    public init(exponent e: [Int]) {
+        self.exponent = X.Exponent(e)
+    }
+}
+
 // R[X]<A> -> R<A, XA, X^2A, ... >
 extension LinearCombination where R: GenericPolynomialType {
     public func flatten() -> LinearCombination<TensorGenerator<MonomialAsGenerator<R.Indeterminate>, A>, R.BaseRing> {
         typealias T = TensorGenerator<MonomialAsGenerator<R.Indeterminate>, A>
         let inflated = elements.flatMap { (a, p) in
-            p.coeffs.map { (m, r) -> (T, R.BaseRing) in
-                (.wrap(m) ⊗ a, r)
+            p.coeffs.map { (e, r) -> (T, R.BaseRing) in
+                (.init(exponent: e) ⊗ a, r)
             }
         }
         return LinearCombination<T, R.BaseRing>(elements: inflated)
