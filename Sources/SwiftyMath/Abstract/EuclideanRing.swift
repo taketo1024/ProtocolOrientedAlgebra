@@ -63,30 +63,36 @@ public func extendedGcd<R: EuclideanRing>(_ a: R, _ b: R) -> (x: R, y: R, gcd: R
 }
 
 public protocol EuclideanIdeal: Ideal where Super: EuclideanRing {
-    static var mod: Super { get }
+    static var generator: Super { get }
 }
 
 public extension EuclideanIdeal {
     static func contains(_ a: Super) -> Bool {
-        a.isDivible(by: mod)
+        a.isDivible(by: generator)
+    }
+}
+
+public protocol EuclideanQuotientRing: QuotientRing where Mod: EuclideanIdeal {
+    static func reduce(_ a: Base) -> Base
+}
+
+public extension EuclideanQuotientRing {
+    static var mod: Base {
+        Mod.generator
     }
     
-    static func quotientRepresentative(of a: Super) -> Super {
+    static func reduce(_ a: Base) -> Base {
         a % mod
     }
     
-    static func quotientInverse(of a: Super) -> Super? {
+    var inverse: Self? {
         // find: a * x + b * y = u  (u: unit)
         // then: a^-1 = u^-1 * x (mod b)
-        let (x, _, u) = extendedGcd(a, mod)
+        let (x, _, u) = extendedGcd(representative, Self.mod)
         if let uInv = u.inverse {
-            return uInv * x
+            return Self(uInv * x)
         } else {
             return nil
         }
-    }
-    
-    static var symbol: String {
-        "(\(mod))"
     }
 }

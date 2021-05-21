@@ -9,53 +9,34 @@
 public typealias 𝐙₂ = IntegerQuotientRing<_2>
 // add more if necessary
 
-// MEMO: waiting for parameterized extension.
-public protocol IntegerIdealType: EuclideanIdeal where Super == 𝐙 {}
-
-extension IntegerIdealType {
-    public static func quotientRepresentative(of a: 𝐙) -> 𝐙 {
-        (a >= 0) ? a % mod : (a % mod + mod)
-    }
-}
-
-public struct IntegerIdeal<n: FixedSizeType>: IntegerIdealType {
-    public static var mod: 𝐙 {
+public struct IntegerIdeal<n: FixedSizeType>: EuclideanIdeal {
+    public typealias Super = 𝐙
+    public static var generator: 𝐙 {
         n.intValue
     }
 }
 
 extension IntegerIdeal: MaximalIdeal where n: PrimeSizeType {}
 
-public struct IntegerQuotientRing<n: FixedSizeType>: QuotientRingType, FiniteSet, Hashable {
-    public typealias Ideal = IntegerIdeal<n>
-    public typealias Sub = Ideal
+public struct IntegerQuotientRing<n: FixedSizeType>: EuclideanQuotientRing, FiniteSet, Hashable, ExpressibleByIntegerLiteral {
+    public typealias Base = 𝐙
+    public typealias Mod = IntegerIdeal<n>
 
     public let representative: 𝐙
-    
-    public init(_ x: 𝐙) {
-        self.representative = Ideal.quotientRepresentative(of: x)
+    public init(_ a: 𝐙) {
+        self.representative = Self.reduce(a)
     }
     
-    public static var mod: 𝐙 {
-        n.intValue
+    public static func reduce(_ a: Int) -> Int {
+        (a >= 0) ? a % mod : (a % mod + mod)
     }
-    
+
     public static var allElements: [Self] {
         (0 ..< mod).map{ .init($0) }
     }
     
     public static var countElements: Int {
         mod
-    }
-    
-    public static var symbol: String {
-        "𝐙\(Format.sub(mod))"
-    }
-}
-
-extension IntegerQuotientRing: ExpressibleByIntegerLiteral {
-    public init(integerLiteral value: Int) {
-        self.init(value)
     }
 }
 

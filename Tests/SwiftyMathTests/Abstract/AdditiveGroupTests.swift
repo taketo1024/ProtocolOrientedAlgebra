@@ -111,7 +111,7 @@ class AdditiveGroupTests: XCTestCase {
     
     private struct Q: AdditiveQuotientGroup {
         typealias Base = A
-        typealias Sub = B
+        typealias Mod = B
         let representative: AdditiveGroupTests.A
         init(_ a: AdditiveGroupTests.A) {
             self.representative = a

@@ -68,8 +68,8 @@ public extension AdditiveProductGroup {
 
 extension Pair: AdditiveGroup, AdditiveProductGroup where Left: AdditiveGroup, Right: AdditiveGroup {}
 
-public protocol AdditiveQuotientGroup: QuotientSet, AdditiveGroup where Base == Sub.Super {
-    associatedtype Sub: AdditiveSubgroup
+public protocol AdditiveQuotientGroup: QuotientSet, AdditiveGroup where Base == Mod.Super {
+    associatedtype Mod: AdditiveSubgroup
 }
 
 public extension AdditiveQuotientGroup {
@@ -86,11 +86,11 @@ public extension AdditiveQuotientGroup {
     }
     
     static func isEquivalent(_ a: Base, _ b: Base) -> Bool {
-        Sub.contains( a - b )
+        Mod.contains( a - b )
     }
     
     static var symbol: String {
-        "\(Base.symbol)/\(Sub.symbol)"
+        "\(Base.symbol)/\(Mod.symbol)"
     }
 }
 

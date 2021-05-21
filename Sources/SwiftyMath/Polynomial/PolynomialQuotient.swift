@@ -6,29 +6,37 @@
 //
 
 public protocol PolynomialTP {
-    associatedtype BaseRing: Ring
-    associatedtype Indeterminate: PolynomialIndeterminate
-    typealias BasePolynomial = Polynomial<BaseRing, Indeterminate>
+    associatedtype BasePolynomial: PolynomialType
+    typealias BaseRing = BasePolynomial.BaseRing
     static var value: BasePolynomial { get }
 }
 
 public protocol IrrPolynomialTP: PolynomialTP {}
 
-public struct PolynomialIdeal<p: PolynomialTP>: EuclideanIdeal where p.BaseRing: Field {
+public struct PolynomialIdeal<p: PolynomialTP>: EuclideanIdeal where p.BasePolynomial: EuclideanRing {
     public typealias Super = p.BasePolynomial
-    public static var mod: Super {
+    public typealias BaseRing = p.BasePolynomial.BaseRing
+    
+    public static var generator: Super {
         p.value
     }
 }
 
 extension PolynomialIdeal: MaximalIdeal where p: IrrPolynomialTP {}
 
-public typealias PolynomialQuotientRing<p: PolynomialTP> = QuotientRing<p.BasePolynomial, PolynomialIdeal<p>> where p.BaseRing: Field
+public struct PolynomialQuotientRing<P, p: PolynomialTP>: EuclideanQuotientRing where P == p.BasePolynomial, P: EuclideanRing {
+    public typealias Base = P
+    public typealias Mod = PolynomialIdeal<p>
 
-extension PolynomialQuotientRing where Base: PolynomialType {
-    public init(_ a: Base.BaseRing) {
-        self.init(Base(a))
+    public let representative: P
+    public init(_ a: P) {
+        self.representative = Self.reduce(a)
+    }
+    
+    public init(_ a: P.BaseRing) {
+        self.init(P(a))
     }
 }
 
-public typealias AlgebraicExtension<F: Field, p: IrrPolynomialTP> = PolynomialQuotientRing<p> where p.BaseRing == F
+extension PolynomialQuotientRing: ExpressibleByIntegerLiteral where Base: ExpressibleByIntegerLiteral {}
+extension PolynomialQuotientRing: EuclideanRing, Field where p: IrrPolynomialTP {}

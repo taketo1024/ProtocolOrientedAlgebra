@@ -39,7 +39,7 @@ public struct ProductModule<X: Module, Y: Module>: ProductModuleType where X.Bas
     }
 }
 
-public protocol QuotientModuleType: AdditiveQuotientGroup, Module where BaseRing == Base.BaseRing, Sub:Submodule {}
+public protocol QuotientModuleType: AdditiveQuotientGroup, Module where BaseRing == Base.BaseRing, Mod:Submodule {}
 
 public extension QuotientModuleType {
     static func * (r: BaseRing, a: Self) -> Self {
@@ -51,12 +51,12 @@ public extension QuotientModuleType {
     }
 }
 
-public struct QuotientModule<Base, Sub: Submodule>: QuotientModuleType where Base == Sub.Super {
+public struct QuotientModule<Base, Mod: Submodule>: QuotientModuleType where Base == Mod.Super {
     public typealias BaseRing = Base.BaseRing
     
     private let x: Base
     public init(_ x: Base) {
-        self.x = Sub.quotientRepresentative(of: x)
+        self.x = Mod.quotientRepresentative(of: x)
     }
     
     public var representative: Base {

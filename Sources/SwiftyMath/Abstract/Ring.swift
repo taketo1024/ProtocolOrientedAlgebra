@@ -1,11 +1,11 @@
 public protocol Ring: AdditiveGroup, Monoid {
     init(from: 𝐙)
+    var isNormalized: Bool { get }
     var normalizingUnit: Self { get }
     var normalized: Self { get }
-    var isNormalized: Bool { get }
     var degree: Int { get }
-    var matrixEliminationWeight: Int { get }
     static var isField: Bool { get }
+    var matrixEliminationWeight: Int { get } // used for matrix elimination
 }
 
 public extension Ring {
@@ -61,21 +61,13 @@ public extension Subring {
 public protocol Ideal: AdditiveSubgroup where Super: Ring {
     static func * (r: Super, a: Self) -> Self
     static func * (m: Self, r: Super) -> Self
-    
-    @available(*, deprecated)
-    static func quotientInverse(of r: Super) -> Super?
 }
 
-// MEMO: Usually Ideals are only used as a TypeParameter for a QuotientRing.
 public extension Ideal {
-    init(_ x: Super) {
-        fatalError()
-    }
-    
-    var asSuper: Super {
-        fatalError()
-    }
-    
+    // suppressed
+    init(_ a: Super) { fatalError() }
+    var asSuper: Super { .zero }
+
     static func * (a: Self, b: Self) -> Self {
         Self(a.asSuper * b.asSuper)
     }
@@ -91,9 +83,9 @@ public extension Ideal {
 
 public protocol MaximalIdeal: Ideal {}
 
-public protocol ProductRingType: ProductMonoid, AdditiveProductGroup, Ring where Left: Ring, Right: Ring {}
+public protocol ProductRing: ProductMonoid, AdditiveProductGroup, Ring where Left: Ring, Right: Ring {}
 
-public extension ProductRingType {
+public extension ProductRing {
     init(from a: 𝐙) {
         self.init(Left(from: a), Right(from: a))
     }
@@ -107,74 +99,36 @@ public extension ProductRingType {
     }
 }
 
-public struct ProductRing<X: Ring, Y: Ring>: ProductRingType {
-    public let left: X
-    public let right: Y
-    public init(_ x: X, _ y: Y) {
-        self.left = x
-        self.right = y
-    }
-}
+extension Pair: Ring, ProductRing where Left: Ring, Right: Ring {}
 
-public protocol QuotientRingType: AdditiveQuotientGroup, Ring where Sub: Ideal {}
+public protocol QuotientRing: AdditiveQuotientGroup, Ring where Mod: Ideal {}
 
-public extension QuotientRingType {
+public extension QuotientRing {
     init(from n: 𝐙) {
         self.init(Base(from: n))
-    }
-    
-    var inverse: Self? {
-        if let inv = Sub.quotientInverse(of: representative) {
-            return Self(inv)
-        } else {
-            return nil
-        }
     }
     
     static var zero: Self {
         Self(Base.zero)
     }
     
-    static func + (a: Self, b: Self) -> Self {
+    static func +(a: Self, b: Self) -> Self {
         Self(a.representative + b.representative)
     }
     
-    static prefix func - (a: Self) -> Self {
+    static prefix func -(a: Self) -> Self {
         Self(-a.representative)
     }
     
-    static func * (a: Self, b: Self) -> Self {
+    static func *(a: Self, b: Self) -> Self {
         Self(a.representative * b.representative)
     }
 }
 
-public struct QuotientRing<R, I: Ideal>: QuotientRingType where R == I.Super {
-    public typealias Sub = I
-    
-    private let x: R
-    public init(_ x: R) {
-        self.x = I.quotientRepresentative(of: x)
-    }
-    
-    public var representative: R {
-        x
-    }
-}
-
-extension QuotientRing: EuclideanRing, Field where Sub: MaximalIdeal {}
-
 public protocol RingHomType: AdditiveGroupHomType where Domain: Ring, Codomain: Ring {}
 
-public struct RingHom<X: Ring, Y: Ring>: RingHomType {
-    public let function: (X) -> Y
-    public init(_ f: @escaping (X) -> Y) {
-        self.function = f
-    }
-}
-
-public protocol RingEndType: RingHomType, EndType {}
-
-extension RingHom: EndType, RingEndType where X == Y {}
+extension Map: RingHomType where Domain: Ring, Codomain: Ring {}
+public typealias RingHom<X: Ring, Y: Ring> = Map<X, Y>
 public typealias RingEnd<X: Ring> = RingHom<X, X>
 
 // a Ring considered as a Module over itself.
@@ -198,16 +152,16 @@ public struct AsModule<R: Ring>: Module {
         .init(a.value + b.value)
     }
     
-    public static prefix func -(x: Self) -> Self {
-        .init(-x.value)
+    public static prefix func -(a: Self) -> Self {
+        .init(-a.value)
     }
     
-    public static func *(m: Self, r: R) -> Self {
-        .init(m.value * r)
+    public static func *(a: Self, r: R) -> Self {
+        .init(a.value * r)
     }
     
-    public static func *(r: R, m: Self) -> Self {
-        .init(r * m.value)
+    public static func *(r: R, a: Self) -> Self {
+        .init(r * a.value)
     }
     
     public var description: String {

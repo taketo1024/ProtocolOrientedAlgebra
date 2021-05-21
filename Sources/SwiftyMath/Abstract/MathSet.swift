@@ -77,6 +77,12 @@ public extension QuotientSet {
     }
 }
 
+extension QuotientSet where Base: ExpressibleByIntegerLiteral {
+    public init(integerLiteral value: Base.IntegerLiteralType) {
+        self.init(Base(integerLiteral: value))
+    }
+}
+
 public protocol EquivalenceRelation {
     associatedtype Base: MathSet
     static func isEquivalent(_ a: Base, _ b: Base) -> Bool

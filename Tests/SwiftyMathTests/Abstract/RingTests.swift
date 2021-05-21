@@ -84,36 +84,15 @@ class RingTests: XCTestCase {
         XCTAssertEqual(b.pow(-3), A(-1))
     }
     
-    /*
-    func testSubgroupSum() {
-        let a = B(A(3))
-        let b = B(A(4))
-        XCTAssertEqual(a + b, B(A(7)))
-    }
-    
-    func testSubgroupZero() {
-        let a = B(A(3))
-        let e = B.zero
-        XCTAssertEqual(e + e, e)
-        XCTAssertEqual(a + e, a)
-        XCTAssertEqual(e + a, a)
-    }
-    
-    func testSubgroupNegative() {
-        let a = B(A(3))
-        XCTAssertEqual(-a, B(A(-3)))
-    }
-     */
-    
     func testProductRingSum() {
-        typealias P = ProductRing<A, A>
+        typealias P = Pair<A, A>
         let a = P(A(1), A(2))
         let b = P(A(3), A(4))
         XCTAssertEqual(a + b, P(A(4), A(6)))
     }
     
     func testProductRingZero() {
-        typealias P = ProductRing<A, A>
+        typealias P = Pair<A, A>
         let a = P(A(1), A(2))
         let z = P.zero
         XCTAssertEqual(z + z, z)
@@ -122,20 +101,20 @@ class RingTests: XCTestCase {
     }
     
     func testProductRingNegative() {
-        typealias P = ProductRing<A, A>
+        typealias P = Pair<A, A>
         let a = P(A(3), A(4))
         XCTAssertEqual(-a, P(A(-3), A(-4)))
     }
     
     func testProductRingMul() {
-        typealias P = ProductRing<A, A>
+        typealias P = Pair<A, A>
         let a = P(A(1), A(2))
         let b = P(A(3), A(4))
         XCTAssertEqual(a * b, P(A(3), A(8)))
     }
     
     func testProductRingIdentity() {
-        typealias P = ProductRing<A, A>
+        typealias P = Pair<A, A>
         let a = P(A(1), A(2))
         let e = P.identity
         XCTAssertEqual(e * e, e)
@@ -144,58 +123,11 @@ class RingTests: XCTestCase {
     }
     
     func testProductRingInverse() {
-        typealias P = ProductRing<A, A>
+        typealias P = Pair<A, A>
         let a = P(A(1), A(-1))
         XCTAssertEqual(a.inverse!, P(A(1), A(-1)))
         
         let b = P(A(2), A(1))
-        XCTAssertNil(b.inverse)
-    }
-    
-    func testQuotientRingSum() {
-        typealias Q = QuotientRing<A, B>
-        let a = Q(A(1))
-        let b = Q(A(2))
-        XCTAssertEqual(a + b, Q(A(3)))
-    }
-    
-    func testQuotientRingZero() {
-        typealias Q = QuotientRing<A, B>
-        let a = Q(A(1))
-        let e = Q.zero
-        XCTAssertEqual(e + e, e)
-        XCTAssertEqual(a + e, a)
-        XCTAssertEqual(e + a, a)
-    }
-    
-    func testQuotientRingNegative() {
-        typealias Q = QuotientRing<A, B>
-        let a = Q(A(1))
-        XCTAssertEqual(-a, Q(A(3)))
-    }
-    
-    func testQuotientRingMul() {
-        typealias Q = QuotientRing<A, B>
-        let a = Q(A(2))
-        let b = Q(A(3))
-        XCTAssertEqual(a * b, Q(A(2)))
-    }
-    
-    func testQuotientRingIdentity() {
-        typealias Q = QuotientRing<A, B>
-        let a = Q(A(2))
-        let e = Q.zero
-        XCTAssertEqual(e + e, e)
-        XCTAssertEqual(a + e, a)
-        XCTAssertEqual(e + a, a)
-    }
-    
-    func testQuotientRingInverse() {
-        typealias Q = QuotientRing<A, B>
-        let a = Q(A(3))
-        XCTAssertEqual(a.inverse!, Q(A(3)))
-        
-        let b = Q(A(2))
         XCTAssertNil(b.inverse)
     }
     
