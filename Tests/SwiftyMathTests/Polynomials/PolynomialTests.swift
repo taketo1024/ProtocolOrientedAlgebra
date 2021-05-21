@@ -19,23 +19,23 @@ class PolynomialTests: XCTestCase {
 
     func testInitFromInt() {
         let a = A(from: 3)
-        XCTAssertEqual(a, A(coeffs: [0: 3]))
+        XCTAssertEqual(a, A(elements: [0: 3]))
     }
     
     func testInitFromIntLiteral() {
         let a: A = 3
-        XCTAssertEqual(a, A(coeffs: [0: 3]))
+        XCTAssertEqual(a, A(elements: [0: 3]))
     }
     
     func testInitFromCoeffList() {
         let a = A(coeffs: 3, 5, -1)
-        XCTAssertEqual(a, A(coeffs: [0: 3, 1: 5, 2: -1]))
+        XCTAssertEqual(a, A(elements: [0: 3, 1: 5, 2: -1]))
     }
     
     func testProperties() {
         let a = A(coeffs: 3, 4, 0, 5)
         XCTAssertEqual(a.leadCoeff, 5)
-        XCTAssertEqual(a.leadTerm, A(coeffs: [3: 5]))
+        XCTAssertEqual(a.leadTerm, A(elements: [3: 5]))
         XCTAssertEqual(a.constTerm, A(3))
         XCTAssertEqual(a.leadExponent, 3)
         XCTAssertEqual(a.degree, 3)
@@ -44,7 +44,7 @@ class PolynomialTests: XCTestCase {
     
     func testIndeterminate() {
         let x = A.indeterminate
-        XCTAssertEqual(x, A(coeffs: [1: 1]))
+        XCTAssertEqual(x, A(elements: [1: 1]))
         XCTAssertEqual(x.description, "x")
         XCTAssertEqual(x.degree, 1)
         XCTAssertEqual(x.leadExponent, 1)
@@ -141,7 +141,7 @@ class PolynomialTests: XCTestCase {
     func testCustomIndeterminate() {
         typealias T = Polynomial<𝐙, _t>
         let t = T.indeterminate
-        XCTAssertEqual(t, T(coeffs: [1: 1]))
+        XCTAssertEqual(t, T(elements: [1: 1]))
         XCTAssertEqual(t.description, "t")
         XCTAssertEqual(t.degree, 2)
         XCTAssertEqual(t.leadExponent, 1)

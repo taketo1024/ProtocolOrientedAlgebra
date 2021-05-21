@@ -16,8 +16,8 @@ public protocol GenericPolynomialType: Ring {
     associatedtype Indeterminate: GenericPolynomialIndeterminate
     typealias Exponent = Indeterminate.Exponent
 
-    init(coeffs: [Exponent : BaseRing])
-    var coeffs: [Exponent : BaseRing] { get }
+    init(elements: [Exponent : BaseRing])
+    var elements: [Exponent : BaseRing] { get }
 }
 
 extension GenericPolynomialType {
@@ -26,25 +26,25 @@ extension GenericPolynomialType {
     }
     
     public init(_ a: BaseRing) {
-        self.init(coeffs: [.zero: a])
+        self.init(elements: [.zero: a])
     }
     
     public init(_ p: LinearCombination<MonomialAsGenerator<Indeterminate>, BaseRing>) {
-        self.init(coeffs: p.elements.mapPairs{ (x, a) in
+        self.init(elements: p.elements.mapPairs{ (x, a) in
             (x.exponent, a)
         })
     }
     
     public static var zero: Self {
-        .init(coeffs: [:])
+        .init(elements: [:])
     }
     
     public var isZero: Bool {
-        coeffs.count == 0
+        elements.count == 0
     }
     
     public static var identity: Self {
-        .init(coeffs: [.zero : .identity])
+        .init(elements: [.zero : .identity])
     }
     
     public var isIdentity: Bool {
@@ -64,19 +64,19 @@ extension GenericPolynomialType {
     }
     
     public func coeff(_ exponent: Exponent) -> BaseRing {
-        coeffs[exponent] ?? .zero
+        elements[exponent] ?? .zero
     }
     
     public func term(_ d: Exponent) -> Self {
-        Self(coeffs: [d: coeff(d)])
+        Self(elements: [d: coeff(d)])
     }
     
     public var terms: [Self] {
-        coeffs.keys.sorted().map( term(_:) )
+        elements.keys.sorted().map( term(_:) )
     }
     
     public var leadExponent: Exponent {
-        coeffs.keys.max{ (e1, e2) in degree(of: e1) < degree(of: e2) } ?? .zero
+        elements.keys.max{ (e1, e2) in degree(of: e1) < degree(of: e2) } ?? .zero
     }
     
     public var leadCoeff: BaseRing {
@@ -88,7 +88,7 @@ extension GenericPolynomialType {
     }
     
     public var tailExponent: Exponent {
-        coeffs.keys.min{ (e1, e2) in degree(of: e1) < degree(of: e2) } ?? .zero
+        elements.keys.min{ (e1, e2) in degree(of: e1) < degree(of: e2) } ?? .zero
     }
     
     public var tailCoeff: BaseRing {
@@ -116,46 +116,46 @@ extension GenericPolynomialType {
     }
     
     public var isMonomial: Bool {
-        coeffs.count <= 1
+        elements.count <= 1
     }
     
     public var isHomogeneous: Bool {
-        coeffs.keys.map { e in degree(of: e) }.isUnique
+        elements.keys.map { e in degree(of: e) }.isUnique
     }
     
     public var asLinearCombination: LinearCombination<MonomialAsGenerator<Indeterminate>, BaseRing> {
-        .init(elements: coeffs.mapPairs{ (e, a) in (.init(exponent: e), a) })
+        .init(elements: elements.mapPairs{ (e, a) in (.init(exponent: e), a) })
     }
     
     public static func + (a: Self, b: Self) -> Self {
-        .init(coeffs: a.coeffs.merging(b.coeffs, uniquingKeysWith: +))
+        .init(elements: a.elements.merging(b.elements, uniquingKeysWith: +))
     }
     
     public static prefix func - (a: Self) -> Self {
-        .init(coeffs: a.coeffs.mapValues{ -$0 })
+        .init(elements: a.elements.mapValues{ -$0 })
     }
     
     public static func * (r: BaseRing, a: Self) -> Self {
-        .init(coeffs: a.coeffs.mapValues{ r * $0 } )
+        .init(elements: a.elements.mapValues{ r * $0 } )
     }
     
     public static func * (a: Self, r: BaseRing) -> Self {
-        .init(coeffs: a.coeffs.mapValues{ $0 * r } )
+        .init(elements: a.elements.mapValues{ $0 * r } )
     }
     
     public static func * (a: Self, b: Self) -> Self {
-        var coeffs: [Exponent: BaseRing] = [:]
-        (a.coeffs * b.coeffs).forEach { (ca, cb) in
+        var elements: [Exponent: BaseRing] = [:]
+        (a.elements * b.elements).forEach { (ca, cb) in
             let (x, r) = ca
             let (y, s) = cb
-            coeffs[x + y] = coeffs[x + y, default: .zero] + r * s
+            elements[x + y] = elements[x + y, default: .zero] + r * s
         }
-        return .init(coeffs: coeffs)
+        return .init(elements: elements)
     }
     
     public var description: String {
         Format.linearCombination(
-            coeffs.sorted{ $0.key }
+            elements.sorted{ $0.key }
                 .map { (I, a) -> (String, BaseRing) in
                     (Indeterminate.descriptionOfMonomial(withExponent: I), a)
                 }
@@ -163,7 +163,7 @@ extension GenericPolynomialType {
     }
 }
 
-public struct MonomialAsGenerator<X: GenericPolynomialIndeterminate>: FreeModuleGenerator {
+public struct MonomialAsGenerator<X: GenericPolynomialIndeterminate>: LinearCombinationGenerator {
     public let exponent: X.Exponent
     
     public init(exponent e: X.Exponent) {
@@ -202,7 +202,7 @@ extension LinearCombination where R: GenericPolynomialType {
     public func flatten() -> LinearCombination<TensorGenerator<MonomialAsGenerator<R.Indeterminate>, A>, R.BaseRing> {
         typealias T = TensorGenerator<MonomialAsGenerator<R.Indeterminate>, A>
         let inflated = elements.flatMap { (a, p) in
-            p.coeffs.map { (e, r) -> (T, R.BaseRing) in
+            p.elements.map { (e, r) -> (T, R.BaseRing) in
                 (.init(exponent: e) ⊗ a, r)
             }
         }

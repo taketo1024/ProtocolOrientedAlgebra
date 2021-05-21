@@ -28,18 +28,18 @@ public protocol PolynomialType: GenericPolynomialType where Indeterminate: Polyn
 
 extension PolynomialType {
     public static var indeterminate: Self {
-        Self(coeffs: [1: .identity])
+        Self(elements: [1: .identity])
     }
     
     public var derivative: Self {
-        .init(coeffs: coeffs
+        .init(elements: elements
             .filter{ (n, _) in n != 0 }
             .mapPairs{ (n, a) in (n - 1, BaseRing(from: n) * a ) }
         )
     }
     
     public func evaluate(by x: BaseRing) -> BaseRing {
-        coeffs.sum { (n, a) in a * x.pow(n) }
+        elements.sum { (n, a) in a * x.pow(n) }
     }
 }
 
@@ -47,15 +47,15 @@ public struct Polynomial<R: Ring, X: PolynomialIndeterminate>: PolynomialType {
     public typealias BaseRing = R
     public typealias Indeterminate = X
 
-    public let coeffs: [Int: R]
-    public init(coeffs: [Int : R]) {
-        assert(coeffs.keys.allSatisfy{ $0 >= 0} )
-        self.coeffs = coeffs.exclude{ $0.value.isZero }
+    public let elements: [Int: R]
+    public init(elements: [Int : R]) {
+        assert(elements.keys.allSatisfy{ $0 >= 0} )
+        self.elements = elements.exclude{ $0.value.isZero }
     }
     
     public init(coeffs: R...) {
         let coeffs = Dictionary(pairs: coeffs.enumerated().map{ (i, a) in (i, a)})
-        self.init(coeffs: coeffs)
+        self.init(elements: coeffs)
     }
 
     public var inverse: Self? {
@@ -108,16 +108,16 @@ public struct LaurentPolynomial<R: Ring, X: PolynomialIndeterminate>: Polynomial
     public typealias Indeterminate = X
     public typealias Exponent = Int
 
-    public let coeffs: [Int: R]
-    public init(coeffs: [Int : R]) {
-        self.coeffs = coeffs.exclude{ $0.value.isZero }
+    public let elements: [Int: R]
+    public init(elements: [Int : R]) {
+        self.elements = elements.exclude{ $0.value.isZero }
     }
     
     public var inverse: Self? {
         if isMonomial && leadCoeff.isInvertible {
             let d = degree
             let a = leadCoeff
-            return .init(coeffs: [-d: a.inverse!])
+            return .init(elements: [-d: a.inverse!])
         } else {
             return nil
         }

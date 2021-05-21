@@ -78,7 +78,7 @@ class MPolynomialTests: XCTestCase {
     
     func testInitFromCoeffList() {
         // 3x²y + 2x + y + 1
-        let a = A(coeffs: [[]: 1, [1]: 2, [0, 1]: 1, [2, 1]: 3])
+        let a = A(elements: [[]: 1, [1]: 2, [0, 1]: 1, [2, 1]: 3])
         XCTAssertTrue(!a.isConst)
         XCTAssertEqual(a.constTerm, A(1))
         XCTAssertEqual(a.coeff(1), 2)
@@ -88,54 +88,54 @@ class MPolynomialTests: XCTestCase {
     }
     
     func testCoeff() {
-        let a = A(coeffs: [[1]: 2])
+        let a = A(elements: [[1]: 2])
         XCTAssertEqual(a.coeff([1]), 2)
         XCTAssertEqual(a.coeff([1, 0]), 2)
     }
     
     func testUniqueness() {
         let a = A(13)
-        let b = A(coeffs: [[0,0]: 13])
+        let b = A(elements: [[0,0]: 13])
         XCTAssertEqual(a, b)
     }
     
     func testUniqueness2() {
-        let a = A(coeffs: [[1]: 1])
-        let b = A(coeffs: [[1,0]: 1, [0,1]: 0])
+        let a = A(elements: [[1]: 1])
+        let b = A(elements: [[1,0]: 1, [0,1]: 0])
         XCTAssertEqual(a, b)
     }
     
     func testDegree() {
-        let a = A(coeffs: [.zero: 1, [1,2,3]: 2, [5,2]: 3])
+        let a = A(elements: [.zero: 1, [1,2,3]: 2, [5,2]: 3])
         XCTAssertEqual(a.leadExponent, [1,2,3])
         XCTAssertEqual(a.degree, 14)
     }
     
     func testSum() {
-        let a = A(coeffs: [[]: 1, [1]: 1, [0, 1]: 1]) // x + y + 1
-        let b = A(coeffs: [[1]: -1, [0, 1]: 2, [1, 1]: 3]) // 3xy - x + 2y
-        XCTAssertEqual(a + b, A(coeffs: [[]: 1, [0, 1]: 3, [1, 1]: 3]))
+        let a = A(elements: [[]: 1, [1]: 1, [0, 1]: 1]) // x + y + 1
+        let b = A(elements: [[1]: -1, [0, 1]: 2, [1, 1]: 3]) // 3xy - x + 2y
+        XCTAssertEqual(a + b, A(elements: [[]: 1, [0, 1]: 3, [1, 1]: 3]))
     }
 
     func testZero() {
-        let a = A(coeffs: [[]: 1, [1]: 1, [0, 1]: 1]) // x + y + 1
+        let a = A(elements: [[]: 1, [1]: 1, [0, 1]: 1]) // x + y + 1
         XCTAssertEqual(a + A.zero, a)
         XCTAssertEqual(A.zero + a, a)
     }
 
     func testNeg() {
-        let a = A(coeffs: [[]: 1, [1]: 1, [0, 1]: 1])
-        XCTAssertEqual(-a, A(coeffs: [[]: -1, [1]: -1, [0, 1]: -1]))
+        let a = A(elements: [[]: 1, [1]: 1, [0, 1]: 1])
+        XCTAssertEqual(-a, A(elements: [[]: -1, [1]: -1, [0, 1]: -1]))
     }
 
     func testMul() {
-        let a = A(coeffs: [[1]: 1, [0, 1]: 1]) // x + y
-        let b = A(coeffs: [[1]: 2, [0, 1]: -1]) // 2x - y
-        XCTAssertEqual(a * b, A(coeffs: [[2]: 2, [1, 1]: 1, [0, 2]: -1]))
+        let a = A(elements: [[1]: 1, [0, 1]: 1]) // x + y
+        let b = A(elements: [[1]: 2, [0, 1]: -1]) // 2x - y
+        XCTAssertEqual(a * b, A(elements: [[2]: 2, [1, 1]: 1, [0, 2]: -1]))
     }
 
     func testId() {
-        let a = A(coeffs: [[]: 1, [1]: 1, [0, 1]: 1])
+        let a = A(elements: [[]: 1, [1]: 1, [0, 1]: 1])
         let e = A.identity
         XCTAssertEqual(a * e, a)
         XCTAssertEqual(e * a, a)
@@ -148,12 +148,12 @@ class MPolynomialTests: XCTestCase {
         let b = A(3)
         XCTAssertNil(b.inverse)
 
-        let c = A(coeffs: [[]: 1, [1]: 1, [0, 1]: 1])
+        let c = A(elements: [[]: 1, [1]: 1, [0, 1]: 1])
         XCTAssertNil(c.inverse)
     }
 
     func testEvaluate() {
-        let a = A(coeffs: [[]: 2, [1]: -1, [0, 1]: 2, [1, 1]: 3]) // f(x,y) = 3xy - x + 2y + 2
+        let a = A(elements: [[]: 2, [1]: -1, [0, 1]: 2, [1, 1]: 3]) // f(x,y) = 3xy - x + 2y + 2
         XCTAssertEqual(a.evaluate(by: 1, 2), 11)                  // f(1, 2) = 6 - 1 + 4 + 2
     }
 
@@ -165,9 +165,9 @@ class MPolynomialTests: XCTestCase {
     
     func testSymmetricPolynomial() {
         XCTAssertEqual(A.elementarySymmetricPolynomial(ofDegree: 0), A(1))
-        XCTAssertEqual(A.elementarySymmetricPolynomial(ofDegree: 1), A(coeffs: [[1]: 1, [0, 1]: 1, [0, 0, 1]: 1]))
-        XCTAssertEqual(A.elementarySymmetricPolynomial(ofDegree: 2), A(coeffs: [[1, 1]: 1, [0, 1, 1]: 1, [1, 0, 1]: 1]))
-        XCTAssertEqual(A.elementarySymmetricPolynomial(ofDegree: 3), A(coeffs: [[1, 1, 1]: 1]))
+        XCTAssertEqual(A.elementarySymmetricPolynomial(ofDegree: 1), A(elements: [[1]: 1, [0, 1]: 1, [0, 0, 1]: 1]))
+        XCTAssertEqual(A.elementarySymmetricPolynomial(ofDegree: 2), A(elements: [[1, 1]: 1, [0, 1, 1]: 1, [1, 0, 1]: 1]))
+        XCTAssertEqual(A.elementarySymmetricPolynomial(ofDegree: 3), A(elements: [[1, 1, 1]: 1]))
         XCTAssertEqual(A.elementarySymmetricPolynomial(ofDegree: 4), .zero)
     }
 }

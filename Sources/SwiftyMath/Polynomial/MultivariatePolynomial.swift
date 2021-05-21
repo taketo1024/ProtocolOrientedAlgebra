@@ -78,7 +78,7 @@ extension MultivariatePolynomialType {
         let l = Indeterminate.isFinite ? Indeterminate.numberOfIndeterminates : i + 1
         let indices = (0 ..< l).map{ $0 == i ? 1 : 0 }
         let I = MultiIndex<NumberOfIndeterminates>(indices)
-        return .init(coeffs: [I : .identity] )
+        return .init(elements: [I : .identity] )
     }
     
     public static var numberOfIndeterminates: Int {
@@ -86,7 +86,7 @@ extension MultivariatePolynomialType {
     }
     
     public static func monomial(withExponents I: Exponent) -> Self {
-        .init(coeffs: [I: .identity])
+        .init(elements: [I: .identity])
     }
     
     public func coeff(_ exponent: Int...) -> BaseRing {
@@ -95,7 +95,7 @@ extension MultivariatePolynomialType {
     
     public func evaluate(by values: [BaseRing]) -> BaseRing {
         assert(!Indeterminate.isFinite || values.count <= Self.numberOfIndeterminates)
-        return coeffs.sum { (I, a) in
+        return elements.sum { (I, a) in
             a * I.indices.enumerated().multiply{ (i, e) in values.count < i ? .zero : values[i].pow(e) }
         }
     }
@@ -109,9 +109,9 @@ public struct MultivariatePolynomial<R: Ring, xn: MultivariatePolynomialIndeterm
     public typealias BaseRing = R
     public typealias Indeterminate = xn
 
-    public let coeffs: [Exponent : R]
-    public init(coeffs: [Exponent : R]) {
-        self.coeffs = coeffs.exclude{ $0.value.isZero }
+    public let elements: [Exponent : R]
+    public init(elements: [Exponent : R]) {
+        self.elements = elements.exclude{ $0.value.isZero }
     }
     
     public var inverse: Self? {
@@ -176,7 +176,7 @@ public struct MultivariatePolynomial<R: Ring, xn: MultivariatePolynomialIndeterm
             }
         }
         
-        return .init(coeffs: Dictionary(pairs: exponents.map{ (Exponent($0), .identity) } ))
+        return .init(elements: Dictionary(pairs: exponents.map{ (Exponent($0), .identity) } ))
     }
 }
 
