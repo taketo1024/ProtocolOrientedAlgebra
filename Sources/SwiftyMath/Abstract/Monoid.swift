@@ -46,9 +46,9 @@ public extension Submonoid {
     }
 }
 
-public protocol ProductMonoidType: ProductSet, Monoid where Left: Monoid, Right: Monoid {}
+public protocol ProductMonoid: ProductSet, Monoid where Left: Monoid, Right: Monoid {}
 
-public extension ProductMonoidType {
+public extension ProductMonoid {
     static func * (a: Self, b: Self) -> Self {
         Self(a.left * b.left, a.right * b.right)
     }
@@ -66,30 +66,16 @@ public extension ProductMonoidType {
     }
 }
 
-public struct ProductMonoid<X: Monoid, Y: Monoid>: ProductMonoidType {
-    public let left: X
-    public let right: Y
-    public init(_ x: X, _ y: Y) {
-        self.left = x
-        self.right = y
-    }
-}
+extension Pair: Multiplicative, Monoid, ProductMonoid where Left: Monoid, Right: Monoid {}
 
 public protocol MonoidHomType: MapType where Domain: Monoid, Codomain: Monoid {}
 
-public struct MonoidHom<X: Monoid, Y: Monoid>: MonoidHomType {
-    public let function: (X) -> Y
-    public init(_ f: @escaping (X) -> Y) {
-        self.function = f
-    }
-}
+// MEMO: Mathematically, a map does not automatically become
+//       monoid Hom when its domain and codomain are monoids.
+extension Map: MonoidHomType where Domain: Monoid, Codomain: Monoid {}
 
-public protocol MonoidEndType: MonoidHomType, EndType {}
-
-extension MonoidHom: EndType, MonoidEndType where X == Y {}
-
-public typealias MonoidEnd<X: Monoid> = MonoidHom<X, X>
-
+public typealias MonoidHom<Domain: Monoid, Codomain: Monoid> = Map<Domain, Codomain>
+public typealias MonoidEnd<Domain: Monoid> = Map<Domain, Domain>
 
 public extension Sequence where Element: Monoid {
     func multiplyAll() -> Element {

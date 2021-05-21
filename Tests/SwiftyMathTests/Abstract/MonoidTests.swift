@@ -85,14 +85,14 @@ class MonoidTests: XCTestCase {
     }
     
     func testProductMonoidMul() {
-        typealias P = ProductMonoid<A, A>
+        typealias P = Pair<A, A>
         let a = P(A(1), A(2))
         let b = P(A(3), A(4))
         XCTAssertEqual(a * b, P(A(4), A(6)))
     }
     
     func testProductMonoidIdentity() {
-        typealias P = ProductMonoid<A, A>
+        typealias P = Pair<A, A>
         let a = P(A(1), A(2))
         let e = P.identity
         XCTAssertEqual(e * e, e)

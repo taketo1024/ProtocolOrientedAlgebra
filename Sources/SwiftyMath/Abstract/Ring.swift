@@ -89,7 +89,7 @@ public extension Ideal {
 
 public protocol MaximalIdeal: Ideal {}
 
-public protocol ProductRingType: ProductMonoidType, AdditiveProductGroupType, Ring where Left: Ring, Right: Ring {}
+public protocol ProductRingType: ProductMonoid, AdditiveProductGroupType, Ring where Left: Ring, Right: Ring {}
 
 public extension ProductRingType {
     init(from a: 𝐙) {

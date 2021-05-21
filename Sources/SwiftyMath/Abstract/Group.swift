@@ -1,24 +1,15 @@
 public protocol Group: Monoid {}
-
 public protocol Subgroup: Submonoid where Super: Group {}
 public protocol NormalSubgroup: Subgroup{}
 
-public protocol ProductGroupType: ProductMonoidType, Group where Left: Group, Right: Group {}
+public protocol ProductGroup: ProductMonoid, Group where Left: Group, Right: Group {}
+extension Pair: Group, ProductGroup where Left: Group, Right: Group {}
 
-public struct ProductGroup<X: Group, Y: Group>: ProductGroupType {
-    public let left: X
-    public let right: Y
-    public init(_ x: X, _ y: Y) {
-        self.left = x
-        self.right = y
-    }
-}
-
-public protocol QuotientGroupType: QuotientSet, Group where Base == Sub.Super {
+public protocol QuotientGroup: QuotientSet, Group where Base == Sub.Super {
     associatedtype Sub: NormalSubgroup
 }
 
-public extension QuotientGroupType {
+public extension QuotientGroup {
     static func isEquivalent(_ x: Base, _ y: Base) -> Bool {
         Sub.contains(x * y.inverse!)
     }
@@ -40,29 +31,8 @@ public extension QuotientGroupType {
     }
 }
 
-public struct QuotientGroup<G, H: NormalSubgroup>: QuotientGroupType where G == H.Super {
-    public typealias Sub = H
-    
-    private let g: G
-    public init(_ g: G) {
-        self.g = g
-    }
-    
-    public var representative: G {
-        g
-    }
-}
-
 public protocol GroupHomType: MonoidHomType where Domain: Group, Codomain: Group {}
+extension Map: GroupHomType where Domain: Group, Codomain: Group {}
 
-public struct GroupHom<X: Group, Y: Group>: GroupHomType {
-    public let function: (X) -> Y
-    public init(_ f: @escaping (X) -> Y) {
-        self.function = f
-    }
-}
-
-public protocol GroupEndType: GroupHomType, EndType {}
-
-extension GroupHom: EndType, GroupEndType where X == Y {}
-public typealias GroupEnd<X: Group> = GroupHom<X, X>
+public typealias GroupHom<X: Group, Y: Group> = Map<X, Y>
+public typealias GroupEnd<X: Group> = Map<X, X>

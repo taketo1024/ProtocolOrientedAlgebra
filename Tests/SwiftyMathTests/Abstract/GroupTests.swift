@@ -47,7 +47,6 @@ class GroupTests: XCTestCase {
         static func contains(_ a: GroupTests.A) -> Bool {
             return a.value % 3 == 0
         }
-        
     }
     
     func testMul() {
@@ -105,15 +104,15 @@ class GroupTests: XCTestCase {
         XCTAssertEqual(aInv * a, B.identity)
     }
     
-    func testProductGroupMul() {
-        typealias P = ProductGroup<A, A>
+    func testPairMul() {
+        typealias P = Pair<A, A>
         let a = P(A(1), A(2))
         let b = P(A(3), A(4))
         XCTAssertEqual(a * b, P(A(4), A(6)))
     }
     
-    func testProductGroupIdentity() {
-        typealias P = ProductGroup<A, A>
+    func testPairIdentity() {
+        typealias P = Pair<A, A>
         let a = P(A(1), A(2))
         let e = P.identity
         XCTAssertEqual(e * e, e)
@@ -121,21 +120,29 @@ class GroupTests: XCTestCase {
         XCTAssertEqual(e * a, a)
     }
     
-    func testProductGroupInverse() {
-        typealias P = ProductGroup<A, A>
+    func testPairInverse() {
+        typealias P = Pair<A, A>
         let a = P(A(3), A(4))
         XCTAssertEqual(a.inverse, P(A(-3), A(-4)))
     }
     
+    private struct Q: QuotientGroup {
+        typealias Base = A
+        typealias Sub = B
+        
+        let representative: A
+        init(_ g: A) {
+            self.representative = g
+        }
+    }
+    
     func testQuotientGroupMul() {
-        typealias Q = QuotientGroup<A, B>
         let a = Q(A(1))
         let b = Q(A(2))
         XCTAssertEqual(a * b, Q(A(0)))
     }
     
     func testQuotientGroupIdentity() {
-        typealias Q = QuotientGroup<A, B>
         let a = Q(A(1))
         let e = Q.identity
         XCTAssertEqual(e * e, e)
@@ -144,7 +151,6 @@ class GroupTests: XCTestCase {
     }
     
     func testQuotientGroupInverse() {
-        typealias Q = QuotientGroup<A, B>
         let a = Q(A(1))
         XCTAssertEqual(a.inverse, Q(A(2)))
     }
