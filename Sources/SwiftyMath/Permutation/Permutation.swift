@@ -19,7 +19,7 @@ public struct Permutation<n: SizeType>: Multiplicative, MathSet, Hashable {
     }
     
     public init<S: Sequence>(length: Int, indices: S) where S.Element == Int {
-        let table = Dictionary(pairs: indices.enumerated().map{ ($0, $1) })
+        let table = Dictionary(indices.enumerated().map{ ($0, $1) })
         self.init(length: length, table: table)
     }
     
@@ -43,7 +43,7 @@ public struct Permutation<n: SizeType>: Multiplicative, MathSet, Hashable {
     
     public var inverse: Self? {
         let inv = table.map{ (i, j) in (j, i)}
-        return .init(length: length, table: Dictionary(pairs: inv))
+        return .init(length: length, table: Dictionary(inv))
     }
     
     // memo: the number of transpositions in it's decomposition.

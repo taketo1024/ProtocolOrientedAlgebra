@@ -54,8 +54,8 @@ public extension Sequence {
         Array(self)
     }
     
-    var asDictionary: [Int: Element] {
-        Dictionary(pairs: self.enumerated().map{ (i, a) in (i, a) } )
+    func toDictionary() -> [Int: Element] {
+        Dictionary(self.enumerated().map{ (i, a) in (i, a) } )
     }
     
     static func *<S: Sequence>(s1: Self, s2: S) -> AnySequence<(Self.Element, S.Element)> {
@@ -90,14 +90,9 @@ public extension Sequence where Element: Hashable {
     func countMultiplicities() -> [Element : Int] {
         self.group{ $0 }.mapValues{ $0.count }
     }
-}
-
-public extension Sequence where Element: Comparable {
-    var range: ClosedRange<Element>? {
-        if let m = self.min(), let M = self.max() {
-            return m ... M
-        } else {
-            return nil
-        }
+    
+    func makeIndexer() -> (Element) -> Int? {
+        let dict = Dictionary(self.enumerated().map{ ($1, $0) })
+        return { dict[$0] }
     }
 }

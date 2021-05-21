@@ -186,7 +186,7 @@ extension SimpleDirectedGraph {
 </body>
 </html>
 """
-        let indexTable = Dictionary(pairs: vertices.keys.enumerated().map { ($1, $0) })
+        let indexTable = Dictionary(vertices.keys.enumerated().map { ($1, $0) })
         let rawVertices = vertices.map { (id, v) -> [String: Any] in
             v.options.merging([
                 "id": indexTable[id]!,

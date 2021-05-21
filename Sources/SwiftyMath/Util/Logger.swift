@@ -68,7 +68,7 @@ public final class Logger {
     }
     
     public func removeHandler(_ handler: FileHandle) {
-        handlers.remove(element: handler)
+        handlers.findAndRemove(element: handler)
     }
     
     public func log(level: Level = .info, _ msg: @autoclosure () -> String) {

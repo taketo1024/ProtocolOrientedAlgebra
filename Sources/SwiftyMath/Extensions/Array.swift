@@ -65,18 +65,14 @@ public extension Array {
         self.enumerated().filter{ $0.offset.isOdd  }.map{ $0.element }
     }
     
-    func toDictionary() -> [Index: Element] {
-        Dictionary(pairs: self.enumerated().map{ (i, a) in (i, a) })
-    }
-    
     static func *(a: Array, n: Int) -> Array {
-        Array<Array<Element>>(repeating: a, count: n).flatMap { $0 }
+        (0 ..< n).flatMap { _ in a }
     }
 }
 
 extension Array where Element: Equatable {
     @discardableResult
-    public mutating func remove(element: Element) -> Bool {
+    public mutating func findAndRemove(element: Element) -> Bool {
         if let i = firstIndex(of: element) {
             remove(at: i)
             return true
@@ -89,13 +85,6 @@ extension Array where Element: Equatable {
 extension Array: Comparable where Element: Comparable {
     public static func < (lhs: Array, rhs: Array) -> Bool {
         lhs.lexicographicallyPrecedes(rhs)
-    }
-}
-
-extension Array where Element: Hashable {
-    public func indexer() -> (Element) -> Int? {
-        let dict = Dictionary(pairs: self.enumerated().map{ ($1, $0) })
-        return { dict[$0] }
     }
 }
 
@@ -128,4 +117,3 @@ extension Array {
         parallelCompactMap { e in predicate(e) ? e : nil }
     }
 }
-

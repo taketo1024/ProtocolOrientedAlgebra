@@ -26,7 +26,7 @@ extension GenericPolynomialType {
     }
     
     public init(dictionaryLiteral elements: (Exponent, BaseRing)...) {
-        self.init(elements: Dictionary(pairs: elements))
+        self.init(elements: Dictionary(elements))
     }
     
     public init(_ a: BaseRing) {

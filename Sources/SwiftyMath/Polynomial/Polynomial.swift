@@ -54,7 +54,7 @@ public struct Polynomial<R: Ring, X: PolynomialIndeterminate>: PolynomialType {
     }
     
     public init(coeffs: R...) {
-        let coeffs = Dictionary(pairs: coeffs.enumerated().map{ (i, a) in (i, a)})
+        let coeffs = Dictionary(coeffs.enumerated().map{ (i, a) in (i, a)})
         self.init(elements: coeffs)
     }
 

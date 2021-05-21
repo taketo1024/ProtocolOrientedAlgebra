@@ -22,7 +22,7 @@ public protocol LinearCombinationType: Module, ExpressibleByDictionaryLiteral wh
 extension LinearCombinationType {
     public init<S: Sequence>(elements: S, generatorsAreUnique: Bool = true) where S.Element == (Generator, BaseRing) {
         if generatorsAreUnique {
-            self.init(elements: Dictionary(pairs: elements))
+            self.init(elements: Dictionary(elements))
         } else {
             let dict = elements
                 .group(by: { $0.0 })
@@ -115,7 +115,7 @@ extension LinearCombinationType {
         case 2: return summands[0] + summands[1]
         default:
             var sum = Dictionary(
-                pairs: summands.reduce(into: Set()) { (res, summand) in
+                summands.reduce(into: Set()) { (res, summand) in
                     res.formUnion(summand.elements.keys)
                 }.map { a in
                     (a, BaseRing.zero)

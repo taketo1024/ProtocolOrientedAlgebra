@@ -122,7 +122,7 @@ public struct Format {
                 if str.isEmpty {
                     str += next
                 } else if next.hasPrefix("-") {
-                    str += " - \(next.substring(1...))"
+                    str += " - \(next[1...])"
                 } else {
                     str += " + \(next)"
                 }
@@ -142,7 +142,7 @@ public struct Format {
     }
     
     public static func table<S: Sequence, T>(elements: S, default d: String = "", symbol: String = "j\\i", separator s: String = "\t", printHeaders: Bool = true) -> String where S.Element == (Int, Int, T) {
-        let dict = Dictionary(pairs: elements.map{ (i, j, t) in ([i, j], t) } )
+        let dict = Dictionary(elements.map{ (i, j, t) in ([i, j], t) } )
         if dict.isEmpty {
             return "empty"
         }

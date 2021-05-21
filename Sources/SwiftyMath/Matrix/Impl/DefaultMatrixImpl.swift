@@ -216,7 +216,7 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
             }
         }
         
-        return .init(size: (a.size.rows, b.size.cols), data: Dictionary(pairs: data))
+        return .init(size: (a.size.rows, b.size.cols), data: Dictionary(data))
     }
     
     public static func ⊕ (A: Self, B: Self) -> Self {

@@ -148,7 +148,7 @@ public struct MultivariatePolynomial<R: Ring, xn: MultivariatePolynomialIndeterm
         
         let max = indices.max() ?? 0
         return generate(deg, ArraySlice(indices)).map { list -> Self in
-            let table = Dictionary(pairs: zip(indices, list))
+            let table = Dictionary(zip(indices, list))
             let exponent = (0 ... max).map { i in
                 table[i] ?? 0
             }
@@ -166,17 +166,17 @@ public struct MultivariatePolynomial<R: Ring, xn: MultivariatePolynomialIndeterm
         }
         
         let max = indices.max() ?? 0
-        let table = indices.asDictionary.inverse!
+        let indexer = indices.makeIndexer()
         
         let exponents = (0 ..< n).choose(deg).map { list -> [Int] in
             // e.g. [0, 1, 3] -> (1, 1, 0, 1)
             let set = Set(list)
             return (0 ... max).map { i in
-                set.contains(table[i] ?? -1) ? 1 : 0
+                set.contains(indexer(i) ?? -1) ? 1 : 0
             }
         }
         
-        return .init(elements: Dictionary(pairs: exponents.map{ (Exponent($0), .identity) } ))
+        return .init(elements: Dictionary(exponents.map{ (Exponent($0), .identity) } ))
     }
 }
 

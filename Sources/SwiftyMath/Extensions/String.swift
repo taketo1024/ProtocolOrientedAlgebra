@@ -6,39 +6,23 @@
 //
 
 public extension String {
-    
-    func substring(_ r: CountableRange<Int>) -> String {
-        
-        let length = self.count
-        let fromIndex = (r.startIndex > 0) ? self.index(self.startIndex, offsetBy: r.startIndex) : self.startIndex
-        let toIndex = (length > r.endIndex) ? self.index(self.startIndex, offsetBy: r.endIndex) : self.endIndex
-        
-        if fromIndex >= self.startIndex && toIndex <= self.endIndex {
-            return String( self[fromIndex ..< toIndex] )
-        } else {
-            return self
-        }
+    subscript(_ r: CountableRange<Int>) -> Substring {
+        let from = index(startIndex, offsetBy: r.lowerBound)
+        let to   = index(startIndex, offsetBy: r.upperBound)
+        return self[from ..< to]
     }
     
-    func substring(_ r: CountableClosedRange<Int>) -> String {
-        
-        let from = r.lowerBound
-        let to = r.upperBound
-        
-        return self.substring(from ..< to + 1)
+    subscript(_ r: CountableClosedRange<Int>) -> Substring {
+        let from = index(startIndex, offsetBy: r.lowerBound)
+        let to   = index(startIndex, offsetBy: r.upperBound)
+        return self[from ... to]
     }
     
-    func substring(_ r: CountablePartialRangeFrom<Int>) -> String {
-        
-        let from = r.lowerBound
-        let to = self.count
-        
-        return self.substring(from ..< to)
+    subscript(_ r: CountablePartialRangeFrom<Int>) -> Substring {
+        self[r.lowerBound ..< self.count]
     }
     
-    func substring(_ r: PartialRangeThrough<Int>) -> String {
-        let to = r.upperBound
-        
-        return self.substring(0 ..< to)
+    subscript(_ r: PartialRangeThrough<Int>) -> Substring {
+        self[0 ..< r.upperBound]
     }
 }

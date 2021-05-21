@@ -7,12 +7,12 @@
 //
 
 public extension Dictionary {
-    init<S: Sequence>(pairs: S) where S.Element == (Key, Value) {
+    init<S: Sequence>(_ pairs: S) where S.Element == (Key, Value) {
         self.init(uniqueKeysWithValues: pairs)
     }
     
     init<S: Sequence>(keys: S, generator: (Key) -> Value) where S.Element == Key {
-        self.init(pairs: keys.map{ ($0, generator($0))} )
+        self.init(keys.map{ ($0, generator($0))} )
     }
     
     func contains(key: Key) -> Bool {
@@ -20,18 +20,18 @@ public extension Dictionary {
     }
     
     func mapKeys<K>(_ transform: (Key) -> K) -> [K : Value] {
-        Dictionary<K, Value>(pairs: self.map{ (k, v) in (transform(k), v) })
+        Dictionary<K, Value>(self.map{ (k, v) in (transform(k), v) })
     }
     
     func mapPairs<K, V>(_ transform: (Key, Value) -> (K, V)) -> [K : V] {
-        Dictionary<K, V>(pairs: self.map{ (k, v) in transform(k, v) })
+        Dictionary<K, V>(self.map{ (k, v) in transform(k, v) })
     }
     
     func exclude(_ isExcluded: (Element) throws -> Bool) rethrows -> Dictionary {
         try self.filter{ try !isExcluded($0) }
     }
     
-    func replaced(at k: Key, with v: Value) -> Dictionary {
+    func replaced(valueForKey k: Key, with v: Value) -> Dictionary {
         var a = self
         a[k] = v
         return a
@@ -57,7 +57,9 @@ public extension Dictionary {
 }
 
 public extension Dictionary where Value: Hashable {
-    var inverse: [Value : Key]? {
-        values.isUnique ? Dictionary<Value, Key>(pairs: self.map{(k, v) in (v, k)}) : nil
+    func invert() -> [Value : Key] {
+        Dictionary<Value, Key>(self.map{(k, v) in (v, k)}) { (v1, _) in
+            v1
+        }
     }
 }
