@@ -7,9 +7,57 @@
 
 import Foundation
 
-public struct Graph<VertexValue: CustomStringConvertible, EdgeValue: CustomStringConvertible> {
+public struct DirectedGraph<VertexValue: CustomStringConvertible, EdgeValue: CustomStringConvertible> {
     public typealias VertexId = Int
     public typealias Options = [String: Any]
+    
+    public private(set) var vertices: [VertexId: Vertex]
+    public var options: Options
+    private var idCounter = 0
+
+    public init(template: Template) {
+        self.init(options: template.options)
+    }
+    
+    public init(options: Options? = nil) {
+        self.vertices = [:]
+        self.options = options ?? [:]
+    }
+
+    public func vertex(id: VertexId) -> Vertex? {
+        vertices[id]
+    }
+    
+    public func addEdge(fromId: VertexId, toId: VertexId, value: EdgeValue, options: Options = [:]) {
+        guard let v = vertex(id: fromId), let w = vertex(id: toId) else {
+            return
+        }
+        v.addEdge(to: w, value: value, options: options)
+    }
+    
+    @discardableResult
+    public mutating func addVertex(value: VertexValue, options: Options = [:]) -> Vertex {
+        idCounter += 1
+        
+        let id = idCounter
+        let v = Vertex(id: id, value: value, options: options)
+        vertices[id] = v
+        return v
+    }
+    
+    public mutating func removeVertex(_ v: Vertex) {
+        v.outEdges.forEach { e in
+            v.removeEdges(to: e.target)
+        }
+        v.inEdges.forEach { e in
+            v.removeEdges(from: e.source)
+        }
+        vertices[v.id] = nil
+    }
+    
+    public func collectEdges() -> [Edge] {
+        vertices.values.flatMap { $0.outEdges }
+    }
     
     public final class Vertex: Equatable, CustomStringConvertible {
         public let id: VertexId
@@ -30,29 +78,33 @@ public struct Graph<VertexValue: CustomStringConvertible, EdgeValue: CustomStrin
             to.inEdges.append(e)
         }
         
-        public func isConnected(to: Vertex) -> Bool {
+        public func hasEdge(to: Vertex) -> Bool {
             outEdges.contains { $0.target == to }
         }
         
-        public func edge(to: Vertex) -> Edge? {
-            outEdges.first { $0.target == to }
+        public func hasEdge(from: Vertex) -> Bool {
+            from.hasEdge(to: self)
         }
         
-        public func removeEdge(to: Vertex) {
-            if let i = outEdges.firstIndex(where: { $0.target == to }) {
-                outEdges.remove(at: i)
+        public func edges(to: Vertex) -> [Edge] {
+            outEdges.filter { $0.target == to }
+        }
+        
+        public func edges(from: Vertex) -> [Edge] {
+            from.edges(to: self)
+        }
+        
+        public func removeEdges(to: Vertex) {
+            outEdges.removeAll { e in
+                e.target == to
             }
-            if let i = to.inEdges.firstIndex(where: { $0.source == self }) {
-                to.inEdges.remove(at: i)
+            to.inEdges.removeAll { e in
+                e.source == self
             }
         }
         
-        public var toVertices: [Vertex] {
-            outEdges.map{ $0.target }
-        }
-        
-        public var fromVertices: [Vertex] {
-            inEdges.map{ $0.source }
+        public func removeEdges(from: Vertex) {
+            from.removeEdges(to: self)
         }
         
         public static func == (v: Vertex, w: Vertex) -> Bool {
@@ -82,74 +134,70 @@ public struct Graph<VertexValue: CustomStringConvertible, EdgeValue: CustomStrin
         }
     }
     
-    public private(set) var vertices: [VertexId: Vertex]
-    public var options: Options
-
-    public init(options: Options = [:]) {
-        self.vertices = [:]
-        self.options = [
-            "edges": [
-                "arrows": "to"
-            ],
-            "layout": [
-                "improvedLayout": false,
-                "hierarchical": [
-                    "enabled": true,
-                    "direction": "UD",
-                    "sortMethod": "directed",
-                    "shakeTowards": "roots",
-                    "nodeSpacing": 10
-                ]
-            ]
-        ]
-    }
-    
-    public subscript(id: VertexId) -> Vertex {
-        vertices[id]!
-    }
-    
-    private var idCounter = 0
-    
-    @discardableResult
-    public mutating func addVertex(value: VertexValue, options: Options = [:]) -> Vertex {
-        idCounter += 1
+    public enum Template {
+        case hierarchical, plane
         
-        let id = idCounter
-        let v = Vertex(id: id, value: value, options: options)
-        vertices[id] = v
-        return v
-    }
-    
-    public mutating func removeVertex(_ v: Vertex) {
-        vertices[v.id] = nil
-        v.inEdges.forEach { e in
-            let u = e.source
-            u.outEdges.removeAll { $0.target == v }
-        }
-        v.outEdges.forEach { e in
-            let w = e.target
-            w.inEdges.removeAll { $0.source == v }
-        }
-    }
-    
-    public func addEdge(from v: Vertex, to w: Vertex, value: EdgeValue, options: Options = [:]) {
-        v.addEdge(to: w, value: value, options: options)
-    }
-    
-    public func edges(from v: Vertex, to w: Vertex) -> [Edge] {
-        v.outEdges.filter { e in
-            e.target == w
+        fileprivate var options: Options {
+            switch self {
+            case .hierarchical:
+                return [
+                    "edges": [
+                        "arrows": "to"
+                    ],
+                    "layout": [
+                        "improvedLayout": false,
+                        "hierarchical": [
+                            "enabled": true,
+                            "direction": "UD",
+                            "sortMethod": "directed",
+                            "shakeTowards": "roots",
+                            "nodeSpacing": 10
+                        ]
+                    ]
+                ]
+            default:
+                return [:]
+            }
         }
     }
 }
 
-extension Graph where VertexValue: Hashable {
-    public func vertex(ofValue v: VertexValue) -> Vertex? {
-        vertices.first { $0.value.value == v }?.value
+extension DirectedGraph {
+    // MEMO: ignores edge-directions.
+    public func spanningTree() -> Self {
+        var remain = Set(self.vertices.keys)
+        
+        var tree = Self()
+        for i in 1 ... vertices.count {
+            let v = self.vertex(id: i)!
+            tree.addVertex(value: v.value, options: v.options)
+        }
+        
+        func dig(_ v: Vertex) {
+            remain.remove(v.id)
+            for e in v.outEdges where remain.contains(e.target.id) {
+                let w = e.target
+                tree.addEdge(fromId: v.id, toId: w.id, value: e.value, options: e.options)
+                dig(w)
+            }
+            for e in v.inEdges where remain.contains(e.source.id) {
+                let w = e.source
+                tree.addEdge(fromId: w.id, toId: v.id, value: e.value, options: e.options)
+                dig(w)
+            }
+        }
+        
+        while !remain.isEmpty {
+            let rootId = remain.first!
+            let root = vertex(id: rootId)!
+            dig(root)
+        }
+        
+        return tree
     }
 }
 
-extension Graph {
+extension DirectedGraph {
     public func asHTML(title: String? = nil) -> String {
         let template =
 """
