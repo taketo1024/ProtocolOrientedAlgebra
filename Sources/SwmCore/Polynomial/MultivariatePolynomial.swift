@@ -42,6 +42,7 @@ extension MultivariatePolynomialIndeterminates {
 }
 
 public struct BivariatePolynomialIndeterminates<x: PolynomialIndeterminate, y: PolynomialIndeterminate>: MultivariatePolynomialIndeterminates {
+    public typealias Exponent = MultiIndex<_2>
     public typealias NumberOfIndeterminates = _2
     public static func degreeOfIndeterminate(at i: Int) -> Int {
         switch i {
@@ -60,6 +61,7 @@ public struct BivariatePolynomialIndeterminates<x: PolynomialIndeterminate, y: P
 }
 
 public struct EnumeratedPolynomialIndeterminates<x: PolynomialIndeterminate, n: SizeType>: MultivariatePolynomialIndeterminates {
+    public typealias Exponent = MultiIndex<n>
     public typealias NumberOfIndeterminates = n
     public static func degreeOfIndeterminate(at i: Int) -> Int {
         x.degree
