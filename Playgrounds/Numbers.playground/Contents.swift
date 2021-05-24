@@ -1,4 +1,4 @@
-import SwiftyMath
+import SwmCore
 
 // MARK: Integers
 

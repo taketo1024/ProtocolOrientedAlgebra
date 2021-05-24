@@ -7,7 +7,7 @@
 //
 
 import XCTest
-@testable import SwiftyMath
+@testable import SwmCore
 
 class MatrixTests: XCTestCase {
     

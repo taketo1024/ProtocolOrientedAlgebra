@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import SwiftyMath
+@testable import SwmCore
 
 class RowEliminationDataTests: XCTestCase {
     private typealias R = 𝐙

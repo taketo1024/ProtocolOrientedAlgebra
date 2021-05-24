@@ -15,7 +15,7 @@ $ swift run --repl
 ```
 
 ```
-1> import SwiftyMath
+1> import SwmCore
 2> let a: Matrix3x3<Int> = [1,2,3,4,5,6,7,8,9]
 3> a.determinant
 ```

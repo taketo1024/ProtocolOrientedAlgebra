@@ -7,7 +7,7 @@
 //
 
 import XCTest
-@testable import SwiftyMath
+@testable import SwmCore
 
 class AdditiveGroupTests: XCTestCase {
     private struct A: AdditiveGroup {

@@ -4,20 +4,20 @@
 import PackageDescription
 
 let package = Package(
-    name: "SwiftyMath",
+    name: "swm-core",
     products: [
         .library(
-            name: "SwiftyMath",
-            targets: ["SwiftyMath"]),
+            name: "SwmCore",
+            targets: ["SwmCore"]),
     ],
     dependencies: [
     ],
     targets: [
         .target(
-            name: "SwiftyMath",
+            name: "SwmCore",
             dependencies: []),
         .testTarget(
-            name: "SwiftyMathTests",
-            dependencies: ["SwiftyMath"]),
+            name: "SwmCoreTests",
+            dependencies: ["SwmCore"]),
     ]
 )

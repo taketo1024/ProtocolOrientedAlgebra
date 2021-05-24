@@ -1,17 +1,15 @@
 //
-//  SwiftyMathTests.swift
+//  F2Tests.swift
 //  SwiftyMathTests
 //
-//  Created by Taketo Sano on 2017/05/03.
-//  Copyright © 2017年 Taketo Sano. All rights reserved.
+//  Created by Taketo Sano on 2019/10/30.
 //
 
 import XCTest
-@testable import SwiftyMath
+import SwmCore
 
-class IntegerQuotientRingTests: XCTestCase {
-    
-    typealias A = IntegerQuotientRing<_4> // not a Field
+class F2Tests: XCTestCase {
+    typealias A = 𝐅₂
     
     func testIntLiteral() {
         let a: A = 2
@@ -46,7 +44,7 @@ class IntegerQuotientRingTests: XCTestCase {
     func testMul() {
         let a = A(2)
         let b = A(3)
-        XCTAssertEqual(a * b, A(2))
+        XCTAssertEqual(a * b, .zero)
     }
     
     func testId() {
@@ -63,12 +61,6 @@ class IntegerQuotientRingTests: XCTestCase {
         
         let b = A(2)
         XCTAssertNil(b.inverse)
-        
-        let c = A(3)
-        XCTAssertEqual(c.inverse!, A(3))
-
-        let o = A.zero
-        XCTAssertNil(o.inverse)
     }
     
     func testIntLiteralMul() {
@@ -85,13 +77,8 @@ class IntegerQuotientRingTests: XCTestCase {
         XCTAssertEqual(a.pow(3), A(3))
     }
     
-    func testIsField() {
-        XCTAssertFalse(IntegerQuotientRing<_4>.isField)
-        XCTAssertTrue( IntegerQuotientRing<_5>.isField)
-    }
-    
     func testAllElements() {
-        XCTAssertEqual(A.allElements, [0, 1, 2, 3])
-        XCTAssertEqual(A.countElements, 4)
+        XCTAssertEqual(A.allElements, [0, 1])
+        XCTAssertEqual(A.countElements, 2)
     }
 }

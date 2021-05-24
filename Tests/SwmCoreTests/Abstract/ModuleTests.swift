@@ -7,7 +7,7 @@
 //
 
 import XCTest
-@testable import SwiftyMath
+@testable import SwmCore
 
 class ModuleTests: XCTestCase {
     private typealias A = AsModule<𝐙>

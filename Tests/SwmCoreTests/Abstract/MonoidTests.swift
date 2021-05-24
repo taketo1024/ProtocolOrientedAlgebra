@@ -7,7 +7,7 @@
 //
 
 import XCTest
-@testable import SwiftyMath
+@testable import SwmCore
 
 class MonoidTests: XCTestCase {
     private struct A: Monoid {

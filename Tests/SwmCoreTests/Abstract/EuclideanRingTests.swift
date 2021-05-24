@@ -7,7 +7,7 @@
 //
 
 import XCTest
-@testable import SwiftyMath
+@testable import SwmCore
 
 class EuclideanRingTests: XCTestCase {
     private typealias A = 𝐙

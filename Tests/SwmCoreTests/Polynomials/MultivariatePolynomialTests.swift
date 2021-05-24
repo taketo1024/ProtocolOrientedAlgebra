@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import SwiftyMath
+@testable import SwmCore
 
 class MPolynomialTests: XCTestCase {
     struct xyz: MultivariatePolynomialIndeterminates {

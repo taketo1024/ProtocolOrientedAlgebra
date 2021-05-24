@@ -1,5 +1,5 @@
 import XCTest
-@testable import SwiftyMathTests
+@testable import SwmCoreTests
 
 XCTMain([
     testCase(SwiftyMathTests.allTests)

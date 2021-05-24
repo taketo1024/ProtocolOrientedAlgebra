@@ -6,7 +6,7 @@
 //
 
 import XCTest
-import SwiftyMath
+import SwmCore
 
 extension String: LinearCombinationGenerator {}
 
