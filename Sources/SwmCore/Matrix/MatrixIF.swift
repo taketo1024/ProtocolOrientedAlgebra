@@ -209,11 +209,6 @@ extension MatrixIF where Impl: SparseMatrixImpl {
     public var numberOfNonZeros: Int {
         impl.numberOfNonZeros
     }
-    
-    @available(*, deprecated)
-    public var nonZeroComponents: AnySequence<MatrixEntry<BaseRing>> {
-        impl.nonZeroComponents
-    }
 }
 
 // MARK: Square Matrix

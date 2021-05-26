@@ -239,10 +239,10 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
         }
     }
     
-    public var nonZeroEntries: AnyIterator<MatrixEntry<R>> {
-        AnyIterator(data.lazy.map{ (c, a) in
+    public var nonZeroEntries: AnySequence<MatrixEntry<R>> {
+        AnySequence(data.map{ (c, a) in
             (c.row, c.col, a)
-        }.makeIterator())
+        })
     }
     
     private func mapNonZeroEntries(_ f: (Int, Int, R) -> R) -> Self {
