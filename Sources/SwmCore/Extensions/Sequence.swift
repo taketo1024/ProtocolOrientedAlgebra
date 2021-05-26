@@ -78,8 +78,7 @@ public extension Sequence where Element: Hashable {
         return self.filter { bucket.insert($0).inserted }
     }
     
-    func subtract(_ b: Self) -> [Element] {
-        let set = Set(b)
+    func subtract(_ set: Set<Element>) -> [Element] {
         return self.filter{ !set.contains($0) }
     }
     
