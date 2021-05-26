@@ -173,6 +173,14 @@ public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: MathSet {
         impl.nonZeroEntries
     }
     
+    public func mapEntries(_ f: @escaping (Int, Int, BaseRing) -> BaseRing) -> Self {
+        .init(size: size, entries: entries.map{ (i, j, a) in (i, j, f(i, j, a)) })
+    }
+    
+    public func mapNonZeroEntries(_ f: @escaping (Int, Int, BaseRing) -> BaseRing) -> Self {
+        .init(size: size, entries: nonZeroEntries.map{ (i, j, a) in (i, j, f(i, j, a)) })
+    }
+    
     public var description: String {
         impl.description
     }
@@ -244,6 +252,10 @@ extension MatrixIF where m == _1 { // n: possibly anySize
         self.init(Impl.init(size: (n, 1), grid: grid))
     }
     
+    public init<S: Sequence>(size n: Int, colEntries: S) where S.Element == ColEntry<BaseRing> {
+        self.init(size: (n, 1), entries: colEntries.map{ (i, a) in MatrixEntry(i, 0, a) })
+    }
+
     public static func zero(size n: Int) -> Self {
         self.init(Impl.zero(size: (n, 1)))
     }
@@ -258,6 +270,10 @@ extension MatrixIF where m == _1 { // n: possibly anySize
         } set {
             self[index, 0] = newValue
         }
+    }
+    
+    public subscript(range: Range<Int>) -> MatrixIF<Impl, anySize, _1> {
+        submatrix(rowRange: range)
     }
     
     public static func •(_ left: Self, _ right: Self) -> BaseRing {
@@ -290,6 +306,10 @@ extension MatrixIF where n == _1 { // m: possibly anySize
         self.init(Impl.init(size: (1, m), grid: grid))
     }
     
+    public init<S: Sequence>(size m: Int, rowEntries: S) where S.Element == RowEntry<BaseRing> {
+        self.init(size: (1, m), entries: rowEntries.map{ (j, a) in MatrixEntry(0, j, a) })
+    }
+
     public static func zero(size m: Int) -> Self {
         self.init(Impl.zero(size: (1, m)))
     }
@@ -304,6 +324,10 @@ extension MatrixIF where n == _1 { // m: possibly anySize
         } set {
             self[0, index] = newValue
         }
+    }
+    
+    public subscript(range: Range<Int>) -> MatrixIF<Impl, _1, anySize> {
+        submatrix(colRange: range)
     }
     
     public static func •(_ left: Self, _ right: Self) -> BaseRing {
