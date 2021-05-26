@@ -29,6 +29,24 @@ public extension Sequence {
         try self.filter{ try !isExcluded($0) }
     }
     
+    func reduce<Result>(_ initialResult: Result, while shouldContinue: (Result, Self.Element) -> Bool, _ nextPartialResult: (Result, Self.Element) throws -> Result) rethrows -> Result {
+        var res = initialResult
+        for e in self {
+            if !shouldContinue(res, e) { break }
+            res = try nextPartialResult(res, e)
+        }
+        return res
+    }
+    
+    func reduce<Result>(into initialResult: Result, while shouldContinue: (Result, Self.Element) -> Bool, _ updateAccumulatingResult: (inout Result, Self.Element) throws -> ()) rethrows -> Result {
+        var res = initialResult
+        for e in self {
+            if !shouldContinue(res, e) { break }
+            try updateAccumulatingResult(&res, e)
+        }
+        return res
+    }
+    
     func sorted<C: Comparable>(by indexer: (Element) -> C) -> [Element] {
         self.sorted{ (e1, e2) in indexer(e1) < indexer(e2) }
     }
