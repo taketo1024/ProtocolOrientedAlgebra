@@ -45,16 +45,12 @@ extension LinearCombinationType {
         .init(elements: [:])
     }
     
-    public var isSingleTerm: Bool {
-        (elements.count == 1)
-    }
-    
     public var isGenerator: Bool {
-        isSingleTerm && elements.first!.value.isIdentity
+        elements.count == 1 && elements.first!.value.isIdentity
     }
     
     public var asGenerator: Generator? {
-        isGenerator ? elements.first.flatMap{ $0.key } : nil
+        isGenerator ? elements.first!.key : nil
     }
     
     public var generators: AnySequence<Generator> {
@@ -66,7 +62,8 @@ extension LinearCombinationType {
     }
     
     public func degree(ofTerm a: Generator) -> Int {
-        coeff(a).degree + a.degree
+        let r = coeff(a)
+        return !r.isZero ? r.degree + a.degree : 0
     }
     
     public var isHomogeneous: Bool {
@@ -89,6 +86,10 @@ extension LinearCombinationType {
     
     public var reduced: Self {
         .init(elements: elements.exclude{(_, r) in r.isZero } )
+    }
+    
+    public static func == (a: Self, b: Self) -> Bool {
+        a.elements.exclude{ $0.value.isZero } == b.elements.exclude{ $0.value.isZero }
     }
     
     public static func + (a: Self, b: Self) -> Self {
