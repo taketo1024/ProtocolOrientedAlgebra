@@ -68,7 +68,7 @@ extension LinearCombinationType {
     
     public var isHomogeneous: Bool {
         elements.compactMap{ (a, r) in
-            r.isZero ? degree(ofTerm: a) : nil
+            !r.isZero ? degree(ofTerm: a) : nil
         }.isUnique
     }
     
