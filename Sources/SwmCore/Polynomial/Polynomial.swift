@@ -57,7 +57,7 @@ public struct Polynomial<R: Ring, X: PolynomialIndeterminate>: PolynomialType {
     public let elements: [Int: R]
     public init(elements: [Int : R]) {
         assert(elements.keys.allSatisfy{ $0 >= 0} )
-        self.elements = elements.exclude{ $0.value.isZero }
+        self.elements = elements
     }
     
     public init(coeffs: R...) {
@@ -117,7 +117,7 @@ public struct LaurentPolynomial<R: Ring, X: PolynomialIndeterminate>: Polynomial
 
     public let elements: [Int: R]
     public init(elements: [Int : R]) {
-        self.elements = elements.exclude{ $0.value.isZero }
+        self.elements = elements
     }
     
     public var inverse: Self? {

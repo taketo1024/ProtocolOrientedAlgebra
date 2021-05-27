@@ -21,12 +21,16 @@ public protocol GenericPolynomialType: Ring, ExpressibleByDictionaryLiteral {
 }
 
 extension GenericPolynomialType {
-    public init(from a: 𝐙) {
-        self.init(BaseRing(from: a))
+    public init<S>(elements: S) where S: Sequence, S.Element == (Exponent, BaseRing) {
+        self.init(elements: Dictionary(elements, uniquingKeysWith: +))
     }
     
     public init(dictionaryLiteral elements: (Exponent, BaseRing)...) {
-        self.init(elements: Dictionary(elements))
+        self.init(elements: elements)
+    }
+    
+    public init(from a: 𝐙) {
+        self.init(BaseRing(from: a))
     }
     
     public init(_ a: BaseRing) {
@@ -43,16 +47,12 @@ extension GenericPolynomialType {
         .init(elements: [:])
     }
     
-    public var isZero: Bool {
-        elements.count == 0
-    }
-    
     public static var identity: Self {
         .init(elements: [.zero : .identity])
     }
     
-    public var isIdentity: Bool {
-        isMonomial && constCoeff == .identity
+    public var reduced: Self {
+        .init(elements: elements.exclude{ $0.value.isZero })
     }
     
     public var normalizingUnit: Self {
@@ -64,7 +64,10 @@ extension GenericPolynomialType {
     }
     
     public func degree(of e: Exponent) -> Int {
-        coeff(e).degree + Indeterminate.degreeOfMonomial(withExponent: e)
+        let a = coeff(e)
+        return !a.isZero
+            ? a.degree + Indeterminate.degreeOfMonomial(withExponent: e)
+            : 0
     }
     
     public func coeff(_ exponent: Exponent) -> BaseRing {
@@ -76,11 +79,15 @@ extension GenericPolynomialType {
     }
     
     public var terms: [Self] {
-        elements.keys.sorted().map( term(_:) )
+        elements.keys.sorted().compactMap {
+            let t = term($0)
+            return !t.isZero ? t : nil
+        }
     }
     
     public var leadExponent: Exponent {
-        elements.keys.max{ (e1, e2) in degree(of: e1) < degree(of: e2) } ?? .zero
+        elements.compactMap{ (e, a) in !a.isZero ? e : nil }
+            .max{ (e1, e2) in degree(of: e1) < degree(of: e2) } ?? .zero
     }
     
     public var leadCoeff: BaseRing {
@@ -92,7 +99,8 @@ extension GenericPolynomialType {
     }
     
     public var tailExponent: Exponent {
-        elements.keys.min{ (e1, e2) in degree(of: e1) < degree(of: e2) } ?? .zero
+        elements.compactMap{ (e, a) in !a.isZero ? e : nil }
+            .min{ (e1, e2) in degree(of: e1) < degree(of: e2) } ?? .zero
     }
     
     public var tailCoeff: BaseRing {
@@ -112,23 +120,30 @@ extension GenericPolynomialType {
     }
     
     public var isConst: Bool {
-        self == .zero || (isMonomial && !constTerm.isZero)
+        self == constTerm
     }
     
     public var isMonic: Bool {
         leadCoeff.isIdentity
     }
     
+    // MEMO: must be reduced to work properly.
     public var isMonomial: Bool {
         elements.count <= 1
     }
     
     public var isHomogeneous: Bool {
-        elements.keys.map { e in degree(of: e) }.isUnique
+        elements.compactMap{ (e, a) in
+            !a.isZero ? degree(of: e) : nil
+        }.isUnique
     }
     
     public var asLinearCombination: LinearCombination<BaseRing, MonomialAsGenerator<Indeterminate>> {
         .init(elements: elements.mapPairs{ (e, a) in (.init(exponent: e), a) })
+    }
+    
+    public static func == (a: Self, b: Self) -> Bool {
+        a.elements.exclude{ $0.value.isZero } == b.elements.exclude{ $0.value.isZero }
     }
     
     public static func + (a: Self, b: Self) -> Self {
@@ -148,13 +163,15 @@ extension GenericPolynomialType {
     }
     
     public static func * (a: Self, b: Self) -> Self {
-        var elements: [Exponent: BaseRing] = [:]
-        (a.elements * b.elements).forEach { (ca, cb) in
+        .init(elements: (a.elements * b.elements).map { (ca, cb) -> (Exponent, BaseRing) in
             let (x, r) = ca
             let (y, s) = cb
-            elements[x + y] = elements[x + y, default: .zero] + r * s
-        }
-        return .init(elements: elements)
+            return (x + y, r * s)
+        })
+    }
+    
+    public static func sum<S: Sequence>(_ summands: S) -> Self where S.Element == Self {
+        .init(elements: summands.flatMap{ $0.elements })
     }
     
     public var description: String {
@@ -173,7 +190,6 @@ extension GenericPolynomialType where BaseRing: ExpressibleByIntegerLiteral {
         self.init(BaseRing(integerLiteral: value))
     }
 }
-
 
 public struct MonomialAsGenerator<X: GenericPolynomialIndeterminate>: LinearCombinationGenerator {
     public let exponent: X.Exponent
