@@ -112,8 +112,8 @@ extension LinearCombinationType {
         .init(elements: summands.flatMap{ $0.elements })
     }
     
-    public func filter(_ f: (Generator) -> Bool) -> Self {
-        .init(elements: elements.filter{ (a, _) in f(a) })
+    public func filter(_ f: (Generator, BaseRing) -> Bool) -> Self {
+        .init(elements: elements.filter{ (a, r) in f(a, r) })
     }
     
     public func mapGenerators<A>(_ f: (Generator) -> A) -> LinearCombination<BaseRing, A> {
