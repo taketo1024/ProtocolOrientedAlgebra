@@ -5,6 +5,13 @@
 //  Created by Taketo Sano.
 //
 
+public typealias ColVectorIF<Impl: MatrixImpl, n: SizeType> = MatrixIF<Impl, n, _1>
+public typealias RowVectorIF<Impl: MatrixImpl, m: SizeType> = MatrixIF<Impl, _1, m>
+
+public typealias AnySizeMatrixIF<Impl: MatrixImpl> = MatrixIF<Impl, anySize, anySize>
+public typealias AnySizeColVectorIF<Impl: MatrixImpl> = ColVectorIF<Impl, anySize>
+public typealias AnySizeRowVectorIF<Impl: MatrixImpl> = RowVectorIF<Impl, anySize>
+
 public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: MathSet {
     public typealias BaseRing = Impl.BaseRing
     public typealias Initializer = Impl.Initializer
@@ -161,8 +168,13 @@ public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: MathSet {
         MatrixIF<Impl, n1, m1>(impl)
     }
     
+    public var asAnySizeMatrix: AnySizeMatrixIF<Impl> {
+        `as`(AnySizeMatrixIF.self)
+    }
+    
+    @available(*, deprecated)
     public var asDynamicMatrix: MatrixIF<Impl, anySize, anySize> {
-        self.as(MatrixIF<Impl, anySize, anySize>.self)
+        asAnySizeMatrix
     }
     
     public var entries: AnySequence<MatrixEntry<BaseRing>> {
@@ -283,6 +295,10 @@ extension MatrixIF where m == _1 { // n: possibly anySize
     public var nonZeroColEntries: AnySequence<ColEntry<BaseRing>> {
         AnySequence(nonZeroEntries.lazy.map{ (i, _, a) in (i, a)})
     }
+    
+    public var asAnySizeColVector: AnySizeColVectorIF<Impl> {
+        `as`(AnySizeColVectorIF.self)
+    }
 }
 
 // MARK: RowVector
@@ -336,6 +352,10 @@ extension MatrixIF where n == _1 { // m: possibly anySize
     
     public var nonZeroRowEntries: AnySequence<RowEntry<BaseRing>> {
         AnySequence(nonZeroEntries.lazy.map{ (_, j, a) in (j, a)})
+    }
+    
+    public var asAnySizeRowVector: AnySizeRowVectorIF<Impl> {
+        `as`(AnySizeRowVectorIF.self)
     }
 }
 
