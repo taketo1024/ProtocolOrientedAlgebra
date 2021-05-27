@@ -1,6 +1,7 @@
 public protocol AdditiveGroup: MathSet {
     static var zero: Self { get }
     var isZero: Bool { get }
+    var reduced: Self { get }
     
     static func + (a: Self, b: Self) -> Self
     prefix static func -(a: Self) -> Self
@@ -11,6 +12,10 @@ public protocol AdditiveGroup: MathSet {
 public extension AdditiveGroup {
     var isZero: Bool {
         self == .zero
+    }
+    
+    var reduced: Self {
+        self
     }
     
     static func -(a: Self, b: Self) -> Self {

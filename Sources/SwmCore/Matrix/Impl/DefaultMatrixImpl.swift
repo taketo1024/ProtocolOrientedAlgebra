@@ -181,42 +181,78 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
     }
     
     public static func *(a: Self, b: Self) -> Self {
+        mulColBased(a, b)
+    }
+    
+    public static func mulRowBased(_ a: Self, _ b: Self) -> Self {
         assert(a.size.cols == b.size.rows)
         
-        //       j              k
+        //       k              j
         //                    |          |
-        //  i>|  a    *  |  j>| b   *    |
+        //  i>|  a    *  |  k>| b   *    |
         //                    |          |
         //                    | *      * |
         //                    |          |
         //
         //                         ↓
-        //                      k
+        //                      j
         //                  i>| *   *  * |
         
-        let aRows = a.data.group{ (e, _) in e.row }
+        let aRows = a.data.group{ (e, _) in e.row } // [row : [index : value]]
         let bRows = b.data.group{ (e, _) in e.row }
         
         let data =
-        Array(aRows).parallelFlatMap { (i, Ai) -> [(Coord, R)] in
-            Ai.flatMap { (e1, a) -> [(Coord, R)] in
-                let j = e1.col
-                guard let Bj = bRows[j] else {
+        Array(aRows).parallelFlatMap { (i, ai) -> [(Coord, R)] in
+            ai.flatMap { (a_idx, a) -> [(Coord, R)] in
+                let k = a_idx.col
+                guard let bk = bRows[k] else {
                     return []
                 }
-                return Bj.map { (e2, b) in
-                    let k = e2.col
-                    return ( Coord(i, k), a * b )
+                return bk.map { (b_idx, b) in
+                    let j = b_idx.col
+                    return ( Coord(i, j), a * b )
                 }
-            }
-            .group(by: { (e, _) in e.col } )
-            .compactMap { (k, list) -> (Coord, R)? in
-                let sum = list.sum { (_, c) in c }
-                return sum.isZero ? nil : (Coord(i, k), sum)
             }
         }
         
-        return .init(size: (a.size.rows, b.size.cols), data: Dictionary(data))
+        return .init(
+            size: (a.size.rows, b.size.cols),
+            data: Dictionary(data, uniquingKeysWith: +).exclude { $0.value.isZero }
+        )
+    }
+    
+    private static func mulColBased(_ a: Self, _ b: Self) -> Self {
+        assert(a.size.cols == b.size.rows)
+        
+        //      k              j        j
+        // i |  a    *  |     | |    i |*|
+        //   |          |   k |b|      | |
+        //   |  *       |  x  | |  ->  | |
+        //   |          |     |*|      |*|
+        //   |  *       |     | |      | |
+        //
+        
+        let aCols = a.data.group{ (e, _) in e.col }  // [col : [index : value]]
+        let bCols = b.data.group{ (e, _) in e.col }
+        
+        let data =
+        Array(bCols).parallelFlatMap { (j, bj) -> [(Coord, R)] in
+            bj.flatMap { (b_idx, b) -> [(Coord, R)] in
+                let k = b_idx.row
+                guard let ak = aCols[k] else {
+                    return []
+                }
+                return ak.map { (a_idx, a) in
+                    let i = a_idx.row
+                    return ( Coord(i, j), a * b )
+                }
+            }
+        }
+        
+        return .init(
+            size: (a.size.rows, b.size.cols),
+            data: Dictionary(data, uniquingKeysWith: +).exclude{ $0.value.isZero }
+        )
     }
     
     public static func ⊕ (A: Self, B: Self) -> Self {
@@ -239,10 +275,10 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
         }
     }
     
-    public var nonZeroEntries: AnyIterator<MatrixEntry<R>> {
-        AnyIterator(data.lazy.map{ (c, a) in
+    public var nonZeroEntries: AnySequence<MatrixEntry<R>> {
+        AnySequence(data.map{ (c, a) in
             (c.row, c.col, a)
-        }.makeIterator())
+        })
     }
     
     private func mapNonZeroEntries(_ f: (Int, Int, R) -> R) -> Self {

@@ -20,18 +20,11 @@ public protocol LinearCombinationType: Module, ExpressibleByDictionaryLiteral wh
 }
 
 extension LinearCombinationType {
-    public init<S: Sequence>(elements: S, generatorsAreUnique: Bool = true) where S.Element == (Generator, BaseRing) {
-        if generatorsAreUnique {
-            self.init(elements: Dictionary(elements))
-        } else {
-            let dict = elements
-                .group(by: { $0.0 })
-                .mapValues{ BaseRing.sum($0.map{ $0.1 }) }
-            self.init(elements: dict)
-        }
+    public init<S: Sequence>(elements: S) where S.Element == (Generator, BaseRing) {
+        self.init(elements: Dictionary(elements, uniquingKeysWith: +))
     }
     
-    public init<S1: Sequence, S2: Sequence>(generators: S1, coefficients: S2, generatorsAreUnique: Bool = true) where S1.Element == Generator, S2.Element == BaseRing {
+    public init<S1: Sequence, S2: Sequence>(generators: S1, coefficients: S2) where S1.Element == Generator, S2.Element == BaseRing {
         assert(generators.count >= coefficients.count)
         self.init(elements: zip(generators, coefficients))
     }
@@ -52,16 +45,12 @@ extension LinearCombinationType {
         .init(elements: [:])
     }
     
-    public var isSingleTerm: Bool {
-        (elements.count == 1)
-    }
-    
     public var isGenerator: Bool {
-        isSingleTerm && elements.first!.value.isIdentity
+        elements.count == 1 && elements.first!.value.isIdentity
     }
     
     public var asGenerator: Generator? {
-        isGenerator ? elements.first.flatMap{ $0.key } : nil
+        isGenerator ? elements.first!.key : nil
     }
     
     public var generators: AnySequence<Generator> {
@@ -73,11 +62,14 @@ extension LinearCombinationType {
     }
     
     public func degree(ofTerm a: Generator) -> Int {
-        coeff(a).degree + a.degree
+        let r = coeff(a)
+        return !r.isZero ? r.degree + a.degree : 0
     }
     
     public var isHomogeneous: Bool {
-        generators.map{ a in degree(ofTerm: a) }.isUnique
+        elements.compactMap{ (a, r) in
+            !r.isZero ? degree(ofTerm: a) : nil
+        }.isUnique
     }
     
     public func coeff(_ a: Generator) -> BaseRing {
@@ -90,6 +82,14 @@ extension LinearCombinationType {
     
     public var terms: [Self] {
         generators.map{ term($0) }
+    }
+    
+    public var reduced: Self {
+        .init(elements: elements.exclude{(_, r) in r.isZero } )
+    }
+    
+    public static func == (a: Self, b: Self) -> Bool {
+        a.elements.exclude{ $0.value.isZero } == b.elements.exclude{ $0.value.isZero }
     }
     
     public static func + (a: Self, b: Self) -> Self {
@@ -109,23 +109,11 @@ extension LinearCombinationType {
     }
     
     public static func sum<S: Sequence>(_ summands: S) -> Self where S.Element == Self {
-        var sum = Dictionary(
-            summands.reduce(into: Set()) { (res, summand) in
-                res.formUnion(summand.elements.keys)
-            }.map { a in
-                (a, BaseRing.zero)
-            }
-        )
-        for z in summands {
-            for (a, r) in z.elements {
-                sum[a] = sum[a]! + r
-            }
-        }
-        return .init(elements: sum)
+        .init(elements: summands.flatMap{ $0.elements })
     }
     
-    public func filter(_ f: (Generator) -> Bool) -> Self {
-        .init(elements: elements.filter{ (a, _) in f(a) })
+    public func filter(_ f: (Generator, BaseRing) -> Bool) -> Self {
+        .init(elements: elements.filter{ (a, r) in f(a, r) })
     }
     
     public func mapGenerators<A>(_ f: (Generator) -> A) -> LinearCombination<BaseRing, A> {
@@ -137,7 +125,7 @@ extension LinearCombinationType {
     }
     
     public func mapElements<A, R>(_ f: (Generator, BaseRing) -> (A, R)) -> LinearCombination<R, A> {
-        LinearCombination<R, A>(elements: elements.map{ (a, r) in f(a, r) }, generatorsAreUnique: false)
+        .init(elements: elements.map{ (a, r) in f(a, r)})
     }
     
     public var asLinearCombination: LinearCombination<BaseRing, Generator> {
@@ -156,14 +144,16 @@ extension LinearCombinationType where Generator: Multiplicative {
             let (y, s) = cb
             return (x * y, r * s)
         }
-        return .init(elements: elements, generatorsAreUnique: false)
+        return .init(elements: elements)
     }
 }
 
 extension ModuleHom where Domain: LinearCombinationType, Codomain: LinearCombinationType, Domain.BaseRing == Codomain.BaseRing {
     public static func linearlyExtend(_ f: @escaping (Domain.Generator) -> Codomain) -> Self {
-        ModuleHom { (m: Domain) in
-            m.isGenerator ? f(m.asGenerator!) : m.elements.sum { (a, r) in r * f(a) }
+        .init { (m: Domain) in
+            m.isGenerator
+                ? f(m.asGenerator!)
+                : m.elements.sum { (a, r) in !r.isZero ? r * f(a) : .zero }
         }
     }
     

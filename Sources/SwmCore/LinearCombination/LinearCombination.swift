@@ -11,7 +11,7 @@ public struct LinearCombination<R: Ring, A: LinearCombinationGenerator>: LinearC
     
     public let elements: [A : R]
     public init(elements: [A : R]) {
-        self.elements = elements.exclude{ $0.value.isZero }
+        self.elements = elements
     }
     
     public static var symbol: String {

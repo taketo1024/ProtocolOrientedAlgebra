@@ -113,7 +113,7 @@ public struct MultivariatePolynomial<R: Ring, xn: MultivariatePolynomialIndeterm
 
     public let elements: [Exponent : R]
     public init(elements: [Exponent : R]) {
-        self.elements = elements.exclude{ $0.value.isZero }
+        self.elements = elements
     }
     
     public var inverse: Self? {

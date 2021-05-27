@@ -136,7 +136,4 @@ extension MatrixImpl {
 
 public protocol SparseMatrixImpl: MatrixImpl {
     var numberOfNonZeros: Int { get }
-    
-    @available(*, deprecated)
-    var nonZeroComponents: AnySequence<MatrixEntry<BaseRing>> { get }
 }

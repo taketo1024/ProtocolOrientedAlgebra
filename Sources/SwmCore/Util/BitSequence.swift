@@ -64,12 +64,6 @@ public struct BitSequence: Sequence, Hashable, Comparable, ExpressibleByArrayLit
         }
     }
     
-    public func replaced(with b: Bit, at i: Int) -> Self {
-        var copy = self
-        copy[i] = b
-        return copy
-    }
-    
     public var weight: Int {
         self.sum{ Int($0.rawValue) }
     }
@@ -78,6 +72,16 @@ public struct BitSequence: Sequence, Hashable, Comparable, ExpressibleByArrayLit
         (0 ..< length).compactMap { i in
             (self[i] == 0) ? self.replaced(with: 1, at: i) : nil
         }
+    }
+    
+    public func replaced(with b: Bit, at i: Int) -> Self {
+        var copy = self
+        copy[i] = b
+        return copy
+    }
+    
+    public func concat(with b: Self) -> Self {
+        .init(intValue: intValue << b.length | b.intValue, length: length + b.length)
     }
     
     public func makeIterator() -> AnyIterator<Bit> {

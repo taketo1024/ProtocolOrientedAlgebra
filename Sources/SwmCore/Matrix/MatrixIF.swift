@@ -5,6 +5,13 @@
 //  Created by Taketo Sano.
 //
 
+public typealias ColVectorIF<Impl: MatrixImpl, n: SizeType> = MatrixIF<Impl, n, _1>
+public typealias RowVectorIF<Impl: MatrixImpl, m: SizeType> = MatrixIF<Impl, _1, m>
+
+public typealias AnySizeMatrixIF<Impl: MatrixImpl> = MatrixIF<Impl, anySize, anySize>
+public typealias AnySizeColVectorIF<Impl: MatrixImpl> = ColVectorIF<Impl, anySize>
+public typealias AnySizeRowVectorIF<Impl: MatrixImpl> = RowVectorIF<Impl, anySize>
+
 public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: MathSet {
     public typealias BaseRing = Impl.BaseRing
     public typealias Initializer = Impl.Initializer
@@ -161,8 +168,13 @@ public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: MathSet {
         MatrixIF<Impl, n1, m1>(impl)
     }
     
+    public var asAnySizeMatrix: AnySizeMatrixIF<Impl> {
+        `as`(AnySizeMatrixIF.self)
+    }
+    
+    @available(*, deprecated)
     public var asDynamicMatrix: MatrixIF<Impl, anySize, anySize> {
-        self.as(MatrixIF<Impl, anySize, anySize>.self)
+        asAnySizeMatrix
     }
     
     public var entries: AnySequence<MatrixEntry<BaseRing>> {
@@ -171,6 +183,14 @@ public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: MathSet {
     
     public var nonZeroEntries: AnySequence<MatrixEntry<BaseRing>> {
         impl.nonZeroEntries
+    }
+    
+    public func mapEntries(_ f: @escaping (Int, Int, BaseRing) -> BaseRing) -> Self {
+        .init(size: size, entries: entries.map{ (i, j, a) in (i, j, f(i, j, a)) })
+    }
+    
+    public func mapNonZeroEntries(_ f: @escaping (Int, Int, BaseRing) -> BaseRing) -> Self {
+        .init(size: size, entries: nonZeroEntries.map{ (i, j, a) in (i, j, f(i, j, a)) })
     }
     
     public var description: String {
@@ -200,11 +220,6 @@ public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: MathSet {
 extension MatrixIF where Impl: SparseMatrixImpl {
     public var numberOfNonZeros: Int {
         impl.numberOfNonZeros
-    }
-    
-    @available(*, deprecated)
-    public var nonZeroComponents: AnySequence<MatrixEntry<BaseRing>> {
-        impl.nonZeroComponents
     }
 }
 
@@ -244,6 +259,10 @@ extension MatrixIF where m == _1 { // n: possibly anySize
         self.init(Impl.init(size: (n, 1), grid: grid))
     }
     
+    public init<S: Sequence>(size n: Int, colEntries: S) where S.Element == ColEntry<BaseRing> {
+        self.init(size: (n, 1), entries: colEntries.map{ (i, a) in MatrixEntry(i, 0, a) })
+    }
+
     public static func zero(size n: Int) -> Self {
         self.init(Impl.zero(size: (n, 1)))
     }
@@ -260,6 +279,10 @@ extension MatrixIF where m == _1 { // n: possibly anySize
         }
     }
     
+    public subscript(range: Range<Int>) -> MatrixIF<Impl, anySize, _1> {
+        submatrix(rowRange: range)
+    }
+    
     public static func •(_ left: Self, _ right: Self) -> BaseRing {
         assert(left.size == right.size)
         return (0 ..< left.size.rows).sum { i in left[i] * right[i] }
@@ -271,6 +294,10 @@ extension MatrixIF where m == _1 { // n: possibly anySize
     
     public var nonZeroColEntries: AnySequence<ColEntry<BaseRing>> {
         AnySequence(nonZeroEntries.lazy.map{ (i, _, a) in (i, a)})
+    }
+    
+    public var asAnySizeColVector: AnySizeColVectorIF<Impl> {
+        `as`(AnySizeColVectorIF.self)
     }
 }
 
@@ -290,6 +317,10 @@ extension MatrixIF where n == _1 { // m: possibly anySize
         self.init(Impl.init(size: (1, m), grid: grid))
     }
     
+    public init<S: Sequence>(size m: Int, rowEntries: S) where S.Element == RowEntry<BaseRing> {
+        self.init(size: (1, m), entries: rowEntries.map{ (j, a) in MatrixEntry(0, j, a) })
+    }
+
     public static func zero(size m: Int) -> Self {
         self.init(Impl.zero(size: (1, m)))
     }
@@ -306,6 +337,10 @@ extension MatrixIF where n == _1 { // m: possibly anySize
         }
     }
     
+    public subscript(range: Range<Int>) -> MatrixIF<Impl, _1, anySize> {
+        submatrix(colRange: range)
+    }
+    
     public static func •(_ left: Self, _ right: Self) -> BaseRing {
         assert(left.size == right.size)
         return (0 ..< left.size.rows).sum { i in left[i] * right[i] }
@@ -317,6 +352,10 @@ extension MatrixIF where n == _1 { // m: possibly anySize
     
     public var nonZeroRowEntries: AnySequence<RowEntry<BaseRing>> {
         AnySequence(nonZeroEntries.lazy.map{ (_, j, a) in (j, a)})
+    }
+    
+    public var asAnySizeRowVector: AnySizeRowVectorIF<Impl> {
+        `as`(AnySizeRowVectorIF.self)
     }
 }
 
