@@ -26,8 +26,8 @@ public extension EuclideanRing {
         return (a.isZero && b.isZero) || (!a.isZero && (b % a).isZero)
     }
     
-    var matrixEliminationWeight: Int {
-        euclideanDegree
+    var computationalWeight: Double {
+        Double(euclideanDegree)
     }
 }
 

@@ -70,8 +70,8 @@ public struct RationalNumber: Field, ExpressibleByIntegerLiteral, Comparable, Ha
         lhs.p * rhs.q < rhs.p * lhs.q
     }
     
-    public var matrixEliminationWeight: Int {
-        isZero ? 0 : max(p.abs, q)
+    public var computationalWeight: Double {
+        isZero ? 0 : Double(max(p.abs, q))
     }
     
     public var description: String {

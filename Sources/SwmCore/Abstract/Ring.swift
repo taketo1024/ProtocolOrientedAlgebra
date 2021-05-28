@@ -5,7 +5,7 @@ public protocol Ring: AdditiveGroup, Monoid {
     var normalized: Self { get }
     var degree: Int { get }
     static var isField: Bool { get }
-    var matrixEliminationWeight: Int { get } // used for matrix elimination
+    var computationalWeight: Double { get } // used for matrix elimination
 }
 
 public extension Ring {
@@ -33,12 +33,12 @@ public extension Ring {
         0
     }
     
-    var matrixEliminationWeight: Int {
-        isZero ? 0 : 1
-    }
-    
     static var isField: Bool {
         false
+    }
+    
+    var computationalWeight: Double {
+        isZero ? 0 : 1
     }
 }
 
