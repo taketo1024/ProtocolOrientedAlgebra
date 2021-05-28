@@ -108,12 +108,16 @@ public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: MathSet {
         .init(impl.stack(B.impl))
     }
     
-    public func permuteRows(by σ: Permutation<n>) -> Self {
-        .init(impl.permuteRows(by: σ.asDynamic))
+    public func permuteRows(by p: Permutation<n>) -> Self {
+        .init(impl.permuteRows(by: p.asDynamic))
     }
     
-    public func permuteCols(by σ: Permutation<m>) -> Self {
-        .init(impl.permuteCols(by: σ.asDynamic))
+    public func permuteCols(by q: Permutation<m>) -> Self {
+        .init(impl.permuteCols(by: q.asDynamic))
+    }
+    
+    public func permute(rowsBy p: Permutation<n>, colsBy q: Permutation<m>) -> Self {
+        .init(impl.permute(rowsBy: p.asDynamic, colsBy: q.asDynamic))
     }
     
     public func serialize() -> [BaseRing] {
