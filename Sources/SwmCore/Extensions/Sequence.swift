@@ -51,6 +51,14 @@ public extension Sequence {
         self.sorted{ (e1, e2) in indexer(e1) < indexer(e2) }
     }
     
+    func max<C: Comparable>(by indexer: (Element) -> C) -> Element? {
+        self.max{ (e1, e2) in indexer(e1) < indexer(e2) }
+    }
+    
+    func min<C: Comparable>(by indexer: (Element) -> C) -> Element? {
+        self.min{ (e1, e2) in indexer(e1) < indexer(e2) }
+    }
+    
     func group<U: Hashable>(by keyGenerator: (Element) -> U) -> [U: [Element]] {
         Dictionary(grouping: self, by: keyGenerator)
     }
