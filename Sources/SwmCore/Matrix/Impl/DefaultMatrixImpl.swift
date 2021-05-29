@@ -176,6 +176,9 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
         mulColBased(a, b)
     }
     
+    @_specialize(where R == 𝐙)
+    @_specialize(where R == 𝐐)
+    @_specialize(where R == 𝐅₂)
     public static func mulRowBased(_ a: Self, _ b: Self) -> Self {
         assert(a.size.cols == b.size.rows)
         
@@ -213,6 +216,9 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
         )
     }
     
+    @_specialize(where R == 𝐙)
+    @_specialize(where R == 𝐐)
+    @_specialize(where R == 𝐅₂)
     private static func mulColBased(_ a: Self, _ b: Self) -> Self {
         assert(a.size.cols == b.size.rows)
         
