@@ -9,18 +9,22 @@ public protocol EuclideanRing: Ring {
 }
 
 public extension EuclideanRing {
+    @inlinable
     static func / (_ a: Self, b: Self) -> Self {
         (a /% b).quotient
     }
     
+    @inlinable
     static func % (_ a: Self, b: Self) -> Self {
         (a /% b).remainder
     }
     
+    @inlinable
     func divides(_ b: Self) -> Bool {
         b.isDivible(by: self)
     }
     
+    @inlinable
     func isDivible(by a: Self) -> Bool {
         let b = self
         return (a.isZero && b.isZero) || (!a.isZero && (b % a).isZero)
@@ -31,10 +35,12 @@ public extension EuclideanRing {
     }
 }
 
+@inlinable
 public func gcd<R: EuclideanRing>(_ a: R, _ b: R) -> R {
     b.isZero ? a : gcd(b, a % b)
 }
 
+@inlinable
 public func lcm<R: EuclideanRing>(_ a: R, _ b: R) -> R {
     (a * b) / gcd(a, b)
 }

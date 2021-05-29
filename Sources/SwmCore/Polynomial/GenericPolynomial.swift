@@ -170,6 +170,7 @@ extension GenericPolynomialType {
         })
     }
     
+    @inlinable
     public static func sum<S: Sequence>(_ summands: S) -> Self where S.Element == Self {
         .init(elements: summands.flatMap{ $0.elements })
     }

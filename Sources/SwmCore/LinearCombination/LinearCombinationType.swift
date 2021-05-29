@@ -41,14 +41,17 @@ extension LinearCombinationType {
         self.init(elements: z.elements)
     }
 
+    @inlinable
     public static var zero: Self {
         .init(elements: [:])
     }
     
+    @inlinable
     public var isGenerator: Bool {
         elements.count == 1 && elements.first!.value.isIdentity
     }
     
+    @inlinable
     public var asGenerator: Generator? {
         isGenerator ? elements.first!.key : nil
     }
@@ -92,22 +95,27 @@ extension LinearCombinationType {
         a.elements.exclude{ $0.value.isZero } == b.elements.exclude{ $0.value.isZero }
     }
     
+    @inlinable
     public static func + (a: Self, b: Self) -> Self {
         .init(elements: a.elements.merging(b.elements, uniquingKeysWith: +))
     }
     
+    @inlinable
     public static prefix func - (a: Self) -> Self {
         .init(elements: a.elements.mapValues{ -$0 })
     }
     
+    @inlinable
     public static func * (r: BaseRing, a: Self) -> Self {
         .init(elements: a.elements.mapValues{ r * $0 } )
     }
     
+    @inlinable
     public static func * (a: Self, r: BaseRing) -> Self {
         .init(elements: a.elements.mapValues{ $0 * r } )
     }
     
+    @inlinable
     public static func sum<S: Sequence>(_ summands: S) -> Self where S.Element == Self {
         .init(elements: summands.flatMap{ $0.elements })
     }

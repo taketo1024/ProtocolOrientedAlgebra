@@ -109,6 +109,7 @@ public extension MapType {
         Map(function)
     }
     
+    @inlinable
     func callAsFunction(_ x: Domain) -> Codomain {
         function(x)
     }

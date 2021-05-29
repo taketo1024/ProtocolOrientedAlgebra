@@ -9,34 +9,42 @@ public protocol Ring: AdditiveGroup, Monoid {
 }
 
 public extension Ring {
+    @inlinable
     static var zero: Self {
         Self(from: 0)
     }
     
+    @inlinable
     static var identity: Self {
         Self(from: 1)
     }
     
+    @inlinable
     var normalizingUnit: Self {
         .identity
     }
     
+    @inlinable
     var normalized: Self {
         normalizingUnit * self
     }
     
+    @inlinable
     var isNormalized: Bool {
         normalizingUnit.isIdentity
     }
     
+    @inlinable
     var degree: Int {
         0
     }
     
+    @inlinable
     static var isField: Bool {
         false
     }
     
+    @inlinable
     var computationalWeight: Double {
         isZero ? 0 : 1
     }

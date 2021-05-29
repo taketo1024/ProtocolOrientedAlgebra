@@ -12,10 +12,12 @@ public protocol Monoid: MathSet, Multiplicative {
 }
 
 public extension Monoid {
+    @inlinable
     var isIdentity: Bool {
         return self == .identity
     }
     
+    @inlinable
     var isInvertible: Bool {
         inverse != nil
     }
@@ -31,18 +33,21 @@ public extension Monoid {
         }
     }
     
+    @inlinable
     static func multiply<S: Sequence>(_ elements: S) -> Self where S.Element == Self {
         elements.reduce(.identity){ (res, e) in res * e }
     }
 }
 
 public extension Sequence where Element: Monoid {
+    @inlinable
     func multiply() -> Element {
         Element.multiply(self)
     }
 }
 
 public extension Sequence {
+    @inlinable
     func multiply<M: Monoid>(mapping f: (Element) -> M) -> M {
         M.multiply( map(f) )
     }
