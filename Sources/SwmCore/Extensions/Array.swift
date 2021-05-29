@@ -9,6 +9,7 @@
 import Foundation
 
 public extension Array {
+    @inlinable
     static var empty: Array {
         []
     }
