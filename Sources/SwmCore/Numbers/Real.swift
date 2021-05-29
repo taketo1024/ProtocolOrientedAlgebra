@@ -13,7 +13,7 @@ extension RealNumber: Field {
     }
     
     public init(_ r: 𝐐) {
-        self.init(Double(r.p) / Double(r.q))
+        self.init(Double(r.numerator) / Double(r.denominator))
     }
     
     public static var zero: 𝐑 {
