@@ -7,7 +7,7 @@
 
 public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
     public typealias BaseRing = R
-    private typealias Data = [Coord : R]
+    fileprivate typealias Data = [Index : R]
     
     public var size: (rows: Int, cols: Int)
     private var data: Data
@@ -27,7 +27,7 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
             assert( 0 <= i && i < size.0 )
             assert( 0 <= j && j < size.1 )
             if !a.isZero {
-                data[Coord(i, j)] = a
+                data[Index(i, j)] = a
             }
         }
         self.init(size: size, data: data)
@@ -35,9 +35,9 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
 
     public subscript(i: Int, j: Int) -> R {
         get {
-            data[i, j] ?? .zero
+            data[Index(i, j)] ?? .zero
         } set {
-            data[i, j] = (newValue.isZero) ? nil : newValue
+            data[Index(i, j)] = (newValue.isZero) ? nil : newValue
         }
     }
     
@@ -45,8 +45,8 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
         data.count
     }
     
-    public var nonZeroComponents: AnySequence<(row: Int, col: Int, value: R)> {
-        AnySequence( data.lazy.map{ (c, a) -> MatrixEntry<R> in (c.row, c.col, a) } )
+    public var nonZeroEntries: AnySequence<MatrixEntry<R>> {
+        AnySequence(NonZeroEntryIterator(data))
     }
     
     public var isZero: Bool {
@@ -197,15 +197,15 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
         let bRows = b.data.group{ (e, _) in e.row }
         
         let data =
-        Array(aRows).parallelFlatMap { (i, ai) -> [(Coord, R)] in
-            ai.flatMap { (a_idx, a) -> [(Coord, R)] in
+        Array(aRows).parallelFlatMap { (i, ai) -> [(Index, R)] in
+            ai.flatMap { (a_idx, a) -> [(Index, R)] in
                 let k = a_idx.col
                 guard let bk = bRows[k] else {
                     return []
                 }
                 return bk.map { (b_idx, b) in
                     let j = b_idx.col
-                    return ( Coord(i, j), a * b )
+                    return ( Index(i, j), a * b )
                 }
             }
         }
@@ -234,15 +234,15 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
         let bCols = b.data.group{ (e, _) in e.col }
         
         let data =
-        Array(bCols).parallelFlatMap { (j, bj) -> [(Coord, R)] in
-            bj.flatMap { (b_idx, b) -> [(Coord, R)] in
+        Array(bCols).parallelFlatMap { (j, bj) -> [(Index, R)] in
+            bj.flatMap { (b_idx, b) -> [(Index, R)] in
                 let k = b_idx.row
                 guard let ak = aCols[k] else {
                     return []
                 }
                 return ak.map { (a_idx, a) in
                     let i = a_idx.row
-                    return ( Coord(i, j), a * b )
+                    return ( Index(i, j), a * b )
                 }
             }
         }
@@ -273,12 +273,6 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
         }
     }
     
-    public var nonZeroEntries: AnySequence<MatrixEntry<R>> {
-        AnySequence(data.map{ (c, a) in
-            (c.row, c.col, a)
-        })
-    }
-    
     private func mapNonZeroEntries(_ f: (Int, Int, R) -> R) -> Self {
         .init(size: size) { setEntry in
             nonZeroEntries.forEach { (i, j, a) in setEntry(i, j, f(i, j, a)) }
@@ -293,25 +287,29 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
         }
         return grid
     }
-}
-
-fileprivate struct Coord: Hashable {
-    let row, col: Int
-    init(_ row: Int, _ col: Int) {
-        self.row = row
-        self.col = col
+    
+    fileprivate struct Index: Hashable {
+        let row, col: Int
+        init(_ row: Int, _ col: Int) {
+            self.row = row
+            self.col = col
+        }
     }
-    var tuple: (Int, Int) {
-        (row, col)
-    }
-}
-
-fileprivate extension Dictionary where Key == Coord {
-    subscript(_ i: Int, _ j: Int) -> Value? {
-        get {
-            self[Coord(i, j)]
-        } set {
-            self[Coord(i, j)] = newValue
+    
+    fileprivate struct NonZeroEntryIterator: Sequence, IteratorProtocol {
+        typealias Element = MatrixEntry<R>
+        
+        var itr: Data.Iterator
+        init(_ data: Data) {
+            self.itr = data.makeIterator()
+        }
+        
+        mutating func next() -> MatrixEntry<R>? {
+            if let (idx, a) = itr.next() {
+                return (idx.row, idx.col, a)
+            } else {
+                return nil
+            }
         }
     }
 }
