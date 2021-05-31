@@ -126,7 +126,7 @@ public struct LaurentPolynomial<R: Ring, X: PolynomialIndeterminate>: Polynomial
     
     public var inverse: Self? {
         if isMonomial && leadCoeff.isInvertible {
-            let d = degree
+            let d = leadExponent
             let a = leadCoeff
             return .init(elements: [-d: a.inverse!])
         } else {

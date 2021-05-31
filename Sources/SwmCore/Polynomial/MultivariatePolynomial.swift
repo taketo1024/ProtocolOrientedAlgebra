@@ -216,7 +216,7 @@ public struct MultivariateLaurentPolynomial<R: Ring, xn: MultivariatePolynomialI
     
     public var inverse: Self? {
         if isMonomial && leadCoeff.isInvertible {
-            let d = degree
+            let d = leadExponent
             let a = leadCoeff
             return .init(elements: [-d: a.inverse!])
         } else {
