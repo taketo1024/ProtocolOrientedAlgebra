@@ -36,10 +36,6 @@ public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: MathSet {
         self.init(Impl(size: size, entries: entries))
     }
     
-    public init<OtherImpl>(_ other: MatrixIF<OtherImpl, n, m>) where OtherImpl.BaseRing == BaseRing {
-        self.init(Impl.init(size: other.size, grid: other.serialize()))
-    }
-    
     public static func zero(size: MatrixSize) -> Self {
         self.init(Impl.zero(size: size))
     }
@@ -179,6 +175,11 @@ public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: MathSet {
     @available(*, deprecated)
     public var asDynamicMatrix: MatrixIF<Impl, anySize, anySize> {
         asAnySizeMatrix
+    }
+    
+    public func convert<OtherImpl, n1, m1>(to type: MatrixIF<OtherImpl, n1, m1>.Type) -> MatrixIF<OtherImpl, n1, m1>
+    where OtherImpl.BaseRing == BaseRing {
+        .init(OtherImpl.init(size: size, entries: nonZeroEntries))
     }
     
     public var entries: AnySequence<MatrixEntry<BaseRing>> {
