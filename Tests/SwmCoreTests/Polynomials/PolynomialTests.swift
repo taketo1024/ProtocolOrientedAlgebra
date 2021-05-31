@@ -139,7 +139,7 @@ class PolynomialTests: XCTestCase {
         let a = B(coeffs: 1, 2, 1)
         let b = B(coeffs: 3, 2)
         XCTAssertEqual(a.computationalWeight, 3)
-        XCTAssertEqual(b.computationalWeight, 2)
+        XCTAssertEqual(b.computationalWeight, 4)
     }
     
     struct _t: PolynomialIndeterminate {
