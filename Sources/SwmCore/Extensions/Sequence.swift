@@ -6,6 +6,8 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
+import Algorithms
+
 public extension Sequence {
     @inlinable
     var isEmpty: Bool {
@@ -93,12 +95,8 @@ public extension Sequence {
         Dictionary(self.enumerated().map{ (i, a) in (i, a) } )
     }
     
-    static func *<S: Sequence>(s1: Self, s2: S) -> AnySequence<(Self.Element, S.Element)> {
-        typealias X = Self.Element
-        typealias Y = S.Element
-        return AnySequence(s1.lazy.flatMap{ (x) -> [(X, Y)] in
-            s2.lazy.map{ (y) -> (X, Y) in (x, y) }
-        })
+    static func *<S: Sequence>(s1: Self, s2: S) -> Product2<Self, S> {
+        product(s1, s2)
     }
 }
 

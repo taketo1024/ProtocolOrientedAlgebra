@@ -11,11 +11,17 @@ let package = Package(
             targets: ["SwmCore"]),
     ],
     dependencies: [
+        .package(
+            url: "https://github.com/apple/swift-algorithms.git",
+            from: "0.2.0"
+        )
     ],
     targets: [
         .target(
             name: "SwmCore",
-            dependencies: []),
+            dependencies: [
+                .product(name: "Algorithms", package: "swift-algorithms"),
+            ]),
         .testTarget(
             name: "SwmCoreTests",
             dependencies: ["SwmCore"]),
