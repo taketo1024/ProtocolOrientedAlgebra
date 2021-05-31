@@ -30,9 +30,11 @@ public protocol MatrixImpl: CustomStringConvertible {
     func submatrix(rowRange: CountableRange<Int>,  colRange: CountableRange<Int>) -> Self
     func concat(_ B: Self) -> Self
     func stack(_ B: Self) -> Self
-    func permuteRows(by σ: Permutation<anySize>) -> Self
-    func permuteCols(by σ: Permutation<anySize>) -> Self
     
+    func permuteRows(by p: Permutation<anySize>) -> Self
+    func permuteCols(by q: Permutation<anySize>) -> Self
+    func permute(rowsBy p: Permutation<anySize>, colsBy q: Permutation<anySize>) -> Self
+
     static func ==(a: Self, b: Self) -> Bool
     static func +(a: Self, b: Self) -> Self
     static prefix func -(a: Self) -> Self
@@ -111,6 +113,14 @@ extension MatrixImpl {
                 return a.isZero ? nil : (i, j, a)
             }
         })
+    }
+    
+    public func permuteRows(by p: Permutation<anySize>) -> Self {
+        permute(rowsBy: p, colsBy: .identity(length: size.cols))
+    }
+    
+    public func permuteCols(by q: Permutation<anySize>) -> Self {
+        permute(rowsBy: .identity(length: size.rows), colsBy: q)
     }
 
     public var description: String {

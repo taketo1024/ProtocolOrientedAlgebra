@@ -5,40 +5,48 @@ public protocol Ring: AdditiveGroup, Monoid {
     var normalized: Self { get }
     var degree: Int { get }
     static var isField: Bool { get }
-    var matrixEliminationWeight: Int { get } // used for matrix elimination
+    var computationalWeight: Double { get } // used for matrix elimination
 }
 
 public extension Ring {
+    @inlinable
     static var zero: Self {
         Self(from: 0)
     }
     
+    @inlinable
     static var identity: Self {
         Self(from: 1)
     }
     
+    @inlinable
     var normalizingUnit: Self {
         .identity
     }
     
+    @inlinable
     var normalized: Self {
         normalizingUnit * self
     }
     
+    @inlinable
     var isNormalized: Bool {
         normalizingUnit.isIdentity
     }
     
+    @inlinable
     var degree: Int {
         0
     }
     
-    var matrixEliminationWeight: Int {
-        isZero ? 0 : 1
-    }
-    
+    @inlinable
     static var isField: Bool {
         false
+    }
+    
+    @inlinable
+    var computationalWeight: Double {
+        isZero ? 0 : 1
     }
 }
 

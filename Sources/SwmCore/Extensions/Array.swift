@@ -9,16 +9,14 @@
 import Foundation
 
 public extension Array {
+    @inlinable
     static var empty: Array {
         []
     }
     
+    @inlinable
     func count(where predicate: (Element) -> Bool) -> Int {
-        var c = 0
-        for e in self where predicate(e) {
-            c += 1
-        }
-        return c
+        reduce(into: 0) { predicate($1) ? $0 += 1 : () }
     }
     
     func with(_ s: (inout Array) -> Void) -> Array {

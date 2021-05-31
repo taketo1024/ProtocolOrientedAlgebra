@@ -35,7 +35,7 @@ extension MultivariatePolynomialIndeterminates {
     
     public static func descriptionOfMonomial(withExponent e: Exponent) -> String {
         let s = e.indices.enumerated().map{ (i, d) in
-            (d > 0) ? Format.power(symbolOfIndeterminate(at: i), d) : ""
+            (d != 0) ? Format.power(symbolOfIndeterminate(at: i), d) : ""
         }.joined()
         return s.isEmpty ? "1" : s
     }
@@ -107,12 +107,15 @@ extension MultivariatePolynomialType {
     }
 }
 
+// MARK: MultivariateLaurentPolynomial
+
 public struct MultivariatePolynomial<R: Ring, xn: MultivariatePolynomialIndeterminates>: MultivariatePolynomialType {
     public typealias BaseRing = R
     public typealias Indeterminate = xn
 
     public let elements: [Exponent : R]
     public init(elements: [Exponent : R]) {
+        assert(elements.keys.allSatisfy{ e in e.indices.allSatisfy{ $0 >= 0 } })
         self.elements = elements
     }
     
@@ -199,3 +202,27 @@ extension MultivariatePolynomial where Indeterminate.NumberOfIndeterminates: Fix
 }
 
 extension MultivariatePolynomial: ExpressibleByIntegerLiteral where R: ExpressibleByIntegerLiteral {}
+
+// MARK: MultivariateLaurentPolynomial
+
+public struct MultivariateLaurentPolynomial<R: Ring, xn: MultivariatePolynomialIndeterminates>: MultivariatePolynomialType {
+    public typealias BaseRing = R
+    public typealias Indeterminate = xn
+
+    public let elements: [Exponent : R]
+    public init(elements: [Exponent : R]) {
+        self.elements = elements
+    }
+    
+    public var inverse: Self? {
+        if isMonomial && leadCoeff.isInvertible {
+            let d = leadExponent
+            let a = leadCoeff
+            return .init(elements: [-d: a.inverse!])
+        } else {
+            return nil
+        }
+    }
+}
+
+

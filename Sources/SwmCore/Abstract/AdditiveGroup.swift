@@ -10,24 +10,29 @@ public protocol AdditiveGroup: MathSet {
 }
 
 public extension AdditiveGroup {
+    @inlinable
     var isZero: Bool {
         self == .zero
     }
     
+    @inlinable
     var reduced: Self {
         self
     }
     
+    @inlinable
     static func -(a: Self, b: Self) -> Self {
         a + (-b)
     }
     
+    @inlinable
     static func sum<S: Sequence>(_ elements: S) -> Self where S.Element == Self {
         elements.reduce(.zero){ (res, e) in res + e }
     }
 }
 
 public extension Sequence where Element: AdditiveGroup {
+    @inlinable
     func sum() -> Element {
         Element.sum(self)
     }
@@ -40,6 +45,7 @@ public extension Sequence where Element: AdditiveGroup {
 }
 
 public extension Sequence {
+    @inlinable
     func sum<G: AdditiveGroup>(mapping f: (Element) -> G) -> G {
         G.sum( self.map(f) )
     }

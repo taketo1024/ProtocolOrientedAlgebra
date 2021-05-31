@@ -71,6 +71,10 @@ public struct Polynomial<R: Ring, X: PolynomialIndeterminate>: PolynomialType {
             : nil
     }
     
+    public var computationalWeight: Double {
+        isZero ? 0 : Double(leadExponent + 1) * leadCoeff.computationalWeight
+    }
+    
     public static var symbol: String {
         "\(R.symbol)[\(X.symbol)]"
     }
@@ -78,7 +82,7 @@ public struct Polynomial<R: Ring, X: PolynomialIndeterminate>: PolynomialType {
 
 extension Polynomial: EuclideanRing where R: Field {
     public var euclideanDegree: Int {
-        isZero ? 0 : 1 + leadExponent
+        isZero ? -1 : leadExponent
     }
     
     public static func /%(f: Self, g: Self) -> (quotient: Self, remainder: Self) {
@@ -122,7 +126,7 @@ public struct LaurentPolynomial<R: Ring, X: PolynomialIndeterminate>: Polynomial
     
     public var inverse: Self? {
         if isMonomial && leadCoeff.isInvertible {
-            let d = degree
+            let d = leadExponent
             let a = leadCoeff
             return .init(elements: [-d: a.inverse!])
         } else {

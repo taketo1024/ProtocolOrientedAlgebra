@@ -3,36 +3,44 @@ import Foundation
 public typealias 𝐙 = Int
 
 extension 𝐙: EuclideanRing, Randomable {
+    @inlinable
     public init(from n: 𝐙) {
         self.init(n)
     }
 
+    @inlinable
     public static var zero: 𝐙 {
         0
     }
 
+    @inlinable
     public var inverse: 𝐙? {
         (self.abs == 1) ? self : nil
     }
 
+    @inlinable
     public var normalizingUnit: 𝐙 {
         (self >= 0) ? 1 : -1
     }
 
+    @inlinable
     public var sign: 𝐙 {
         (self >  0) ? 1 :
         (self == 0) ? 0 :
                      -1
     }
 
+    @inlinable
     public var abs: 𝐙 {
         (self >= 0) ? self : -self
     }
 
+    @inlinable
     public var isEven: Bool {
         (self % 2 == 0)
     }
 
+    @inlinable
     public var isOdd: Bool {
         (self % 2 == 1)
     }
@@ -49,15 +57,18 @@ extension 𝐙: EuclideanRing, Randomable {
         }
     }
 
+    @inlinable
     public var euclideanDegree: Int {
         Swift.abs(self)
     }
     
+    @inlinable
     public static func /%(a: 𝐙, b: 𝐙) -> (quotient: 𝐙, remainder: 𝐙) {
         let q = a / b
         return (q, a - q * b)
     }
     
+    @inlinable
     public static func ./(a: 𝐙, b: 𝐙) -> 𝐐 {
         .init(a, b)
     }

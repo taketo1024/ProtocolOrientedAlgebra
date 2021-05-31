@@ -6,25 +6,32 @@
 //  Copyright © 2017年 Taketo Sano. All rights reserved.
 //
 
+import Algorithms
+
 public extension Sequence {
+    @inlinable
     var isEmpty: Bool {
         anyElement == nil
     }
     
+    @inlinable
     var anyElement: Element? {
         first { _ in true }
     }
     
+    @inlinable
     var count: Int {
         count { _ in true }
     }
     
+    @inlinable
     func count(where predicate: (Element) -> Bool) -> Int {
         self.reduce(into: 0) { (c, x) in
             if predicate(x) { c += 1 }
         }
     }
     
+    @inlinable
     func exclude(_ isExcluded: (Self.Element) throws -> Bool) rethrows -> [Self.Element] {
         try self.filter{ try !isExcluded($0) }
     }
@@ -47,10 +54,22 @@ public extension Sequence {
         return res
     }
     
+    @inlinable
     func sorted<C: Comparable>(by indexer: (Element) -> C) -> [Element] {
         self.sorted{ (e1, e2) in indexer(e1) < indexer(e2) }
     }
     
+    @inlinable
+    func max<C: Comparable>(by indexer: (Element) -> C) -> Element? {
+        self.max{ (e1, e2) in indexer(e1) < indexer(e2) }
+    }
+    
+    @inlinable
+    func min<C: Comparable>(by indexer: (Element) -> C) -> Element? {
+        self.min{ (e1, e2) in indexer(e1) < indexer(e2) }
+    }
+    
+    @inlinable
     func group<U: Hashable>(by keyGenerator: (Element) -> U) -> [U: [Element]] {
         Dictionary(grouping: self, by: keyGenerator)
     }
@@ -76,12 +95,8 @@ public extension Sequence {
         Dictionary(self.enumerated().map{ (i, a) in (i, a) } )
     }
     
-    static func *<S: Sequence>(s1: Self, s2: S) -> AnySequence<(Self.Element, S.Element)> {
-        typealias X = Self.Element
-        typealias Y = S.Element
-        return AnySequence(s1.lazy.flatMap{ (x) -> [(X, Y)] in
-            s2.lazy.map{ (y) -> (X, Y) in (x, y) }
-        })
+    static func *<S: Sequence>(s1: Self, s2: S) -> Product2<Self, S> {
+        product(s1, s2)
     }
 }
 

@@ -13,7 +13,7 @@ extension RealNumber: Field {
     }
     
     public init(_ r: 𝐐) {
-        self.init(Double(r.p) / Double(r.q))
+        self.init(Double(r.numerator) / Double(r.denominator))
     }
     
     public static var zero: 𝐑 {
@@ -34,12 +34,12 @@ extension RealNumber: Field {
         (self == 0) ? nil : 1/self
     }
     
-    public var matrixEliminationWeight: Int {
+    public var computationalWeight: Double {
         if isZero {
             return 0
         } else {
             let a = abs
-            return max(Int(a), Int(a.inverse!))
+            return max(a, a.inverse!)
         }
     }
     

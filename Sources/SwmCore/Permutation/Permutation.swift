@@ -23,16 +23,20 @@ public struct Permutation<n: SizeType>: Multiplicative, MathSet, Hashable {
         self.init(length: length, table: table)
     }
     
+    public init(length: Int, indices: Int...)  {
+        self.init(length: length, indices: indices)
+    }
+    
     public static func transposition(length: Int, indices: (Int, Int)) -> Self {
         let (i, j) = indices
         return .init(length: length, table: [i : j, j : i])
     }
     
-    public static func cyclic(length: Int, elements: [Int]) -> Self {
+    public static func cyclic(length: Int, indices: [Int]) -> Self {
         var d = [Int : Int]()
-        let l = elements.count
-        for (i, a) in elements.enumerated() {
-            d[a] = elements[(i + 1) % l]
+        let l = indices.count
+        for (p, i) in indices.enumerated() {
+            d[i] = indices[(p + 1) % l]
         }
         return .init(length: length, table: d)
     }
@@ -41,16 +45,19 @@ public struct Permutation<n: SizeType>: Multiplicative, MathSet, Hashable {
         table[i] ?? i
     }
     
+    public static func identity(length: Int) -> Self {
+        .init(length: length, table: [:])
+    }
+    
     public var inverse: Self? {
         let inv = table.map{ (i, j) in (j, i)}
         return .init(length: length, table: Dictionary(inv))
     }
     
     // memo: the number of transpositions in it's decomposition.
+    // the sign of a cyclic-perm of length l (l >= 2) is (-1)^{l - 1}
     public var signature: Int {
-        // the sign of a cyclic-perm of length l (l >= 2) is (-1)^{l - 1}
-        let decomp = cyclicDecomposition
-        return decomp.multiply { p in (-1).pow( p.table.count - 1) }
+        cyclicDecomposition.multiply { I in (-1).pow( I.count - 1 ) }
     }
     
     public static func *(a: Self, b: Self) -> Self {
@@ -70,7 +77,7 @@ public struct Permutation<n: SizeType>: Multiplicative, MathSet, Hashable {
         Permutation<m>(length: length, table: self.table)
     }
     
-    public var asDynamic: Permutation<anySize> {
+    public var asAnySize: Permutation<anySize> {
         self.as(Permutation<anySize>.self)
     }
     
@@ -92,27 +99,36 @@ public struct Permutation<n: SizeType>: Multiplicative, MathSet, Hashable {
         Map{ i in self[i] }
     }
     
-    public var cyclicDecomposition: [Self] {
-        var dict = table
-        var result: [Self] = []
+    public var cyclicDecomposition: [[Int]] {
+        typealias Indices = [Int]
         
-        while !dict.isEmpty {
-            let i = dict.keys.anyElement!
-            var c: [Int] = []
-            var x = i
+        var bucket = Set(table.keys)
+        var result: [Indices] = []
+        
+        while !bucket.isEmpty {
+            var i = bucket.first!
+            var indices: Indices = []
             
-            while !c.contains(x) {
-                c.append(x)
-                x = dict.removeValue(forKey: x)!
+            while bucket.contains(i) {
+                bucket.remove(i)
+                indices.append(i)
+                i = self[i]
             }
             
-            if c.count > 1 {
-                let p = Self.cyclic(length: length, elements: c)
-                result.append(p)
+            if indices.count > 1 {
+                result.append(indices)
             }
         }
         
         return result
+    }
+    
+    public var transpositionDecomposition: [(Int, Int)] {
+        cyclicDecomposition.flatMap { I in
+            (0 ..< I.count - 1).reversed().map { i in
+                (I[i], I[i + 1])
+            }
+        }
     }
     
     public var description: String {
@@ -143,12 +159,12 @@ extension Permutation: Monoid, Group, FiniteSet where n: FixedSizeType {
         transposition(length: n.intValue, indices: (i, j))
     }
     
-    public static func cyclic(_ elements: [Int]) -> Self {
-        cyclic(length: n.intValue, elements: elements)
+    public static func cyclic(_ indices: [Int]) -> Self {
+        cyclic(length: n.intValue, indices: indices)
     }
     
-    public static func cyclic(_ elements: Int...) -> Self {
-        cyclic(elements)
+    public static func cyclic(_ indices: Int...) -> Self {
+        cyclic(indices)
     }
 
     public static var identity: Self {
