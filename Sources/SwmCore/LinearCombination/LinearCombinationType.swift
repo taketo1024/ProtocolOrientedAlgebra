@@ -165,6 +165,7 @@ extension ModuleHom where Domain: LinearCombinationType, Codomain: LinearCombina
         }
     }
     
+    @inlinable
     public func callAsFunction(_ x: Domain.Generator) -> Codomain {
         callAsFunction(.init(x))
     }
