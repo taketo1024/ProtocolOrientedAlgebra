@@ -25,7 +25,7 @@ public enum Bit: Int8, Comparable, ExpressibleByIntegerLiteral, CustomStringConv
     }
 }
 
-public struct BitSequence: Sequence, Hashable, Comparable, ExpressibleByArrayLiteral, CustomStringConvertible, Codable {
+public struct BitSequence: Collection, Sequence, Hashable, Comparable, ExpressibleByArrayLiteral, CustomStringConvertible, Codable {
     public typealias Element = Bit
     public typealias ArrayLiteralElement = Bit
     
@@ -64,6 +64,18 @@ public struct BitSequence: Sequence, Hashable, Comparable, ExpressibleByArrayLit
         }
     }
     
+    public var startIndex: Int {
+        0
+    }
+    
+    public var endIndex: Int {
+        length
+    }
+    
+    public func index(after i: Int) -> Int {
+        i + 1
+    }
+    
     public var weight: Int {
         self.sum{ Int($0.rawValue) }
     }
@@ -82,10 +94,6 @@ public struct BitSequence: Sequence, Hashable, Comparable, ExpressibleByArrayLit
     
     public func concat(with b: Self) -> Self {
         .init(intValue: intValue << b.length | b.intValue, length: length + b.length)
-    }
-    
-    public func makeIterator() -> AnyIterator<Bit> {
-        AnyIterator((0 ..< length).lazy.map { i in self[i] }.makeIterator())
     }
     
     public static func < (lhs: Self, rhs: Self) -> Bool {
