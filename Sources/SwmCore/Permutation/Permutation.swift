@@ -81,11 +81,6 @@ public struct Permutation<n: SizeType>: Multiplicative, MathSet, Hashable {
         self.as(Permutation<anySize>.self)
     }
     
-    @available(*, deprecated)
-    public var asDynamic: Permutation<anySize> {
-        asAnySize
-    }
-    
     public var asMatrix: Matrix<𝐙, n, n> {
         asMatrix(over: 𝐙.self)
     }

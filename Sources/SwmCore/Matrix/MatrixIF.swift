@@ -105,15 +105,15 @@ public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: MathSet {
     }
     
     public func permuteRows(by p: Permutation<n>) -> Self {
-        .init(impl.permuteRows(by: p.asDynamic))
+        .init(impl.permuteRows(by: p.asAnySize))
     }
     
     public func permuteCols(by q: Permutation<m>) -> Self {
-        .init(impl.permuteCols(by: q.asDynamic))
+        .init(impl.permuteCols(by: q.asAnySize))
     }
     
     public func permute(rowsBy p: Permutation<n>, colsBy q: Permutation<m>) -> Self {
-        .init(impl.permute(rowsBy: p.asDynamic, colsBy: q.asDynamic))
+        .init(impl.permute(rowsBy: p.asAnySize, colsBy: q.asAnySize))
     }
     
     public func serialize() -> [BaseRing] {
