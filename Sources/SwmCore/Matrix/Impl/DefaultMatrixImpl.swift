@@ -53,99 +53,12 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
         data.isEmpty
     }
     
-    public var transposed: Self {
-        .init(size: (size.cols, size.rows)) { setEntry in
-            nonZeroEntries.forEach { (i, j, a) in setEntry(j, i, a) }
+    public var isIdentity: Bool {
+        data.allSatisfy { (e, a) in
+            e.row == e.col && a.isIdentity
         }
     }
     
-    public func submatrix(rowRange: CountableRange<Int>, colRange: CountableRange<Int>) -> Self {
-        let size = (rowRange.upperBound - rowRange.lowerBound, colRange.upperBound - colRange.lowerBound)
-        return .init(size: size ) { setEntry in
-            nonZeroEntries.forEach { (i, j, a) in
-                if rowRange.contains(i) && colRange.contains(j) {
-                    setEntry(i - rowRange.lowerBound, j - colRange.lowerBound, a)
-                }
-            }
-        }
-    }
-    
-    public var isInvertible: Bool {
-        isSquare && determinant.isInvertible
-    }
-    
-    public var inverse: Self? {
-        if isSquare, let dInv = determinant.inverse {
-            return .init(size: size) { setEntry in
-                ((0 ..< size.rows) * (0 ..< size.cols)).forEach { (i, j) in
-                    let a = dInv * cofactor(j, i)
-                    setEntry(i, j, a)
-                }
-            }
-        } else {
-            return nil
-        }
-    }
-    
-    public var trace: BaseRing {
-        assert(isSquare)
-        return (0 ..< size.rows).sum { i in
-            self[i, i]
-        }
-    }
-    
-    public var determinant: R {
-        assert(isSquare)
-        if size.rows == 0 {
-            return .identity
-        } else {
-            return nonZeroEntries
-                .filter{ (i, j, a) in i == 0 }
-                .sum { (_, j, a) in a * cofactor(0, j) }
-        }
-    }
-    
-    private func cofactor(_ i0: Int, _ j0: Int) -> R {
-        let ε = (-R.identity).pow(i0 + j0)
-        let minor = Self(size: (size.rows - 1, size.cols - 1)) { setEntry in
-            nonZeroEntries.forEach { (i, j, a) in
-                if i == i0 || j == j0 { return }
-                let i1 = i < i0 ? i : i - 1
-                let j1 = j < j0 ? j : j - 1
-                setEntry(i1, j1, a)
-            }
-        }
-        return ε * minor.determinant
-    }
-    
-    public func concat(_ B: Self) -> Self {
-        assert(size.rows == B.size.rows)
-        
-        let A = self
-        return .init(size: (A.size.rows, A.size.cols + B.size.cols)) { setEntry in
-            A.nonZeroEntries.forEach { (i, j, a) in setEntry(i, j, a) }
-            B.nonZeroEntries.forEach { (i, j, a) in setEntry(i, j + A.size.cols, a) }
-        }
-    }
-    
-    public func stack(_ B: Self) -> Self {
-        assert(size.cols == B.size.cols)
-        
-        let A = self
-        return .init(size: (A.size.rows + B.size.rows, A.size.cols)) { setEntry in
-            A.nonZeroEntries.forEach { (i, j, a) in setEntry(i, j, a) }
-            B.nonZeroEntries.forEach { (i, j, a) in setEntry(i + A.size.rows, j, a) }
-        }
-    }
-    
-    public func permute(rowsBy p: Permutation<anySize>, colsBy q: Permutation<anySize>) -> Self {
-        .init(size: size) { setEntry in
-            nonZeroEntries.forEach{ (i, j, a) in
-                setEntry(p[i], q[j], a)
-            }
-        }
-    }
-
     public static func ==(a: Self, b: Self) -> Bool {
         a.data == b.data
     }
@@ -253,39 +166,10 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
         )
     }
     
-    public static func ⊕ (A: Self, B: Self) -> Self {
-        .init(size: (A.size.rows + B.size.rows, A.size.cols + B.size.cols)) { setEntry in
-            A.nonZeroEntries.forEach { (i, j, a) in setEntry(i, j, a) }
-            B.nonZeroEntries.forEach { (i, j, a) in setEntry(i + A.size.rows, j + A.size.cols, a) }
-        }
-    }
-    
-    public static func ⊗ (A: Self, B: Self) -> Self {
-        .init(size: (A.size.rows * B.size.rows, A.size.cols * B.size.cols)) { setEntry in
-            A.nonZeroEntries.forEach { (i, j, a) in
-                B.nonZeroEntries.forEach { (k, l, b) in
-                    let p = i * B.size.rows + k
-                    let q = j * B.size.cols + l
-                    let c = a * b
-                    setEntry(p, q, c)
-                }
-            }
-        }
-    }
-    
     private func mapNonZeroEntries(_ f: (Int, Int, R) -> R) -> Self {
         .init(size: size) { setEntry in
             nonZeroEntries.forEach { (i, j, a) in setEntry(i, j, f(i, j, a)) }
         }
-    }
-    
-    public func serialize() -> [R] {
-        let (n, m) = self.size
-        var grid = Array(repeating: R.zero, count: n * m)
-        for (i, j, a) in nonZeroEntries {
-            grid[i * m + j] = a
-        }
-        return grid
     }
     
     fileprivate struct Index: Hashable {
