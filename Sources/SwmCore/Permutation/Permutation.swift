@@ -8,7 +8,7 @@
 
 public struct Permutation<n: SizeType>: Multiplicative, MathSet, Hashable {
     public let length: Int
-    private let table: [Int : Int]
+    public let table: [Int : Int]
     
     public init(length: Int, table: [Int : Int]) {
         assert(Set(table.keys) == Set(table.values))
@@ -46,6 +46,7 @@ public struct Permutation<n: SizeType>: Multiplicative, MathSet, Hashable {
         return .init(length: length, table: d)
     }
     
+    @inlinable
     public subscript(i: Int) -> Int {
         table[i] ?? i
     }
@@ -55,8 +56,11 @@ public struct Permutation<n: SizeType>: Multiplicative, MathSet, Hashable {
     }
     
     public var inverse: Self? {
-        let inv = table.map{ (i, j) in (j, i)}
-        return .init(length: length, table: Dictionary(inv))
+        .init(length: length, table: table.invert())
+    }
+    
+    public var indices: [Int] {
+        (0 ..< length).map{ self[$0] }
     }
     
     // memo: the number of transpositions in it's decomposition.
@@ -65,13 +69,17 @@ public struct Permutation<n: SizeType>: Multiplicative, MathSet, Hashable {
         cyclicDecomposition.multiply { I in (-1).pow( I.count - 1 ) }
     }
     
+    public func extended(_ n: Int) -> Permutation<anySize> {
+        .init(length: length + n, indices: indices, fillRemaining: true)
+    }
+
+    public func shifted(_ n: Int) -> Permutation<anySize> {
+        .init(length: length + n, table: table.mapPairs{ (i, j) in (i + n, j + n) } )
+    }
+    
     public static func *(a: Self, b: Self) -> Self {
         assert(a.length == b.length)
-        var d = a.table
-        for i in b.table.keys {
-            d[i] = a[b[i]]
-        }
-        return .init(length: a.length, table: d)
+        return .init(length: a.length, table: b.table.mapValues{ a[$0] }.merging(a.table, overwrite: false))
     }
     
     public static func ==(a: Self, b: Self) -> Bool {
