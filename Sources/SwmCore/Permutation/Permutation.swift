@@ -18,9 +18,14 @@ public struct Permutation<n: SizeType>: Multiplicative, MathSet, Hashable {
         self.table = table.exclude{ (k, v) in k == v }
     }
     
-    public init<S: Sequence>(length: Int, indices: S) where S.Element == Int {
-        let table = Dictionary(indices.enumerated().map{ ($0, $1) })
-        self.init(length: length, table: table)
+    public init<S: Sequence>(length: Int, indices: S, fillRemaining: Bool = false) where S.Element == Int {
+        if fillRemaining {
+            let remain = Set(0 ..< length).subtracting(indices)
+            self.init(length: length, indices: Array(indices) + remain.sorted(), fillRemaining: false)
+        } else {
+            let table = Dictionary(indices.enumerated().map{ ($0, $1) })
+            self.init(length: length, table: table)
+        }
     }
     
     public init(length: Int, indices: Int...)  {
