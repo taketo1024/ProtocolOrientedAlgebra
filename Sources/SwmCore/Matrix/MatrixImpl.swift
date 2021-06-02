@@ -5,7 +5,7 @@
 //  Created by Taketo Sano on 2019/10/04.
 //
 
-public protocol MatrixImpl: CustomStringConvertible {
+public protocol MatrixImpl: Equatable, CustomStringConvertible {
     associatedtype BaseRing: Ring
     typealias Initializer = (Int, Int, BaseRing) -> Void
     
