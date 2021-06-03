@@ -5,12 +5,16 @@
 //  Created by Taketo Sano on 2021/05/14.
 //
 
+//  Implemented with DOK (dictionary of keys) format.
+//  https://en.wikipedia.org/wiki/Sparse_matrix#Dictionary_of_keys_(DOK)
+//  Not intended for fast computation.
+
 public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
     public typealias BaseRing = R
-    fileprivate typealias Data = [Index : R]
+    public typealias Data = [Index : R]
     
     public var size: (rows: Int, cols: Int)
-    private var data: Data
+    public private(set) var data: Data
     
     private init(size: MatrixSize, data: Data) {
         assert(size.0 >= 0)
@@ -34,6 +38,7 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
     }
 
     public subscript(i: Int, j: Int) -> R {
+        @inlinable
         get {
             data[Index(i, j)] ?? .zero
         } set {
@@ -41,6 +46,7 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
         }
     }
     
+    @inlinable
     public var numberOfNonZeros: Int {
         data.count
     }
@@ -49,16 +55,19 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
         AnySequence(NonZeroEntryIterator(data))
     }
     
+    @inlinable
     public var isZero: Bool {
         data.isEmpty
     }
     
+    @inlinable
     public var isIdentity: Bool {
         data.allSatisfy { (e, a) in
             e.row == e.col && a.isIdentity
         }
     }
     
+    @inlinable
     public static func ==(a: Self, b: Self) -> Bool {
         a.data == b.data
     }
@@ -68,71 +77,32 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
         return .init(size: a.size, data: a.data.merging(b.data, uniquingKeysWith: +).exclude{ $0.value.isZero })
     }
     
+    @inlinable
     public static prefix func - (a: Self) -> Self {
         a.mapNonZeroEntries{ (_, _, a) in -a }
     }
     
+    @inlinable
     public static func -(a: Self, b: Self) -> Self {
         assert(a.size == b.size)
         return a + (-b)
     }
     
+    @inlinable
     public static func * (r: R, a: DefaultMatrixImpl<R>) -> Self {
         a.mapNonZeroEntries{ (_, _, a) in r * a }
     }
     
+    @inlinable
     public static func * (a: DefaultMatrixImpl<R>, r: R) -> Self {
         a.mapNonZeroEntries{ (_, _, a) in a * r }
     }
     
+    @_specialize(where R == 𝐙)
+    @_specialize(where R == 𝐐)
+    @_specialize(where R == 𝐅₂)
+    
     public static func *(a: Self, b: Self) -> Self {
-        mulColBased(a, b)
-    }
-    
-    @_specialize(where R == 𝐙)
-    @_specialize(where R == 𝐐)
-    @_specialize(where R == 𝐅₂)
-    public static func mulRowBased(_ a: Self, _ b: Self) -> Self {
-        assert(a.size.cols == b.size.rows)
-        
-        //       k              j
-        //                    |          |
-        //  i>|  a    *  |  k>| b   *    |
-        //                    |          |
-        //                    | *      * |
-        //                    |          |
-        //
-        //                         ↓
-        //                      j
-        //                  i>| *   *  * |
-        
-        let aRows = a.data.group{ (e, _) in e.row } // [row : [index : value]]
-        let bRows = b.data.group{ (e, _) in e.row }
-        
-        let data =
-        Array(aRows).parallelFlatMap { (i, ai) -> [(Index, R)] in
-            ai.flatMap { (a_idx, a) -> [(Index, R)] in
-                let k = a_idx.col
-                guard let bk = bRows[k] else {
-                    return []
-                }
-                return bk.map { (b_idx, b) in
-                    let j = b_idx.col
-                    return ( Index(i, j), a * b )
-                }
-            }
-        }
-        
-        return .init(
-            size: (a.size.rows, b.size.cols),
-            data: Dictionary(data, uniquingKeysWith: +).exclude { $0.value.isZero }
-        )
-    }
-    
-    @_specialize(where R == 𝐙)
-    @_specialize(where R == 𝐐)
-    @_specialize(where R == 𝐅₂)
-    private static func mulColBased(_ a: Self, _ b: Self) -> Self {
         assert(a.size.cols == b.size.rows)
         
         //      k              j        j
@@ -166,15 +136,20 @@ public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
         )
     }
     
-    private func mapNonZeroEntries(_ f: (Int, Int, R) -> R) -> Self {
+    public func mapNonZeroEntries(_ f: (Int, Int, R) -> R) -> Self {
         .init(size: size) { setEntry in
-            nonZeroEntries.forEach { (i, j, a) in setEntry(i, j, f(i, j, a)) }
+            nonZeroEntries.forEach { (i, j, a) in
+                let b = f(i, j, a)
+                if !b.isZero {
+                    setEntry(i, j, b)
+                }
+            }
         }
     }
     
-    fileprivate struct Index: Hashable {
-        let row, col: Int
-        init(_ row: Int, _ col: Int) {
+    public struct Index: Hashable {
+        public let row, col: Int
+        public init(_ row: Int, _ col: Int) {
             self.row = row
             self.col = col
         }
