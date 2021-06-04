@@ -60,12 +60,16 @@ public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: MathSet {
         impl.size
     }
     
+    public var isSquare: Bool {
+        size.rows == size.cols
+    }
+    
     public var isZero: Bool {
         impl.isZero
     }
     
-    public var isSquare: Bool {
-        impl.isSquare
+    public var isIdentity: Bool {
+        impl.isIdentity
     }
     
     public var transposed: MatrixIF<Impl, m, n> {
@@ -182,16 +186,8 @@ public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: MathSet {
         .init(OtherImpl.init(size: size, entries: nonZeroEntries))
     }
     
-    public var entries: AnySequence<MatrixEntry<BaseRing>> {
-        impl.entries
-    }
-    
     public var nonZeroEntries: AnySequence<MatrixEntry<BaseRing>> {
         impl.nonZeroEntries
-    }
-    
-    public func mapEntries(_ f: @escaping (Int, Int, BaseRing) -> BaseRing) -> Self {
-        .init(size: size, entries: entries.map{ (i, j, a) in (i, j, f(i, j, a)) })
     }
     
     public func mapNonZeroEntries(_ f: @escaping (Int, Int, BaseRing) -> BaseRing) -> Self {
@@ -293,10 +289,6 @@ extension MatrixIF where m == _1 { // n: possibly anySize
         return (0 ..< left.size.rows).sum { i in left[i] * right[i] }
     }
     
-    public var colEntries: AnySequence<ColEntry<BaseRing>> {
-        AnySequence(entries.lazy.map{ (i, _, a) in (i, a)})
-    }
-    
     public var nonZeroColEntries: AnySequence<ColEntry<BaseRing>> {
         AnySequence(nonZeroEntries.lazy.map{ (i, _, a) in (i, a)})
     }
@@ -349,10 +341,6 @@ extension MatrixIF where n == _1 { // m: possibly anySize
     public static func •(_ left: Self, _ right: Self) -> BaseRing {
         assert(left.size == right.size)
         return (0 ..< left.size.rows).sum { i in left[i] * right[i] }
-    }
-    
-    public var rowEntries: AnySequence<RowEntry<BaseRing>> {
-        AnySequence(entries.lazy.map{ (_, j, a) in (j, a)})
     }
     
     public var nonZeroRowEntries: AnySequence<RowEntry<BaseRing>> {

@@ -5,7 +5,7 @@
 //  Created by Taketo Sano on 2019/10/04.
 //
 
-public protocol MatrixImpl: CustomStringConvertible {
+public protocol MatrixImpl: Equatable, CustomStringConvertible {
     associatedtype BaseRing: Ring
     typealias Initializer = (Int, Int, BaseRing) -> Void
     
@@ -19,14 +19,18 @@ public protocol MatrixImpl: CustomStringConvertible {
     static func scalar(size: MatrixSize, value: BaseRing) -> Self
 
     subscript(i: Int, j: Int) -> BaseRing { get set }
+    
     var size: (rows: Int, cols: Int) { get }
+    var nonZeroEntries: AnySequence<MatrixEntry<BaseRing>> { get }
+    
     var isZero: Bool { get }
-    var transposed: Self { get }
+    var isIdentity: Bool { get }
     var isInvertible: Bool { get }
     var inverse: Self? { get }
     var determinant: BaseRing { get }
     var trace: BaseRing { get }
 
+    var transposed: Self { get }
     func submatrix(rowRange: CountableRange<Int>,  colRange: CountableRange<Int>) -> Self
     func concat(_ B: Self) -> Self
     func stack(_ B: Self) -> Self
@@ -35,6 +39,8 @@ public protocol MatrixImpl: CustomStringConvertible {
     func permuteCols(by q: Permutation<anySize>) -> Self
     func permute(rowsBy p: Permutation<anySize>, colsBy q: Permutation<anySize>) -> Self
 
+    func serialize() -> [BaseRing]
+
     static func ==(a: Self, b: Self) -> Bool
     static func +(a: Self, b: Self) -> Self
     static prefix func -(a: Self) -> Self
@@ -42,15 +48,12 @@ public protocol MatrixImpl: CustomStringConvertible {
     static func *(r: BaseRing, a: Self) -> Self
     static func *(a: Self, r: BaseRing) -> Self
     static func *(a: Self, b: Self) -> Self
-    static func ⊕(a: Self, B: Self) -> Self
-    static func ⊗(a: Self, B: Self) -> Self
-
-    var entries: AnySequence<MatrixEntry<BaseRing>> { get }
-    var nonZeroEntries: AnySequence<MatrixEntry<BaseRing>> { get }
-    func serialize() -> [BaseRing]
-
-    var detailDescription: String { get }
+    static func ⊕(a: Self, b: Self) -> Self
+    static func ⊗(a: Self, b: Self) -> Self
 }
+
+// MEMO: default implementations are provided,
+// but conforming types should override them for performance.
 
 extension MatrixImpl {
     public init<S: Sequence>(size: MatrixSize, grid: S) where S.Element == BaseRing {
@@ -94,25 +97,110 @@ extension MatrixImpl {
         }
     }
     
+    public var nonZeroEntries: AnySequence<MatrixEntry<BaseRing>> {
+        AnySequence(
+            ((0 ..< size.rows) * (0 ..< size.cols)).compactMap{ (i, j) in
+                let a = self[i, j]
+                return a.isZero ? nil : (i, j, a)
+            }
+        )
+    }
+    
     public var isSquare: Bool {
         size.rows == size.cols
     }
     
-    public var entries: AnySequence<MatrixEntry<BaseRing>> {
-        AnySequence((0 ..< size.rows).lazy.flatMap{ i in
-            (0 ..< size.cols).lazy.map { j in
-                (i, j, self[i, j])
-            }
-        })
+    public var isZero: Bool {
+        nonZeroEntries.isEmpty
     }
     
-    public var nonZeroEntries: AnySequence<MatrixEntry<BaseRing>> {
-        AnySequence((0 ..< size.rows).lazy.flatMap{ i in
-            (0 ..< size.cols).lazy.compactMap { j in
-                let a = self[i, j]
-                return a.isZero ? nil : (i, j, a)
+    public var isIdentity: Bool {
+        isSquare && nonZeroEntries.allSatisfy { (i, j, a) in i == j && a.isIdentity }
+    }
+    
+    public var isInvertible: Bool {
+        isSquare && determinant.isInvertible
+    }
+    
+    public var inverse: Self? {
+        if isSquare, let dInv = determinant.inverse {
+            return .init(size: size) { setEntry in
+                ((0 ..< size.rows) * (0 ..< size.cols)).forEach { (i, j) in
+                    let a = dInv * cofactor(j, i)
+                    setEntry(i, j, a)
+                }
             }
-        })
+        } else {
+            return nil
+        }
+    }
+    
+    public var trace: BaseRing {
+        assert(isSquare)
+        return (0 ..< size.rows).sum { i in
+            self[i, i]
+        }
+    }
+    
+    public var determinant: BaseRing {
+        assert(isSquare)
+        if size.rows == 0 {
+            return .identity
+        } else {
+            return nonZeroEntries
+                .filter{ (i, j, a) in i == 0 }
+                .sum { (_, j, a) in a * cofactor(0, j) }
+        }
+    }
+    
+    private func cofactor(_ i0: Int, _ j0: Int) -> BaseRing {
+        let ε = (-BaseRing.identity).pow(i0 + j0)
+        let minor = Self(size: (size.rows - 1, size.cols - 1)) { setEntry in
+            nonZeroEntries.forEach { (i, j, a) in
+                if i == i0 || j == j0 { return }
+                let i1 = i < i0 ? i : i - 1
+                let j1 = j < j0 ? j : j - 1
+                setEntry(i1, j1, a)
+            }
+        }
+        return ε * minor.determinant
+    }
+    
+    public var transposed: Self {
+        .init(size: (size.cols, size.rows)) { setEntry in
+            nonZeroEntries.forEach { (i, j, a) in setEntry(j, i, a) }
+        }
+    }
+    
+    public func submatrix(rowRange: CountableRange<Int>, colRange: CountableRange<Int>) -> Self {
+        let size = (rowRange.upperBound - rowRange.lowerBound, colRange.upperBound - colRange.lowerBound)
+        return .init(size: size ) { setEntry in
+            nonZeroEntries.forEach { (i, j, a) in
+                if rowRange.contains(i) && colRange.contains(j) {
+                    setEntry(i - rowRange.lowerBound, j - colRange.lowerBound, a)
+                }
+            }
+        }
+    }
+    
+    public func concat(_ B: Self) -> Self {
+        assert(size.rows == B.size.rows)
+        
+        let A = self
+        return .init(size: (A.size.rows, A.size.cols + B.size.cols)) { setEntry in
+            A.nonZeroEntries.forEach { (i, j, a) in setEntry(i, j, a) }
+            B.nonZeroEntries.forEach { (i, j, a) in setEntry(i, j + A.size.cols, a) }
+        }
+    }
+    
+    public func stack(_ B: Self) -> Self {
+        assert(size.cols == B.size.cols)
+        
+        let A = self
+        return .init(size: (A.size.rows + B.size.rows, A.size.cols)) { setEntry in
+            A.nonZeroEntries.forEach { (i, j, a) in setEntry(i, j, a) }
+            B.nonZeroEntries.forEach { (i, j, a) in setEntry(i + A.size.rows, j, a) }
+        }
     }
     
     public func permuteRows(by p: Permutation<anySize>) -> Self {
@@ -123,10 +211,44 @@ extension MatrixImpl {
         permute(rowsBy: .identity(length: size.rows), colsBy: q)
     }
 
+    public func permute(rowsBy p: Permutation<anySize>, colsBy q: Permutation<anySize>) -> Self {
+        .init(size: size) { setEntry in
+            nonZeroEntries.forEach{ (i, j, a) in
+                setEntry(p[i], q[j], a)
+            }
+        }
+    }
+
+    public static func ⊕ (A: Self, B: Self) -> Self {
+        .init(size: (A.size.rows + B.size.rows, A.size.cols + B.size.cols)) { setEntry in
+            A.nonZeroEntries.forEach { (i, j, a) in setEntry(i, j, a) }
+            B.nonZeroEntries.forEach { (i, j, a) in setEntry(i + A.size.rows, j + A.size.cols, a) }
+        }
+    }
+    
+    public static func ⊗ (A: Self, B: Self) -> Self {
+        .init(size: (A.size.rows * B.size.rows, A.size.cols * B.size.cols)) { setEntry in
+            A.nonZeroEntries.forEach { (i, j, a) in
+                B.nonZeroEntries.forEach { (k, l, b) in
+                    let p = i * B.size.rows + k
+                    let q = j * B.size.cols + l
+                    let c = a * b
+                    setEntry(p, q, c)
+                }
+            }
+        }
+    }
+    
+    public func serialize() -> [BaseRing] {
+        ((0 ..< size.rows) * (0 ..< size.cols)).map{ (i, j) in
+            self[i, j]
+        }
+    }
+    
     public var description: String {
         "[" + (0 ..< size.rows).map({ i in
-            return (0 ..< size.cols).map({ j in
-                return "\(self[i, j])"
+            (0 ..< size.cols).map({ j in
+                "\(self[i, j])"
             }).joined(separator: ", ")
         }).joined(separator: "; ") + "]"
     }
