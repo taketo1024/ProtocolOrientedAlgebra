@@ -7,13 +7,13 @@
 
 import Foundation
 
-public struct DirectedGraph<VertexValue: CustomStringConvertible, EdgeValue: CustomStringConvertible> {
-    public typealias VertexId = Int
+public typealias PlainGraph<VertexId: Hashable> = Graph<VertexId, Int, Int>
+
+public struct Graph<VertexId, VertexValue, EdgeValue> where VertexId: Hashable {
     public typealias Options = [String: Any]
     
     public private(set) var vertices: [VertexId: Vertex]
     public var options: Options
-    private var idCounter = 0
 
     public init(template: Template) {
         self.init(options: template.options)
@@ -21,25 +21,18 @@ public struct DirectedGraph<VertexValue: CustomStringConvertible, EdgeValue: Cus
     
     public init(options: Options? = nil) {
         self.vertices = [:]
-        self.options = options ?? [:]
+        self.options = options ?? Template.plain.options
     }
 
-    public func vertex(id: VertexId) -> Vertex? {
+    @inlinable
+    public subscript(id: VertexId) -> Vertex? {
         vertices[id]
     }
     
-    public func addEdge(fromId: VertexId, toId: VertexId, value: EdgeValue, options: Options = [:]) {
-        guard let v = vertex(id: fromId), let w = vertex(id: toId) else {
-            return
-        }
-        v.addEdge(to: w, value: value, options: options)
-    }
-    
     @discardableResult
-    public mutating func addVertex(value: VertexValue, options: Options = [:]) -> Vertex {
-        idCounter += 1
+    public mutating func addVertex(id: VertexId, value: VertexValue, options: Options = [:]) -> Vertex {
+        assert(!vertices.contains(key: id))
         
-        let id = idCounter
         let v = Vertex(id: id, value: value, options: options)
         vertices[id] = v
         return v
@@ -53,6 +46,13 @@ public struct DirectedGraph<VertexValue: CustomStringConvertible, EdgeValue: Cus
             v.removeEdges(from: e.source)
         }
         vertices[v.id] = nil
+    }
+    
+    public func addEdge(fromId: VertexId, toId: VertexId, value: EdgeValue, options: Options = [:]) {
+        guard let v = self[fromId], let w = self[toId] else {
+            return
+        }
+        v.addEdge(to: w, value: value, options: options)
     }
     
     public func collectEdges() -> [Edge] {
@@ -112,7 +112,7 @@ public struct DirectedGraph<VertexValue: CustomStringConvertible, EdgeValue: Cus
         }
         
         public var description: String {
-            "v\(Format.sub(id))"
+            "\(id)"
         }
     }
     
@@ -130,12 +130,12 @@ public struct DirectedGraph<VertexValue: CustomStringConvertible, EdgeValue: Cus
         }
         
         public var description: String {
-            return "\(source)\(target)"
+            return "\(source)-\(target)"
         }
     }
     
     public enum Template {
-        case hierarchical, plane
+        case hierarchical, plain
         
         fileprivate var options: Options {
             switch self {
@@ -156,21 +156,75 @@ public struct DirectedGraph<VertexValue: CustomStringConvertible, EdgeValue: Cus
                     ]
                 ]
             default:
-                return [:]
+                return [
+                    "edges": [
+                        "arrows": "to"
+                    ]
+                ]
             }
         }
     }
 }
 
-extension DirectedGraph {
+extension Graph where VertexId: CustomStringConvertible, VertexValue == Int, EdgeValue == Int {
+    public init(structure: [VertexId: [VertexId]] = [:], options: Options? = nil) {
+        self.init(options: options)
+        
+        for v in structure.keys {
+            addVertex(id: v)
+        }
+        for (v, ws) in structure {
+            for w in ws {
+                addEdge(fromId: v, toId: w)
+            }
+        }
+    }
+    
+    @discardableResult
+    public mutating func addVertex(id: VertexId, options: Options = [:]) -> Vertex {
+        addVertex(id: id, value: 0, options: options)
+    }
+    
+    public func addEdge(fromId: VertexId, toId: VertexId, options: Options = [:]) {
+        addEdge(fromId: fromId, toId: toId, value: 0, options: options)
+    }
+}
+
+extension Graph {
+    public func topologicalSort() -> [Vertex] {
+        var visited: Set<VertexId> = []
+        var result: [Vertex] = []
+        
+        visited.reserveCapacity(vertices.count)
+        result .reserveCapacity(vertices.count)
+
+        func traverse(_ v: Vertex) {
+            visited.insert(v.id)
+            
+            for w in v.outEdges.map({ $0.target }) where !visited.contains(w.id) {
+                traverse(w)
+            }
+            
+            result.append(v)
+        }
+        
+        let startVertices = vertices.values.filter{ $0.inEdges.isEmpty }
+        for v in startVertices {
+            traverse(v)
+        }
+        
+        return result.reversed()
+    }
+}
+
+extension Graph {
     // MEMO: ignores edge-directions.
     public func spanningTree() -> Self {
         var remain = Set(self.vertices.keys)
         
         var tree = Self()
-        for i in 1 ... vertices.count {
-            let v = self.vertex(id: i)!
-            tree.addVertex(value: v.value, options: v.options)
+        for v in vertices.values {
+            tree.addVertex(id: v.id, value: v.value, options: v.options)
         }
         
         func dig(_ v: Vertex) {
@@ -189,7 +243,7 @@ extension DirectedGraph {
         
         while !remain.isEmpty {
             let rootId = remain.first!
-            let root = vertex(id: rootId)!
+            let root = self[rootId]!
             dig(root)
         }
         
@@ -197,7 +251,7 @@ extension DirectedGraph {
     }
 }
 
-extension DirectedGraph {
+extension Graph {
     public func asHTML(title: String? = nil) -> String {
         let template =
 """
@@ -238,7 +292,7 @@ extension DirectedGraph {
         let rawVertices = vertices.map { (id, v) -> [String: Any] in
             v.options.merging([
                 "id": indexTable[id]!,
-                "label": v.value.description,
+                "label": "\(v.id)",
                 "shape": "box"
             ], overwrite: false)
         }
@@ -246,8 +300,7 @@ extension DirectedGraph {
             $0.outEdges.map { e -> [String: Any] in
                 e.options.merging([
                     "from": indexTable[e.source.id]!,
-                    "to": indexTable[e.target.id]!,
-                    "label": e.value.description
+                    "to": indexTable[e.target.id]!
                 ], overwrite: false)
             }
         }
