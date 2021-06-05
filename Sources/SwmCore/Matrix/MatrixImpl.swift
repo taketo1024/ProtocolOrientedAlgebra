@@ -19,19 +19,23 @@ public protocol MatrixImpl: Equatable, CustomStringConvertible {
     static func scalar(size: MatrixSize, value: BaseRing) -> Self
 
     subscript(i: Int, j: Int) -> BaseRing { get set }
-    
+
     var size: (rows: Int, cols: Int) { get }
-    var nonZeroEntries: AnySequence<MatrixEntry<BaseRing>> { get }
-    
     var isZero: Bool { get }
     var isIdentity: Bool { get }
     var isInvertible: Bool { get }
     var inverse: Self? { get }
+    var transposed: Self { get }
+    
     var determinant: BaseRing { get }
     var trace: BaseRing { get }
 
-    var transposed: Self { get }
-    func submatrix(rowRange: CountableRange<Int>,  colRange: CountableRange<Int>) -> Self
+    func rowVector(_ i: Int) -> Self
+    func colVector(_ j: Int) -> Self
+    func submatrix(rowRange: Range<Int>) -> Self
+    func submatrix(colRange: Range<Int>) -> Self
+    func submatrix(rowRange: Range<Int>, colRange: Range<Int>) -> Self
+    
     func concat(_ B: Self) -> Self
     func stack(_ B: Self) -> Self
     
@@ -39,6 +43,8 @@ public protocol MatrixImpl: Equatable, CustomStringConvertible {
     func permuteCols(by q: Permutation<anySize>) -> Self
     func permute(rowsBy p: Permutation<anySize>, colsBy q: Permutation<anySize>) -> Self
 
+    var nonZeroEntries: AnySequence<MatrixEntry<BaseRing>> { get }
+    func mapNonZeroEntries(_ f: (Int, Int, BaseRing) -> BaseRing) -> Self
     func serialize() -> [BaseRing]
 
     static func ==(a: Self, b: Self) -> Bool
@@ -97,13 +103,9 @@ extension MatrixImpl {
         }
     }
     
-    public var nonZeroEntries: AnySequence<MatrixEntry<BaseRing>> {
-        AnySequence(
-            ((0 ..< size.rows) * (0 ..< size.cols)).compactMap{ (i, j) in
-                let a = self[i, j]
-                return a.isZero ? nil : (i, j, a)
-            }
-        )
+    @inlinable
+    public subscript(rowRange: Range<Int>, colRange: Range<Int>) -> Self {
+        self.submatrix(rowRange: rowRange, colRange: colRange)
     }
     
     public var isSquare: Bool {
@@ -132,6 +134,12 @@ extension MatrixImpl {
             }
         } else {
             return nil
+        }
+    }
+    
+    public var transposed: Self {
+        .init(size: (size.cols, size.rows)) { setEntry in
+            nonZeroEntries.forEach { (i, j, a) in setEntry(j, i, a) }
         }
     }
     
@@ -166,13 +174,27 @@ extension MatrixImpl {
         return ε * minor.determinant
     }
     
-    public var transposed: Self {
-        .init(size: (size.cols, size.rows)) { setEntry in
-            nonZeroEntries.forEach { (i, j, a) in setEntry(j, i, a) }
-        }
+    @inlinable
+    public func rowVector(_ i: Int) -> Self {
+        submatrix(rowRange: i ..< i + 1, colRange: 0 ..< size.cols)
     }
     
-    public func submatrix(rowRange: CountableRange<Int>, colRange: CountableRange<Int>) -> Self {
+    @inlinable
+    public func colVector(_ j: Int) -> Self {
+        submatrix(rowRange: 0 ..< size.rows, colRange: j ..< j + 1)
+    }
+
+    @inlinable
+    public func submatrix(rowRange: Range<Int>) -> Self {
+        submatrix(rowRange: rowRange, colRange: 0 ..< size.cols)
+    }
+    
+    @inlinable
+    public func submatrix(colRange: Range<Int>) -> Self {
+        submatrix(rowRange: 0 ..< size.rows, colRange: colRange)
+    }
+    
+    public func submatrix(rowRange: Range<Int>, colRange: Range<Int>) -> Self {
         let size = (rowRange.upperBound - rowRange.lowerBound, colRange.upperBound - colRange.lowerBound)
         return .init(size: size ) { setEntry in
             nonZeroEntries.forEach { (i, j, a) in
@@ -203,10 +225,12 @@ extension MatrixImpl {
         }
     }
     
+    @inlinable
     public func permuteRows(by p: Permutation<anySize>) -> Self {
         permute(rowsBy: p, colsBy: .identity(length: size.cols))
     }
     
+    @inlinable
     public func permuteCols(by q: Permutation<anySize>) -> Self {
         permute(rowsBy: .identity(length: size.rows), colsBy: q)
     }
@@ -219,6 +243,27 @@ extension MatrixImpl {
         }
     }
 
+    @inlinable
+    public static prefix func - (a: Self) -> Self {
+        a.mapNonZeroEntries{ (_, _, a) in -a }
+    }
+    
+    @inlinable
+    public static func -(a: Self, b: Self) -> Self {
+        assert(a.size == b.size)
+        return a + (-b)
+    }
+    
+    @inlinable
+    public static func * (r: BaseRing, a: Self) -> Self {
+        a.mapNonZeroEntries{ (_, _, a) in r * a }
+    }
+    
+    @inlinable
+    public static func * (a: Self, r: BaseRing) -> Self {
+        a.mapNonZeroEntries{ (_, _, a) in a * r }
+    }
+    
     public static func ⊕ (A: Self, B: Self) -> Self {
         .init(size: (A.size.rows + B.size.rows, A.size.cols + B.size.cols)) { setEntry in
             A.nonZeroEntries.forEach { (i, j, a) in setEntry(i, j, a) }
@@ -234,6 +279,17 @@ extension MatrixImpl {
                     let q = j * B.size.cols + l
                     let c = a * b
                     setEntry(p, q, c)
+                }
+            }
+        }
+    }
+    
+    public func mapNonZeroEntries(_ f: (Int, Int, BaseRing) -> BaseRing) -> Self {
+        .init(size: size) { setEntry in
+            nonZeroEntries.forEach { (i, j, a) in
+                let b = f(i, j, a)
+                if !b.isZero {
+                    setEntry(i, j, b)
                 }
             }
         }
