@@ -3,7 +3,7 @@ public protocol SizeType {
     static var intValue: Int { get }
 }
 
-extension SizeType {
+public extension SizeType {
     static var isArbitrary: Bool { !isFixed }
 }
 
