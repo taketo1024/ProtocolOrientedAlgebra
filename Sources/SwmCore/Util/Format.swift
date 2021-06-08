@@ -129,7 +129,8 @@ public struct Format {
             }
     }
     
-    public static func table<S1: Sequence, S2: Sequence, T>(rows: S1, cols: S2, symbol: String = "", separator s: String = "\t", printHeaders: Bool = true, op: (S1.Element, S2.Element) -> T) -> String {
+    public static func table<S1, S2, T>(rows: S1, cols: S2, symbol: String = "", separator s: String = "\t", printHeaders: Bool = true, op: (S1.Element, S2.Element) -> T) -> String
+    where S1: Sequence, S2: Sequence {
         let head = printHeaders ? [[symbol] + cols.map{ y in "\(y)" }] : []
         let body = rows.enumerated().map { (i, x) -> [String] in
             let head = printHeaders ? ["\(x)"] : []
@@ -141,7 +142,8 @@ public struct Format {
         return (head + body).map{ $0.joined(separator: s) }.joined(separator: "\n")
     }
     
-    public static func table<S: Sequence, T>(elements: S, default d: String = "", symbol: String = "j\\i", separator s: String = "\t", printHeaders: Bool = true) -> String where S.Element == (Int, Int, T) {
+    public static func table<S, T>(elements: S, default d: String = "", symbol: String = "j\\i", separator s: String = "\t", printHeaders: Bool = true) -> String
+    where S: Sequence, S.Element == (Int, Int, T) {
         let dict = Dictionary(elements.map{ (i, j, t) in ([i, j], t) } )
         if dict.isEmpty {
             return "empty"
@@ -158,6 +160,24 @@ public struct Format {
                             printHeaders: printHeaders)
         { (j, i) -> String in
             dict[ [i, j] ].map{ "\($0)" } ?? d
+        }
+    }
+    
+    public static func table<S, T>(elements: S, default d: String = "", symbol: String = "i", separator s: String = "\t", printHeaders: Bool = true) -> String
+    where S: Sequence, S.Element == (Int, T) {
+        let dict = Dictionary(elements)
+        if dict.isEmpty {
+            return "empty"
+        }
+        
+        let (iMax, iMin) = (dict.keys.max()!, dict.keys.min()!)
+        return Format.table(rows: [""],
+                            cols: (iMin ... iMax),
+                            symbol: symbol,
+                            separator: s,
+                            printHeaders: printHeaders)
+        { (_, i) -> String in
+            dict[i].map{ "\($0)" } ?? d
         }
     }
 }
