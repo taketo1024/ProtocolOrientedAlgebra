@@ -173,7 +173,7 @@ public struct MultivariatePolynomial<R: Ring, xn: MultivariatePolynomialIndeterm
         let max = indices.max() ?? 0
         let indexer = indices.makeIndexer()
         
-        let exponents = (0 ..< n).choose(deg).map { list -> [Int] in
+        let exponents = (0 ..< n).combinations(ofCount: deg).map { list -> [Int] in
             // e.g. [0, 1, 3] -> (1, 1, 0, 1)
             let set = Set(list)
             return (0 ... max).map { i in
