@@ -48,7 +48,7 @@ public struct MultiIndex<n: SizeType>: AdditiveGroup, ExpressibleByArrayLiteral,
     }
     
     public static var zero: MultiIndex<n> {
-        .init([])
+        n.isFixed ? .init([0] * n.intValue) : .init([])
     }
     
     public static func ==(c1: Self, c2: Self) -> Bool {

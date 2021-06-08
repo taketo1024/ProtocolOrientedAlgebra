@@ -70,9 +70,10 @@ extension LinearCombinationType {
     }
     
     public var isHomogeneous: Bool {
-        elements.compactMap{ (a, r) in
-            !r.isZero ? degree(ofTerm: a) : nil
-        }.isUnique
+        let d = degree
+        return elements.allSatisfy{ (a, r) in
+            r.isZero || degree(ofTerm: a) == d
+        }
     }
     
     public func coeff(_ a: Generator) -> BaseRing {
