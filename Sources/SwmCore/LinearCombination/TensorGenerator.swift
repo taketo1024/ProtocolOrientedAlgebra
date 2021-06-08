@@ -6,8 +6,11 @@
 //
 
 public struct TensorGenerator<A, B>: LinearCombinationGenerator where A: LinearCombinationGenerator, B: LinearCombinationGenerator {
-    public let left : A
-    public let right: B
+    public typealias Left = A
+    public typealias Right = B
+    
+    public let left : Left
+    public let right: Right
     
     public init(_ a: A, _ b: B) {
         self.left = a

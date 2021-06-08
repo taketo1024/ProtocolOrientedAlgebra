@@ -6,6 +6,7 @@
 //
 
 public extension Sequence {
+    @available(*, deprecated, message: "use Algorithms::permutations()")
     var permutations: [[Element]] {
         // MEMO Heap's algorithm: https://en.wikipedia.org/wiki/Heap%27s_algorithm
         
@@ -30,6 +31,7 @@ public extension Sequence {
         return result
     }
     
+    @available(*, deprecated, message: "use Algorithms::combinations")
     func choose(_ k: Int) -> [[Element]] {
         ArraySlice(self).choose(k)
     }

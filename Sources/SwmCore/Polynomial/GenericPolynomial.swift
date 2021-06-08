@@ -133,9 +133,10 @@ extension GenericPolynomialType {
     }
     
     public var isHomogeneous: Bool {
-        elements.compactMap{ (e, a) in
-            !a.isZero ? degree(of: e) : nil
-        }.isUnique
+        let d = degree
+        return elements.allSatisfy{ (a, r) in
+            r.isZero || degree(of: a) == d
+        }
     }
     
     public var asLinearCombination: LinearCombination<BaseRing, MonomialAsGenerator<Indeterminate>> {

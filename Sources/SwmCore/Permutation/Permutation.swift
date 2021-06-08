@@ -6,6 +6,8 @@
 //  Copyright © 2018年 Taketo Sano. All rights reserved.
 //
 
+import Algorithms
+
 public struct Permutation<n: SizeType>: Multiplicative, MathSet, Hashable {
     public let length: Int
     public let table: [Int : Int]
@@ -185,13 +187,15 @@ extension Permutation: Monoid, Group, FiniteSet where n: FixedSizeType {
     }
     
     public static var allElements: [Self] {
-        (0 ..< n.intValue).permutations.map{
+        (0 ..< n.intValue).permutations().map{
             .init(length: n.intValue, indices: $0)
         }
     }
     
     public static var allTranspositions: [Self] {
-        (0 ..< n.intValue).choose(2).map { .transposition($0[0], $0[1]) }
+        (0 ..< n.intValue).combinations(ofCount: 2).map {
+            .transposition($0[0], $0[1])
+        }
     }
     
     public static var countElements: Int {
@@ -201,11 +205,15 @@ extension Permutation: Monoid, Group, FiniteSet where n: FixedSizeType {
 
 extension Permutation where n == anySize {
     public static func allPermutations(length n: Int) -> [Self] {
-        (0 ..< n).permutations.map{ .init(length: n, indices: $0) }
+        (0 ..< n).permutations().map{
+            .init(length: n, indices: $0)
+        }
     }
     
     public static func allTranspositions(within n: Int) -> [Self] {
-        (0 ..< n).choose(2).map { .transposition(length: n, indices: ($0[0], $0[1])) }
+        (0 ..< n).combinations(ofCount: 2).map {
+            .transposition(length: n, indices: ($0[0], $0[1]))
+        }
     }
 }
 

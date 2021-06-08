@@ -49,10 +49,15 @@ public extension Array {
         }
     }
     
+    @inlinable
+    func merging(_ other: Array, mergedBy f: (Element, Element) -> Element) -> Array {
+        zip(self, other).map(f)
+    }
+    
     func merging(_ other: Array, filledWith e: Element, mergedBy f: (Element, Element) -> Element) -> Array {
         let l = Swift.max(self.count, other.count)
         let (a, b) = (self.filled(with: e, upToLength: l), other.filled(with: e, upToLength: l))
-        return zip(a, b).map(f)
+        return a.merging(b, mergedBy: f)
     }
     
     func takeEven() -> Array {
@@ -87,7 +92,7 @@ extension Array: Comparable where Element: Comparable {
 }
 
 extension Array {
-    public func parallelForEach(body: @escaping  (Element) -> Void ) {
+    public func parallelForEach(body: (Element) -> Void ) {
         DispatchQueue.concurrentPerform(iterations: count) { i in
             body(self[i])
         }
@@ -103,15 +108,24 @@ extension Array {
         }
     }
     
-    public func parallelFlatMap<T>(transform: @escaping (Element) -> [T] ) -> [T] {
+    public func parallelFlatMap<T>(transform: (Element) -> [T] ) -> [T] {
         parallelMap(transform: transform).flatMap { $0 }
     }
     
-    public func parallelCompactMap<T>(transform: @escaping (Element) -> T? ) -> [T] {
+    public func parallelCompactMap<T>(transform: (Element) -> T? ) -> [T] {
         parallelMap(transform: transform).compactMap { $0 }
     }
     
-    public func parallelFilter(predicate: @escaping  (Element) -> Bool ) -> Self {
+    public func parallelFilter(predicate: (Element) -> Bool ) -> Self {
         parallelCompactMap { e in predicate(e) ? e : nil }
+    }
+}
+
+extension RandomAccessCollection where Element: Comparable {
+    @inlinable
+    public func binarySearch(_ element: Element) -> Index? {
+        let index = partitioningIndex(where: { $0 >= element })
+        let found = index != endIndex && self[index] == element
+        return found ? index : nil
     }
 }

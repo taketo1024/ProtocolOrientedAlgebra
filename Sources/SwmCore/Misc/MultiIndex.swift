@@ -11,7 +11,12 @@ public struct MultiIndex<n: SizeType>: AdditiveGroup, ExpressibleByArrayLiteral,
     public let indices: [Int]
     
     public init(_ indices: [Int]) {
-        self.indices = indices.dropLast{ $0 == 0 }
+        if n.isFixed {
+            assert(indices.count == n.intValue)
+            self.indices = indices
+        } else {
+            self.indices = indices.dropLast{ $0 == 0 }
+        }
     }
     
     public init(_ indices: Int...) {
@@ -35,12 +40,15 @@ public struct MultiIndex<n: SizeType>: AdditiveGroup, ExpressibleByArrayLiteral,
     }
     
     public subscript(_ i: Int) -> Int {
-        assert(0 <= i && i <= Self.length)
-        return indices.indices.contains(i) ? indices[i] : 0
+        if n.isFixed {
+            return indices[i]
+        } else {
+            return indices.indices.contains(i) ? indices[i] : 0
+        }
     }
     
     public static var zero: MultiIndex<n> {
-        .init([])
+        n.isFixed ? .init([0] * n.intValue) : .init([])
     }
     
     public static func ==(c1: Self, c2: Self) -> Bool {
@@ -48,17 +56,17 @@ public struct MultiIndex<n: SizeType>: AdditiveGroup, ExpressibleByArrayLiteral,
     }
 
     public static func +(c1: Self, c2: Self) -> Self {
-        .init( c1.indices.merging(c2.indices, filledWith: 0, mergedBy: +) )
+        if n.isFixed {
+            return .init( c1.indices.merging(c2.indices, mergedBy: +) )
+        } else {
+            return .init( c1.indices.merging(c2.indices, filledWith: 0, mergedBy: +) )
+        }
     }
     
     public static prefix func -(_ c: Self) -> Self {
         .init( c.indices.map{ -$0 } )
     }
 
-    public static func -(c1: Self, c2: Self) -> Self {
-        .init( c1.indices.merging(c2.indices, filledWith: 0, mergedBy: -) )
-    }
-    
     public static func < (c1: Self, c2: Self) -> Bool {
         (c1 != c2) && (c2 - c1).indices.allSatisfy{ $0 >= 0 }
     }
@@ -69,12 +77,20 @@ public struct MultiIndex<n: SizeType>: AdditiveGroup, ExpressibleByArrayLiteral,
 }
 
 extension MultiIndex where n == _2 {
+    public init(_ indices: (Int, Int)) {
+        self.init([indices.0, indices.1])
+    }
+    
     public var tuple: (Int, Int) {
         (self[0], self[1])
     }
 }
 
 extension MultiIndex where n == _3 {
+    public init(_ indices: (Int, Int, Int)) {
+        self.init([indices.0, indices.1, indices.2])
+    }
+    
     public var triple: (Int, Int, Int) {
         (self[0], self[1], self[2])
     }
