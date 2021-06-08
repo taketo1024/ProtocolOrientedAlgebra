@@ -149,12 +149,11 @@ public struct Format {
             return "empty"
         }
         
-        let (I, J) = (dict.keys.map{$0[0]}, dict.keys.map{$0[1]})
-        let (iMax, iMin) = (I.max()!, I.min()!)
-        let (jMax, jMin) = (J.max()!, J.min()!)
+        let I = dict.keys.map{ $0[0] }.uniqued().sorted()
+        let J = dict.keys.map{ $0[1] }.uniqued().sorted()
         
-        return Format.table(rows: (jMin ... jMax).reversed(),
-                            cols: (iMin ... iMax),
+        return Format.table(rows: J.reversed(),
+                            cols: I,
                             symbol: symbol,
                             separator: s,
                             printHeaders: printHeaders)
@@ -170,9 +169,8 @@ public struct Format {
             return "empty"
         }
         
-        let (iMax, iMin) = (dict.keys.max()!, dict.keys.min()!)
         return Format.table(rows: [""],
-                            cols: (iMin ... iMax),
+                            cols: dict.keys.sorted(),
                             symbol: symbol,
                             separator: s,
                             printHeaders: printHeaders)
