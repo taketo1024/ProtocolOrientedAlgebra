@@ -106,6 +106,7 @@ public extension Sequence where Element: Hashable {
         return self.allSatisfy{ bucket.insert($0).inserted }
     }
     
+    @available(*, deprecated, message: "use uniqued()")
     func unique() -> [Element] {
         var bucket = Set<Element>()
         return self.filter { bucket.insert($0).inserted }
