@@ -267,4 +267,12 @@ class MatrixTests: XCTestCase {
         
         XCTAssertEqual(c, r)
     }
+    
+    func testRandom() {
+        let range = -10000 ..< 10000
+        let a = Matrix4x4<Int>.random(in: range)
+        let result = a.serialize()
+        XCTAssert(result.isUnique)
+        XCTAssertTrue(result.allSatisfy{ range.contains($0) })
+    }
 }

@@ -60,6 +60,15 @@ extension RealNumber: Field {
     }
 }
 
+extension 𝐑: Randomable, RangeRandomable {
+    public static func random() -> Self {
+        // MEMO:
+        // random(in: -greatestFiniteMagnitude ..< greatestFiniteMagnitude)
+        // throws fatalError.
+        Bool.random() ? random(in: 0 ..< greatestFiniteMagnitude) : -random(in: 0 ..< greatestFiniteMagnitude)
+    }
+}
+
 extension 𝐑: ComplexSubset {
     public var asComplex: 𝐂 {
         .init(self)

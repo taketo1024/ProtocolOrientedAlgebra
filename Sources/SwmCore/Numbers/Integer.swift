@@ -2,7 +2,7 @@ import Foundation
 
 public typealias 𝐙 = Int
 
-extension 𝐙: EuclideanRing, Randomable {
+extension 𝐙: EuclideanRing {
     @inlinable
     public init(from n: 𝐙) {
         self.init(n)
@@ -160,6 +160,12 @@ extension 𝐙 {
                 return ps.map { I in [i] + I }
             } + [[n]]
         }
+    }
+}
+
+extension 𝐙: Randomable, RangeRandomable {
+    public static func random() -> Int {
+        random(in: .min ..< .max)
     }
 }
 

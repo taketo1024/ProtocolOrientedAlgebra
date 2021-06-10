@@ -12,8 +12,6 @@ public typealias ComplexNumber = Complex<RealNumber>
 public typealias 𝐂 = ComplexNumber
 
 public struct Complex<Base: Ring>: Ring {
-    public typealias BaseRing = Base
-    
     private let x: Base
     private let y: Base
     
@@ -133,17 +131,23 @@ public func exp(_ z: ComplexNumber) -> ComplexNumber {
     return ComplexNumber(R * cos(y), R * sin(y))
 }
 
-extension Complex where Base: Randomable & Comparable {
-    public static func random(in real: Range<Base>, _ imaginary: Range<Base>) -> Self {
-        .init(.random(in: real), .random(in: imaginary))
-    }
-    
-    public static func random(in real: ClosedRange<Base>, _ imaginary: ClosedRange<Base>) -> Self {
-        .init(.random(in: real), .random(in: imaginary))
+extension Complex: Hashable where Base: Hashable {}
+
+extension Complex: Randomable where Base: Randomable {
+    public static func random() -> Self {
+        .init(.random(), .random())
     }
 }
 
-extension Complex: Hashable where Base: Hashable {}
+extension Complex: RangeRandomable where Base: RangeRandomable {
+    public static func random(in range: Range<Base.RangeBound>) -> Complex<Base> {
+        .init(.random(in: range), .random(in: range))
+    }
+    
+    public static func random(in range: ClosedRange<Base.RangeBound>) -> Complex<Base> {
+        .init(.random(in: range), .random(in: range))
+    }
+}
 
 public protocol ComplexSubset {
     var asComplex: 𝐂 { get }
