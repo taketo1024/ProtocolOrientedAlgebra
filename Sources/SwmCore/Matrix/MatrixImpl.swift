@@ -321,7 +321,3 @@ extension MatrixImpl {
         }
     }
 }
-
-public protocol SparseMatrixImpl: MatrixImpl {
-    var numberOfNonZeros: Int { get }
-}

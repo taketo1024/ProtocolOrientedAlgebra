@@ -9,7 +9,7 @@
 //  https://en.wikipedia.org/wiki/Sparse_matrix#Dictionary_of_keys_(DOK)
 //  Not intended for fast computation.
 
-public struct DefaultMatrixImpl<R: Ring>: SparseMatrixImpl {
+public struct DefaultMatrixImpl<R: Ring>: MatrixImpl {
     public typealias BaseRing = R
     public typealias Data = [Index : R]
     

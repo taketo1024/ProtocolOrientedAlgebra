@@ -253,15 +253,6 @@ public struct MatrixIF<Impl: MatrixImpl, n: SizeType, m: SizeType>: MathSet {
     }
 }
 
-// MARK: Sparse Matrix
-
-extension MatrixIF where Impl: SparseMatrixImpl {
-    @inlinable
-    public var numberOfNonZeros: Int {
-        impl.numberOfNonZeros
-    }
-}
-
 // MARK: Square Matrix
 
 extension MatrixIF where n == m { // n, m: possibly anySize
@@ -530,5 +521,39 @@ extension MatrixIF where n == m, n == _1 {
     @inlinable
     public var asScalar: BaseRing {
         self[0, 0]
+    }
+}
+
+// MARK: Random
+
+extension MatrixIF where BaseRing: Randomable {
+    public static func random(size: MatrixSize) -> Self {
+        .init(size: size, grid: (0 ..< size.rows * size.cols).map{_ in .random() } )
+    }
+}
+
+extension MatrixIF where BaseRing: RangeRandomable {
+    public static func random(size: MatrixSize, in range: Range<BaseRing.RangeBound>) -> Self {
+        .init(size: size, grid: (0 ..< size.rows * size.cols).map{_ in .random(in: range) } )
+    }
+
+    public static func random(size: MatrixSize, in range: ClosedRange<BaseRing.RangeBound>) -> Self {
+        .init(size: size, grid: (0 ..< size.rows * size.cols).map{_ in .random(in: range) } )
+    }
+}
+
+extension MatrixIF: Randomable where BaseRing: Randomable, n: FixedSizeType, m: FixedSizeType {
+    public static func random() -> MatrixIF<Impl, n, m> {
+        random(size: Self.size)
+    }
+}
+
+extension MatrixIF: RangeRandomable where BaseRing: RangeRandomable, n: FixedSizeType, m: FixedSizeType {
+    public static func random(in range: Range<BaseRing.RangeBound>) -> Self {
+        random(size: Self.size, in: range)
+    }
+
+    public static func random(in range: ClosedRange<BaseRing.RangeBound>) -> Self {
+        random(size: Self.size, in: range)
     }
 }
