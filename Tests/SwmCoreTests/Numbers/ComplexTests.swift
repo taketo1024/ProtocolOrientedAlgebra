@@ -120,7 +120,7 @@ class ComplexTests: XCTestCase {
     }
     
     func testRandomInRange() {
-        let range: Range<A.Base> = -100 ..< 100
+        let range: Range<Double> = -100 ..< 100
         var results: Set<A> = []
         
         for _ in 0 ..< 100 {
@@ -137,7 +137,7 @@ class ComplexTests: XCTestCase {
     }
 
     func testRandomInClosedRange() {
-        let range: ClosedRange<A.Base> = -100 ... 100
+        let range: ClosedRange<Double> = -100 ... 100
         var results: Set<A> = []
         
         for _ in 0 ..< 100 {
