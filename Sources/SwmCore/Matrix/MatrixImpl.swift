@@ -112,10 +112,6 @@ extension MatrixImpl {
         size.rows == size.cols
     }
     
-    public var isZero: Bool {
-        nonZeroEntries.isEmpty
-    }
-    
     public var isIdentity: Bool {
         isSquare && nonZeroEntries.allSatisfy { (i, j, a) in i == j && a.isIdentity }
     }
@@ -324,4 +320,16 @@ extension MatrixImpl {
 
 public protocol SparseMatrixImpl: MatrixImpl {
     var numberOfNonZeros: Int { get }
+    var density: Double { get }
+}
+
+extension SparseMatrixImpl {
+    public var isZero: Bool {
+        numberOfNonZeros == 0
+    }
+    
+    public var density: Double {
+        let N = numberOfNonZeros
+        return N > 0 ? Double(N) / Double(size.rows * size.cols) : 0
+    }
 }

@@ -112,16 +112,42 @@ class RationalTests: XCTestCase {
     }
     
     func testRandom() {
-        let (x0, x1) = (A(0), A(10, 3))
-        for x in (0 ..< 10).map({ _ in A.random(in: x0 ..< x1) }) {
-            XCTAssertTrue((x0 ..< x1).contains(x))
+        var results: Set<A> = []
+        
+        for _ in 0 ..< 100 {
+            let x = A.random()
+            results.insert(x)
         }
+        XCTAssertTrue(results.isUnique)
+        XCTAssertTrue(results.contains{ $0 > 0 })
+        XCTAssertTrue(results.contains{ $0 < 0 })
+    }
+    
+    func testRandomInRange() {
+        let range: Range<A> = -100 ..< 100
+        var results: Set<A> = []
+        
+        for _ in 0 ..< 100 {
+            let x = A.random(in: range)
+            results.insert(x)
+        }
+        XCTAssertTrue(results.allSatisfy{ range.contains($0) })
+        XCTAssertTrue(results.isUnique)
+        XCTAssertTrue(results.contains{ $0 > 0 })
+        XCTAssertTrue(results.contains{ $0 < 0 })
     }
 
-    func testRandomClosed() {
-        let (x0, x1) = (A(0), A(10, 3))
-        for x in (0 ... 10).map({ _ in A.random(in: x0 ..< x1) }) {
-            XCTAssertTrue((x0 ... x1).contains(x))
+    func testRandomInClosedRange() {
+        let range: ClosedRange<A> = -100 ... 100
+        var results: Set<A> = []
+        
+        for _ in 0 ..< 100 {
+            let x = A.random(in: range)
+            results.insert(x)
         }
+        XCTAssertTrue(results.allSatisfy{ range.contains($0) })
+        XCTAssertTrue(results.isUnique)
+        XCTAssertTrue(results.contains{ $0 > 0 })
+        XCTAssertTrue(results.contains{ $0 < 0 })
     }
 }

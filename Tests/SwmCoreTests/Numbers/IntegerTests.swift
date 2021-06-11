@@ -96,4 +96,44 @@ class IntegerTests: XCTestCase {
         let ps = 124.divisors
         XCTAssertEqual(ps, [1, 2, 4, 31, 62, 124])
     }
+    
+    func testRandom() {
+        var results: Set<A> = []
+        
+        for _ in 0 ..< 100 {
+            let x = A.random()
+            results.insert(x)
+        }
+        XCTAssertTrue(results.isUnique)
+        XCTAssertTrue(results.contains{ $0 > 0 })
+        XCTAssertTrue(results.contains{ $0 < 0 })
+    }
+    
+    func testRandomInRange() {
+        let range: Range<A> = -100 ..< 100
+        var results: Set<A> = []
+        
+        for _ in 0 ..< 100 {
+            let x = A.random(in: range)
+            results.insert(x)
+        }
+        XCTAssertTrue(results.allSatisfy{ range.contains($0) })
+        XCTAssertTrue(results.isUnique)
+        XCTAssertTrue(results.contains{ $0 > 0 })
+        XCTAssertTrue(results.contains{ $0 < 0 })
+    }
+
+    func testRandomInClosedRange() {
+        let range: ClosedRange<A> = -100 ... 100
+        var results: Set<A> = []
+        
+        for _ in 0 ..< 100 {
+            let x = A.random(in: range)
+            results.insert(x)
+        }
+        XCTAssertTrue(results.allSatisfy{ range.contains($0) })
+        XCTAssertTrue(results.isUnique)
+        XCTAssertTrue(results.contains{ $0 > 0 })
+        XCTAssertTrue(results.contains{ $0 < 0 })
+    }
 }

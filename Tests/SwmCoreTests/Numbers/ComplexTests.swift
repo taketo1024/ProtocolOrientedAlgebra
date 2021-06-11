@@ -105,6 +105,55 @@ class ComplexTests: XCTestCase {
         assertApproxEqual(a.arg, π / 4)
     }
     
+    func testRandom() {
+        var results: Set<A> = []
+        
+        for _ in 0 ..< 100 {
+            let x = A.random()
+            results.insert(x)
+        }
+        XCTAssertTrue(results.isUnique)
+        XCTAssertTrue(results.contains{ $0.realPart > 0 && $0.imaginaryPart > 0 })
+        XCTAssertTrue(results.contains{ $0.realPart > 0 && $0.imaginaryPart < 0 })
+        XCTAssertTrue(results.contains{ $0.realPart < 0 && $0.imaginaryPart > 0 })
+        XCTAssertTrue(results.contains{ $0.realPart < 0 && $0.imaginaryPart < 0 })
+    }
+    
+    func testRandomInRange() {
+        let range: Range<Double> = -100 ..< 100
+        var results: Set<A> = []
+        
+        for _ in 0 ..< 100 {
+            let x = A.random(in: range)
+            results.insert(x)
+            XCTAssertTrue(range.contains(x.realPart))
+            XCTAssertTrue(range.contains(x.imaginaryPart))
+        }
+        XCTAssertTrue(results.isUnique)
+        XCTAssertTrue(results.contains{ $0.realPart > 0 && $0.imaginaryPart > 0 })
+        XCTAssertTrue(results.contains{ $0.realPart > 0 && $0.imaginaryPart < 0 })
+        XCTAssertTrue(results.contains{ $0.realPart < 0 && $0.imaginaryPart > 0 })
+        XCTAssertTrue(results.contains{ $0.realPart < 0 && $0.imaginaryPart < 0 })
+    }
+
+    func testRandomInClosedRange() {
+        let range: ClosedRange<Double> = -100 ... 100
+        var results: Set<A> = []
+        
+        for _ in 0 ..< 100 {
+            let x = A.random(in: range)
+            results.insert(x)
+            XCTAssertTrue(range.contains(x.realPart))
+            XCTAssertTrue(range.contains(x.imaginaryPart))
+        }
+        XCTAssertTrue(results.isUnique)
+        XCTAssertTrue(results.contains{ $0.realPart > 0 && $0.imaginaryPart > 0 })
+        XCTAssertTrue(results.contains{ $0.realPart > 0 && $0.imaginaryPart < 0 })
+        XCTAssertTrue(results.contains{ $0.realPart < 0 && $0.imaginaryPart > 0 })
+        XCTAssertTrue(results.contains{ $0.realPart < 0 && $0.imaginaryPart < 0 })
+    }
+
+    
     private func assertApproxEqual(_ x: 𝐑, _ y: 𝐑, error e: 𝐑 = 0.0001) {
         XCTAssertTrue(x.isApproximatelyEqualTo(y, error: e))
     }

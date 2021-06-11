@@ -102,22 +102,26 @@ public struct RationalNumber: Field, ExpressibleByIntegerLiteral, Comparable, Ha
     }
 }
 
-extension 𝐐: Randomable {
-    private static func random(_ x0: 𝐐, _ x1: 𝐐, closed: Bool) -> 𝐐 {
-        let slice = 10
-        let q = lcm(x0.denominator, x1.denominator) * slice
-        let p0 = q * x0.numerator / x0.denominator
-        let p1 = q * x1.numerator / x1.denominator
-        let p = closed ? 𝐙.random(in: p0 ... p1) : 𝐙.random(in: p0 ..< p1)
-        return .init(p, q)
+extension RationalNumber: RangeRandomable {
+    public static func random() -> RationalNumber {
+        .init(.random(), .random())
     }
     
-    public static func random(in range: Range<𝐐>) -> 𝐐 {
+    public static func random(in range: Range<Self>) -> Self {
         random(range.lowerBound, range.upperBound, closed: false)
     }
     
-    public static func random(in range: ClosedRange<𝐐>) -> 𝐐 {
+    public static func random(in range: ClosedRange<Self>) -> Self {
         random(range.lowerBound, range.upperBound, closed: true)
+    }
+    
+    private static func random(_ x0: Self, _ x1: Self, closed: Bool) -> Self {
+        let slice = Int.random(in: 1 ..< 100)
+        let q = lcm(x0.denominator, x1.denominator) * slice
+        let p0 = q * x0.numerator / x0.denominator
+        let p1 = q * x1.numerator / x1.denominator
+        let p = closed ? Int.random(in: p0 ... p1) : Int.random(in: p0 ..< p1)
+        return .init(p, q)
     }
 }
 

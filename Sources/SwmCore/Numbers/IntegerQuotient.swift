@@ -18,7 +18,7 @@ public struct IntegerIdeal<n: FixedSizeType>: EuclideanIdeal {
 
 extension IntegerIdeal: MaximalIdeal where n: PrimeSizeType {}
 
-public struct IntegerQuotientRing<n: FixedSizeType>: EuclideanQuotientRing, FiniteSet, Hashable, ExpressibleByIntegerLiteral {
+public struct IntegerQuotientRing<n: FixedSizeType>: EuclideanQuotientRing, FiniteSet, Randomable, Hashable, ExpressibleByIntegerLiteral {
     public typealias Base = 𝐙
     public typealias Mod = IntegerIdeal<n>
 
@@ -41,6 +41,10 @@ public struct IntegerQuotientRing<n: FixedSizeType>: EuclideanQuotientRing, Fini
     
     public static var symbol: String {
         "𝐙\(Format.sub(mod))"
+    }
+    
+    public static func random() -> Self {
+        .init(.random(in: 0 ..< n.intValue))
     }
 }
 

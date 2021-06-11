@@ -81,4 +81,14 @@ class F2Tests: XCTestCase {
         XCTAssertEqual(A.allElements, [0, 1])
         XCTAssertEqual(A.countElements, 2)
     }
+    
+    func testRandom() {
+        var results: Set<A> = []
+        
+        for _ in 0 ..< 100 {
+            let x = A.random()
+            results.insert(x)
+        }
+        XCTAssertTrue(results.count == A.countElements)
+    }
 }
