@@ -208,8 +208,7 @@ extension Graph {
             result.append(v)
         }
         
-        let startVertices = vertices.values.filter{ $0.inEdges.isEmpty }
-        for v in startVertices {
+        for v in vertices.values where v.inEdges.isEmpty {
             traverse(v)
         }
         
