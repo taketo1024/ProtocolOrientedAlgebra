@@ -133,15 +133,6 @@ class PolynomialTests: XCTestCase {
         XCTAssertEqual(a, q * b + r)
     }
     
-    func testComputationalWeight() {
-        XCTAssertEqual(B.zero.computationalWeight, 0)
-        XCTAssertEqual(B.identity.computationalWeight, 1)
-        let a = B(coeffs: 1, 2, 1)
-        let b = B(coeffs: 3, 2)
-        XCTAssertEqual(a.computationalWeight, 3)
-        XCTAssertEqual(b.computationalWeight, 4)
-    }
-    
     struct _t: PolynomialIndeterminate {
         static var symbol = "t"
         static var degree = 2
