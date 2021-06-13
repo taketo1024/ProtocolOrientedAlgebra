@@ -29,10 +29,6 @@ public extension EuclideanRing {
         let b = self
         return (a.isZero && b.isZero) || (!a.isZero && (b % a).isZero)
     }
-    
-    var computationalWeight: Double {
-        Double(euclideanDegree)
-    }
 }
 
 @inlinable

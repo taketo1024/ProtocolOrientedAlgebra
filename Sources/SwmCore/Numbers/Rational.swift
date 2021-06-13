@@ -86,10 +86,6 @@ public struct RationalNumber: Field, ExpressibleByIntegerLiteral, Comparable, Ha
         lhs.numerator * rhs.denominator < rhs.numerator * lhs.denominator
     }
     
-    public var computationalWeight: Double {
-        isZero ? 0 : Double(max(numerator.abs, denominator))
-    }
-    
     public var description: String {
         switch denominator {
         case 1:  return "\(numerator)"

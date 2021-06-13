@@ -34,15 +34,6 @@ extension RealNumber: Field {
         (self == 0) ? nil : 1/self
     }
     
-    public var computationalWeight: Double {
-        if isZero {
-            return 0
-        } else {
-            let a = abs
-            return max(a, a.inverse!)
-        }
-    }
-    
     public var sqrt: 𝐑 {
         squareRoot()
     }
