@@ -191,28 +191,10 @@ extension Graph where VertexId: CustomStringConvertible, VertexValue == Int, Edg
 }
 
 extension Graph {
-    public func topologicalSort() -> [Vertex] {
-        var visited: Set<VertexId> = []
-        var result: [Vertex] = []
-        
-        visited.reserveCapacity(vertices.count)
-        result .reserveCapacity(vertices.count)
-
-        func traverse(_ v: Vertex) {
-            visited.insert(v.id)
-            
-            for w in v.outEdges.map({ $0.target }) where !visited.contains(w.id) {
-                traverse(w)
-            }
-            
-            result.append(v)
-        }
-        
-        for v in vertices.values where v.inEdges.isEmpty {
-            traverse(v)
-        }
-        
-        return result.reversed()
+    public func topologicalSort() throws -> [Vertex] {
+        try vertices.keys.topologicalSort { id in
+            self[id]!.outEdges.map { $0.target.id }
+        }.map { id in self[id]! }
     }
 }
 
