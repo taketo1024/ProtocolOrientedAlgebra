@@ -134,7 +134,6 @@ public struct MultivariatePolynomial<R: Ring, xn: MultivariatePolynomialIndeterm
             deg  < 0 && indices.allSatisfy{ i in Indeterminate.degreeOfIndeterminate(at: i) <  0 }
         )
         
-        typealias E = Indeterminate.Exponent // MultiIndex<n>
         func generate(_ deg: Int, _ indices: ArraySlice<Int>) -> [[Int]] {
             if indices.isEmpty {
                 return deg == 0 ? [[]] : []
@@ -151,13 +150,16 @@ public struct MultivariatePolynomial<R: Ring, xn: MultivariatePolynomialIndeterm
             }
         }
         
-        let max = indices.max() ?? 0
-        return generate(deg, ArraySlice(indices)).map { list -> Self in
-            let table = Dictionary(zip(indices, list))
-            let exponent = (0 ... max).map { i in
-                table[i] ?? 0
+        let exponents = generate(deg, ArraySlice(indices))
+        let l = indices.max() ?? 0
+
+        return exponents.map { list -> Self in
+            let e = Array(repeating: 0, count: l + 1).with { arr in
+                for (i, d) in zip(indices, list) {
+                    arr[i] = d
+                }
             }
-            return monomial(withExponents: Exponent(exponent))
+            return monomial(withExponents: Exponent(e))
         }
     }
     
