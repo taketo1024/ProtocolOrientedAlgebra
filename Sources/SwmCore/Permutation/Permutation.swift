@@ -22,8 +22,8 @@ public struct Permutation<n: SizeType>: Multiplicative, MathSet, Hashable {
     
     public init<S: Sequence>(length: Int, indices: S, fillRemaining: Bool = false) where S.Element == Int {
         if fillRemaining {
-            let remain = Set(0 ..< length).subtracting(indices)
-            self.init(length: length, indices: Array(indices) + remain.sorted(), fillRemaining: false)
+            let filled = Self.order(length: length, indices: indices)
+            self.init(length: length, indices: filled)
         } else {
             let table = Dictionary(indices.enumerated().map{ ($0, $1) })
             self.init(length: length, table: table)
@@ -154,6 +154,22 @@ public struct Permutation<n: SizeType>: Multiplicative, MathSet, Hashable {
     
     public static var symbol: String {
         "𝔖\(n.isFixed ? Format.sub(n.intValue) : "")"
+    }
+    
+    private static func order<S>(length: Int, indices: S) -> [Int] where S: Sequence, S.Element == Int {
+        var result: [Int] = []
+        var remainings = Array(repeating: true, count: length)
+
+        for i in indices {
+            result.append(i)
+            remainings[i] = false
+        }
+        
+        for (i, remaining) in remainings.enumerated() where remaining {
+            result.append(i)
+        }
+        
+        return result
     }
 }
 
