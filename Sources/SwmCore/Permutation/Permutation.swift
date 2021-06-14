@@ -9,34 +9,51 @@
 import Algorithms
 
 public struct Permutation<n: SizeType>: Multiplicative, MathSet, Hashable {
-    public let length: Int
-    public let table: [Int : Int]
+    public let indices: [Int]
+    
+    public init(indices: [Int]) {
+        assert(n.isArbitrary || n.intValue == indices.count)
+        assert(Set(indices) == Set(0 ..< indices.count))
+        self.indices = indices
+    }
+    
+    public init(indices: Int...)  {
+        self.init(indices: indices)
+    }
+    
+    public init<S: Sequence>(indices: S) where S.Element == Int {
+        self.init(indices: Array(indices))
+    }
     
     public init(length: Int, table: [Int : Int]) {
         assert(Set(table.keys) == Set(table.values))
-        assert(table.keys.allSatisfy { i in (0 ..< length).contains(i) })
-        
-        self.length = length
-        self.table = table.exclude{ (k, v) in k == v }
+        let indices = (0 ..< length).map { i in table[i] ?? i }
+        self.init(indices: indices)
     }
     
-    public init<S: Sequence>(length: Int, indices: S, fillRemaining: Bool = false) where S.Element == Int {
-        if fillRemaining {
-            let filled = Self.order(length: length, indices: indices)
-            self.init(length: length, indices: filled)
-        } else {
-            let table = Dictionary(indices.enumerated().map{ ($0, $1) })
-            self.init(length: length, table: table)
+    public static func identity(length: Int) -> Self {
+        .init(indices: 0 ..< length)
+    }
+    
+    public static func fill<S: Sequence>(length: Int, indices: S) -> Self where S.Element == Int {
+        var filled: [Int] = []
+        var remainings = Array(repeating: true, count: length)
+
+        for i in indices {
+            filled.append(i)
+            remainings[i] = false
         }
+        
+        for (i, remaining) in remainings.enumerated() where remaining {
+            filled.append(i)
+        }
+        
+        return .init(indices: filled)
     }
     
-    public init(length: Int, indices: Int...)  {
-        self.init(length: length, indices: indices)
-    }
-    
-    public static func transposition(length: Int, indices: (Int, Int)) -> Self {
-        let (i, j) = indices
-        return .init(length: length, table: [i : j, j : i])
+    public static func transposition(length: Int, indices t: (Int, Int)) -> Self {
+        let indices = Array(0 ..< length).with { $0.swapAt(t.0, t.1) }
+        return .init(indices: indices)
     }
     
     public static func cyclic(length: Int, indices: [Int]) -> Self {
@@ -50,19 +67,23 @@ public struct Permutation<n: SizeType>: Multiplicative, MathSet, Hashable {
     
     @inlinable
     public subscript(i: Int) -> Int {
-        table[i] ?? i
+        indices[i]
     }
     
-    public static func identity(length: Int) -> Self {
-        .init(length: length, table: [:])
+    public var length: Int {
+        indices.count
     }
     
     public var inverse: Self? {
-        .init(length: length, table: table.invert())
+        var inv = Array(0 ..< length)
+        for (i, j) in indices.enumerated() {
+            inv[j] = i
+        }
+        return .init(indices: inv)
     }
     
-    public var indices: [Int] {
-        (0 ..< length).map{ self[$0] }
+    public var table: [Int : Int] {
+        Dictionary(keys: 0 ..< length) { self[$0] }
     }
     
     // memo: the number of transpositions in it's decomposition.
@@ -72,24 +93,24 @@ public struct Permutation<n: SizeType>: Multiplicative, MathSet, Hashable {
     }
     
     public func extended(_ n: Int) -> Permutation<anySize> {
-        .init(length: length + n, indices: indices, fillRemaining: true)
+        .init(indices: indices + Array(length ..< length + n))
     }
 
     public func shifted(_ n: Int) -> Permutation<anySize> {
-        .init(length: length + n, table: table.mapPairs{ (i, j) in (i + n, j + n) } )
+        .init(indices: Array(0 ..< n) + indices.map{ $0 + n })
     }
     
     public static func *(a: Self, b: Self) -> Self {
         assert(a.length == b.length)
-        return .init(length: a.length, table: b.table.mapValues{ a[$0] }.merging(a.table, overwrite: false))
+        return .init(indices: (0 ..< a.length).map{ a[b[$0]] } )
     }
     
     public static func ==(a: Self, b: Self) -> Bool {
-        a.table == b.table
+        a.indices == b.indices
     }
     
     public func `as`<m>(_ type: Permutation<m>.Type) -> Permutation<m> {
-        Permutation<m>(length: length, table: self.table)
+        Permutation<m>(indices: indices)
     }
     
     public var asAnySize: Permutation<anySize> {
@@ -117,7 +138,7 @@ public struct Permutation<n: SizeType>: Multiplicative, MathSet, Hashable {
     public var cyclicDecomposition: [[Int]] {
         typealias Indices = [Int]
         
-        var bucket = Set(table.keys)
+        var bucket = Set(0 ..< length)
         var result: [Indices] = []
         
         while !bucket.isEmpty {
@@ -147,29 +168,11 @@ public struct Permutation<n: SizeType>: Multiplicative, MathSet, Hashable {
     }
     
     public var description: String {
-        table.isEmpty
-            ? "id"
-            : "[\((0 ..< length).map{ i in "\(i): \(self[i])" }.joined(separator: ", "))]"
+        self == .identity(length: length) ? "id" : indices.description
     }
     
     public static var symbol: String {
         "𝔖\(n.isFixed ? Format.sub(n.intValue) : "")"
-    }
-    
-    private static func order<S>(length: Int, indices: S) -> [Int] where S: Sequence, S.Element == Int {
-        var result: [Int] = []
-        var remainings = Array(repeating: true, count: length)
-
-        for i in indices {
-            result.append(i)
-            remainings[i] = false
-        }
-        
-        for (i, remaining) in remainings.enumerated() where remaining {
-            result.append(i)
-        }
-        
-        return result
     }
 }
 
@@ -178,12 +181,12 @@ extension Permutation: Monoid, Group, FiniteSet where n: FixedSizeType {
         self.init(length: n.intValue, table: table)
     }
     
-    public init(indices: [Int]) {
-        self.init(length: n.intValue, indices: indices)
+    public static func fill<S: Sequence>(indices: S) -> Self where S.Element == Int {
+        fill(length: n.intValue, indices: indices)
     }
-
-    public init(indices: Int...) {
-        self.init(indices: indices)
+    
+    public static func fill(indices: Int...) -> Self {
+        fill(indices: indices)
     }
     
     public static func transposition(_ i: Int, _ j: Int) -> Self {
@@ -203,8 +206,8 @@ extension Permutation: Monoid, Group, FiniteSet where n: FixedSizeType {
     }
     
     public static var allElements: [Self] {
-        (0 ..< n.intValue).permutations().map{
-            .init(length: n.intValue, indices: $0)
+        (0 ..< n.intValue).permutations().map {
+            .init(indices: $0)
         }
     }
     
@@ -221,8 +224,8 @@ extension Permutation: Monoid, Group, FiniteSet where n: FixedSizeType {
 
 extension Permutation where n == anySize {
     public static func allPermutations(length n: Int) -> [Self] {
-        (0 ..< n).permutations().map{
-            .init(length: n, indices: $0)
+        (0 ..< n).permutations().map {
+            .init(indices: $0)
         }
     }
     

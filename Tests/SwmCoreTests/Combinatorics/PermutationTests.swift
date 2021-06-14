@@ -12,6 +12,52 @@ class PermutationTests: XCTestCase {
     
     typealias S3 = Permutation<_3>
     typealias S4 = Permutation<_4>
+    
+    func testLength() {
+        let p = S3(indices: 2, 0, 1)
+        XCTAssertEqual(p.length, 3)
+    }
+    
+    func testIndices() {
+        let p = S3(indices: 2, 0, 1)
+        XCTAssertEqual(p.indices, [2,0,1])
+    }
+    
+    func testSubscript() {
+        let p = S3(indices: 2, 0, 1)
+        XCTAssertEqual(p[0], 2)
+        XCTAssertEqual(p[1], 0)
+        XCTAssertEqual(p[2], 1)
+    }
+
+    func testIdentity() {
+        let id = S3.identity
+        XCTAssertEqual(id.indices, [0,1,2])
+    }
+
+    func testMul() {
+        let p = S3(indices: 2, 0, 1)
+        let q = S3(indices: 0, 2, 1)
+        let s = q * p
+        XCTAssertEqual(s[0], 1)
+        XCTAssertEqual(s[1], 0)
+        XCTAssertEqual(s[2], 2)
+    }
+    
+    func testFill() {
+        let p = Permutation<anySize>.fill(length: 10, indices: [2, 1, 5, 8])
+        XCTAssertEqual(p.indices, [2,1,5,8,0,3,4,6,7,9])
+    }
+
+    func testTransposition() {
+        let p = S4.transposition(0, 2)
+        XCTAssertEqual(p.indices, [2,1,0,3])
+    }
+
+    func testCyclic() {
+        let p = S4.cyclic(0,2,3)
+        XCTAssertEqual(p.indices, [2,1,3,0])
+    }
 
     func testAllPermutations_3() {
         let all = S3.allElements
@@ -49,16 +95,9 @@ class PermutationTests: XCTestCase {
         XCTAssertEqual(σ.asMatrix * τ.asMatrix, (σ * τ).asMatrix)
     }
     
-    func testCyclic() {
-        let σ = S3.cyclic(2,0,1)
-        XCTAssertEqual(σ[2], 0)
-        XCTAssertEqual(σ[0], 1)
-        XCTAssertEqual(σ[1], 2)
-    }
-    
     func testCyclicDecomposition() {
         let n = 10
-        let σ = Permutation<anySize>(length: n, indices: 3,2,1,5,9,7,8,0,4,6)
+        let σ = Permutation<anySize>(indices: 3,2,1,5,9,7,8,0,4,6)
         let cyclics = σ.cyclicDecomposition
         
         XCTAssertEqual(cyclics.count, 3)
@@ -75,7 +114,7 @@ class PermutationTests: XCTestCase {
     
     func testTranspositionDecomposition() {
         let n = 10
-        let σ = Permutation<anySize>(length: 10, indices: 3,2,1,5,9,7,8,0,4,6)
+        let σ = Permutation<anySize>(indices: 3,2,1,5,9,7,8,0,4,6)
         let trans = σ.transpositionDecomposition
         
         let τ = trans.map { t in
