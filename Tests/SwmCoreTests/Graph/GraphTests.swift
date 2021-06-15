@@ -17,7 +17,11 @@ class GraphTests: XCTestCase {
             3: [1, 2],
             4: [1]
         ])
-        let sorted = G.topologicalSort().map{ $0.id }
+        guard let sorted = try? G.topologicalSort().map({ $0.id }) else {
+            XCTFail()
+            return
+        }
+        
         let order = (0 ... 4).map { i in sorted.firstIndex(of: i)! }
         print(sorted)
         XCTAssertTrue(order[0] < order[2])
