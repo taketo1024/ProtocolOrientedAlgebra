@@ -120,12 +120,3 @@ extension Array {
         parallelCompactMap { e in predicate(e) ? e : nil }
     }
 }
-
-extension RandomAccessCollection where Element: Comparable {
-    @inlinable
-    public func binarySearch(_ element: Element) -> Index? {
-        let index = partitioningIndex(where: { $0 >= element })
-        let found = index != endIndex && self[index] == element
-        return found ? index : nil
-    }
-}
