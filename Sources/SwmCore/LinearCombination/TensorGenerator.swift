@@ -26,7 +26,7 @@ public struct TensorGenerator<A, B>: LinearCombinationGenerator where A: LinearC
     }
     
     public static func < (a: Self, b: Self) -> Bool {
-        [a.left.degree, a.right.degree] < [b.left.degree, b.right.degree]
+        a.left < b.left || (a.left == b.left && a.right < b.right)
     }
     
     public var description: String {
