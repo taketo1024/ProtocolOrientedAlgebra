@@ -64,10 +64,7 @@ extension GenericPolynomialType {
     }
     
     public func degree(of e: Exponent) -> Int {
-        let a = coeff(e)
-        return !a.isZero
-            ? a.degree + Indeterminate.degreeOfMonomial(withExponent: e)
-            : 0
+        !coeff(e).isZero ? Indeterminate.degreeOfMonomial(withExponent: e) : 0
     }
     
     public func coeff(_ exponent: Exponent) -> BaseRing {
