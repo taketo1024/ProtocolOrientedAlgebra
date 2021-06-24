@@ -76,15 +76,19 @@ public protocol MultivariatePolynomialType: GenericPolynomialType where Indeterm
 }
 
 extension MultivariatePolynomialType {
-    public static func indeterminate(_ i: Int) -> Self {
+    public static func indeterminate(_ i: Int, exponent: Int = 1) -> Self {
         let l = Indeterminate.isFinite ? Indeterminate.numberOfIndeterminates : i + 1
-        let indices = (0 ..< l).map{ $0 == i ? 1 : 0 }
+        let indices = (0 ..< l).map{ $0 == i ? exponent : 0 }
         let I = MultiIndex<NumberOfIndeterminates>(indices)
         return .init(elements: [I : .identity] )
     }
     
     public static var numberOfIndeterminates: Int {
         NumberOfIndeterminates.intValue
+    }
+    
+    public static func monomial(withExponents I: [Int]) -> Self {
+        monomial(withExponents: Exponent(I))
     }
     
     public static func monomial(withExponents I: Exponent) -> Self {

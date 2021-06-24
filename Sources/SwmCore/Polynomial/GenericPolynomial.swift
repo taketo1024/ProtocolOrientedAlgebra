@@ -173,6 +173,17 @@ extension GenericPolynomialType {
         .init(elements: summands.flatMap{ $0.elements })
     }
     
+    public static func multiply<S: Sequence>(_ elements: S) -> Self where S.Element == Self {
+        .init(elements: elements.reduce([(.zero, .identity)]) { (res, next) -> [(Exponent, BaseRing)] in
+            (res * next.elements).map { (ca, cb) -> (Exponent, BaseRing) in
+                let (x, r) = ca
+                let (y, s) = cb
+                return (x + y, r * s)
+            }
+        })
+    }
+
+    
     public var description: String {
         Format.linearCombination(
             elements.sorted{ (e, _) in degree(of: e) }
