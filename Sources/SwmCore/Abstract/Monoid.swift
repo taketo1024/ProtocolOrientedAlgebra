@@ -23,13 +23,24 @@ public extension Monoid {
     }
     
     func pow(_ n: Int) -> Self {
-        if n >= 0 {
-            return (0 ..< n).reduce(.identity){ (res, _) in self * res }
-        } else {
+        switch n {
+        case 0:
+            return .identity
+        case 1:
+            return self
+        case _ where n > 0:
+            return (0 ..< n - 1).reduce(self){ (res, _) in
+                res * self
+            }
+        case _ where n < 0:
             guard let inv = inverse else {
                 fatalError()
             }
-            return (0 ..< -n).reduce(.identity){ (res, _) in inv * res }
+            return (0 ..< -n - 1).reduce(inv){ (res, _) in
+                res * inv
+            }
+        default:
+            fatalError()
         }
     }
     
