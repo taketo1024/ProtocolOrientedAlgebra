@@ -60,6 +60,27 @@ public struct BivariatePolynomialIndeterminates<x: PolynomialIndeterminate, y: P
     }
 }
 
+public struct TrivariatePolynomialIndeterminates<x: PolynomialIndeterminate, y: PolynomialIndeterminate, z: PolynomialIndeterminate>: MultivariatePolynomialIndeterminates {
+    public typealias Exponent = MultiIndex<_3>
+    public typealias NumberOfIndeterminates = _3
+    public static func degreeOfIndeterminate(at i: Int) -> Int {
+        switch i {
+        case 0: return x.degree
+        case 1: return y.degree
+        case 2: return z.degree
+        default: fatalError()
+        }
+    }
+    public static func symbolOfIndeterminate(at i: Int) -> String {
+        switch i {
+        case 0: return x.symbol
+        case 1: return y.symbol
+        case 2: return z.symbol
+        default: fatalError()
+        }
+    }
+}
+
 public struct EnumeratedPolynomialIndeterminates<x: PolynomialIndeterminate, n: SizeType>: MultivariatePolynomialIndeterminates {
     public typealias Exponent = MultiIndex<n>
     public typealias NumberOfIndeterminates = n

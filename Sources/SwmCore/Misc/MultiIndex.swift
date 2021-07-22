@@ -5,7 +5,7 @@
 //  Created by Taketo Sano on 2021/05/18.
 //
 
-public struct MultiIndex<n: SizeType>: AdditiveGroup, ExpressibleByArrayLiteral, Comparable, Hashable {
+public struct MultiIndex<n: SizeType>: AdditiveGroup, ExpressibleByArrayLiteral, Comparable, Hashable, Codable {
     public typealias ArrayLiteralElement = Int
     
     public let indices: [Int]
