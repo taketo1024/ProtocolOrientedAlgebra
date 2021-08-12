@@ -14,6 +14,11 @@ extension 𝐙: EuclideanRing {
     }
 
     @inlinable
+    public static var identity: 𝐙 {
+        1
+    }
+
+    @inlinable
     public var inverse: 𝐙? {
         (self.abs == 1) ? self : nil
     }
@@ -42,7 +47,7 @@ extension 𝐙: EuclideanRing {
 
     @inlinable
     public var isOdd: Bool {
-        (self % 2 == 1)
+        !isEven
     }
 
     public func pow(_ n: 𝐙) -> 𝐙 {
