@@ -1,105 +1,148 @@
+public typealias RationalNumber = Rational<Int>
 public typealias 𝐐 = RationalNumber
 
-public struct RationalNumber: Field, ExpressibleByIntegerLiteral, Comparable, Hashable, Codable {
-    public let numerator:   𝐙
-    public let denominator: 𝐙  // memo: (p, q) coprime, q > 0.
+public struct Rational<Base: EuclideanRing>: Field {
+    public let numerator: Base
+    public let denominator: Base  // memo: (p, q) coprime, q > 0.
     
     @inlinable
     public init(from n: 𝐙) {
-        self.init(n, 1)
+        self.init(Base(from: n))
     }
     
     @inlinable
-    public init(from r: 𝐐) {
-        self.init(r.numerator, r.denominator)
+    public init(_ n: Base) {
+        self.init(reduced: n, .identity)
     }
     
     @inlinable
-    public init(_ n: 𝐙) {
-        self.init(from: n)
-    }
-    
-    public init(_ p_: 𝐙, _ q_: 𝐙) {
-        guard q_ != 0 else {
+    public init(_ p: Base, _ q: Base) {
+        guard !q.isZero else {
             fatalError("Given 0 for the dominator.")
         }
         
-        let (p, q) = (q_ > 0) ? (p_, q_) : (-p_, -q_)
-        
+        let a = q.normalizingUnit
+        if a.isIdentity {
+            self.init(normalized: p, q)
+        } else {
+            self.init(normalized: p * a, q * a)
+        }
+    }
+
+    @inlinable
+    internal init(normalized p: Base, _ q: Base) {
         switch (p, q) {
-        case (_, 1):
-            (self.numerator, self.denominator) = (p, 1)
-        case (0, _):
-            (self.numerator, self.denominator) = (0, 1)
-        case (1, _):
-            (self.numerator, self.denominator) = (1, q)
-        case (-1, _):
-            (self.numerator, self.denominator) = (-1, q)
+        case (_, .identity):
+            self.init(reduced: p, .identity)
+        case (.zero, _):
+            self.init(reduced: .zero, .identity)
         default:
-            let d = gcd(p, q).abs
+            let d = gcd(p, q).normalized
             switch d {
-            case 1:
-                (self.numerator, self.denominator) = (p, q)
+            case .identity:
+                self.init(reduced: p, q)
             default:
-                (self.numerator, self.denominator) = (p/d, q/d)
+                self.init(reduced: p / d, q / d)
             }
         }
     }
     
     @inlinable
-    public init(integerLiteral value: Int) {
-        self.init(value)
+    internal init(reduced p: Base, _ q: Base) {
+        self.numerator = p
+        self.denominator = q
+    }
+
+    //    @inlinable
+    //    public init(from r: 𝐐) {
+    //        self.init(r.numerator, r.denominator)
+    //    }
+    
+    @inlinable
+    public var isZero: Bool {
+        numerator.isZero
     }
     
     @inlinable
-    public var sign: 𝐙 {
-        numerator.sign
+    public var isIdentity: Bool {
+        numerator.isIdentity && denominator.isIdentity
     }
     
     @inlinable
-    public var abs: 𝐐 {
-        (numerator >= 0) == (denominator >= 0) ? self : -self
+    public var inverse: Self? {
+        numerator.isZero ? nil : .init(reduced: denominator, numerator)
     }
     
     @inlinable
-    public var inverse: 𝐐? {
-        (numerator != 0) ? 𝐐(denominator, numerator) : nil
+    @_specialize(where Base == Int)
+    public static func + (a: Self, b: Self) -> Self {
+        let p = a.numerator * b.denominator + a.denominator * b.numerator
+        let q = a.denominator * b.denominator
+        return .init(p, q)
     }
     
     @inlinable
-    public static func + (a: 𝐐, b: 𝐐) -> 𝐐 {
-        .init(a.numerator * b.denominator + a.denominator * b.numerator, a.denominator * b.denominator)
-    }
-    
-    @inlinable
-    public static prefix func - (a: 𝐐) -> 𝐐 {
+    @_specialize(where Base == Int)
+    public static prefix func - (a: Self) -> Self {
         .init(-a.numerator, a.denominator)
     }
     
     @inlinable
-    public static func * (a: 𝐐, b: 𝐐) -> 𝐐 {
+    @_specialize(where Base == Int)
+    public static func * (a: Self, b: Self) -> Self {
         .init(a.numerator * b.numerator, a.denominator * b.denominator)
-    }
-    
-    @inlinable
-    public static func <(lhs: 𝐐, rhs: 𝐐) -> Bool {
-        lhs.numerator * rhs.denominator < rhs.numerator * lhs.denominator
     }
     
     public var description: String {
         switch denominator {
-        case 1:  return "\(numerator)"
+        case .identity:  return "\(numerator)"
         default: return "\(numerator)/\(denominator)"
         }
     }
     
     public static var symbol: String {
-        "𝐐"
+        (Base.self == Int.self) ? "𝐐" : "Rational<\(Base.self)>"
     }
 }
 
-extension RationalNumber: RangeRandomable {
-    public static func random() -> RationalNumber {
+extension Rational: Comparable where Base: Comparable {
+    @inlinable
+    public static func <(lhs: Self, rhs: Self) -> Bool {
+        lhs.numerator * rhs.denominator < rhs.numerator * lhs.denominator
+    }
+}
+
+extension Rational: Hashable where Base: Hashable {}
+
+extension Rational: Codable where Base: Codable {}
+
+extension Rational: ExpressibleByIntegerLiteral where Base: ExpressibleByIntegerLiteral {
+    @inlinable
+    public init(integerLiteral value: Base.IntegerLiteralType) {
+        self.init(Base(integerLiteral: value))
+    }
+}
+
+extension Rational: RealSubset, ComplexSubset, Randomable, RangeRandomable where Base == Int {
+    @inlinable
+    public var sign: Base {
+        numerator.sign
+    }
+    
+    @inlinable
+    public var abs: Self {
+        (numerator >= 0) == (denominator >= 0) ? self : -self
+    }
+    
+    public var asReal: 𝐑 {
+        .init(self)
+    }
+    
+    public var asComplex: 𝐂 {
+        self.asReal.asComplex
+    }
+    
+    public static func random() -> Self {
         .init(.random(), .random())
     }
     
@@ -118,17 +161,5 @@ extension RationalNumber: RangeRandomable {
         let p1 = q * x1.numerator / x1.denominator
         let p = closed ? Int.random(in: p0 ... p1) : Int.random(in: p0 ..< p1)
         return .init(p, q)
-    }
-}
-
-extension 𝐐: RealSubset {
-    public var asReal: 𝐑 {
-        .init(self)
-    }
-}
-
-extension 𝐐: ComplexSubset {
-    public var asComplex: 𝐂 {
-        self.asReal.asComplex
     }
 }
