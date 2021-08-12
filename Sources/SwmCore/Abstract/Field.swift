@@ -1,4 +1,4 @@
-public protocol Field: EuclideanRing {}
+public protocol Field: EuclideanRing where EuclideanDegreeType == Int {}
 
 public extension Field {
     @inlinable

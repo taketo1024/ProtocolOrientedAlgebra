@@ -1,5 +1,6 @@
 public protocol EuclideanRing: Ring {
-    var  euclideanDegree: Int { get }
+    associatedtype EuclideanDegreeType: Comparable
+    var  euclideanDegree: EuclideanDegreeType { get }
     func divides(_ a: Self) -> Bool
     func isDivible(by a: Self) -> Bool
     
