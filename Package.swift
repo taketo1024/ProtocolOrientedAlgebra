@@ -13,7 +13,11 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/apple/swift-algorithms.git",
-            from: "0.2.0"
+            .upToNextMajor(from: "0.2.0")
+        ),
+        .package(
+            url: "https://github.com/apple/swift-collections.git",
+            .upToNextMajor(from: "1.0.0")
         )
     ],
     targets: [
@@ -21,6 +25,7 @@ let package = Package(
             name: "SwmCore",
             dependencies: [
                 .product(name: "Algorithms", package: "swift-algorithms"),
+                .product(name: "OrderedCollections", package: "swift-collections"),
             ]),
         .testTarget(
             name: "SwmCoreTests",

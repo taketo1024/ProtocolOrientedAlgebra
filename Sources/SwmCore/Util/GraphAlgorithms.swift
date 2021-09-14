@@ -10,6 +10,8 @@
 // Modified global functions to methods of Sequence.
 // Original code: https://github.com/apple/swift-tools-support-core/blob/main/Sources/TSCBasic/GraphAlgorithms.swift
 
+import OrderedCollections
+
 public enum GraphError: Error {
     /// A cycle was detected in the input.
     case unexpectedCycle
@@ -72,7 +74,7 @@ extension Sequence where Element: Hashable {
             
             // Otherwise, visit each adjacent node.
             for succ in try successors(node) {
-                guard stack.append(succ) else {
+                guard stack.append(succ).inserted else {
                     // If the successor is already in this current stack, we have found a cycle.
                     //
                     // FIXME: We could easily include information on the cycle we found here.
@@ -121,7 +123,7 @@ extension Sequence where Element: Hashable {
         // FIXME: Convert to stack.
         func visit(_ node: T, _ successors: (T) throws -> [T]) rethrows -> (path: [T], cycle: [T])? {
             // If this node is already in the current path then we have found a cycle.
-            if !path.append(node) {
+            if !path.append(node).inserted {
                 let index = path.firstIndex(of: node)!
                 return (Array(path[path.startIndex..<index]), Array(path[index..<path.endIndex]))
             }
