@@ -228,6 +228,7 @@ extension MultivariatePolynomial where Indeterminate.NumberOfIndeterminates: Fix
     }
 }
 
+extension MultivariatePolynomial: Hashable where R: Hashable {}
 extension MultivariatePolynomial: ExpressibleByIntegerLiteral where R: ExpressibleByIntegerLiteral {}
 
 // MARK: MultivariateLaurentPolynomial
@@ -252,4 +253,4 @@ public struct MultivariateLaurentPolynomial<R: Ring, xn: MultivariatePolynomialI
     }
 }
 
-
+extension MultivariateLaurentPolynomial: Hashable where R: Hashable {}

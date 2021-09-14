@@ -186,7 +186,7 @@ extension GenericPolynomialType {
     
     public var description: String {
         Format.linearCombination(
-            elements.sorted{ (e, _) in degree(of: e) }
+            elements.sorted{ (e, _) in e }
                 .reversed()
                 .map { (I, a) -> (String, BaseRing) in
                     (Indeterminate.descriptionOfMonomial(withExponent: I), a)
