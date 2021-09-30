@@ -10,7 +10,7 @@ import XCTest
 
 class MPolynomialTests: XCTestCase {
     struct xy: MultivariatePolynomialIndeterminates {
-        typealias Exponent = MultiIndex<_2>
+        typealias Exponent = IntList<_2>
         typealias NumberOfIndeterminates = _2
         static func symbolOfIndeterminate(at i: Int) -> String {
             switch i {

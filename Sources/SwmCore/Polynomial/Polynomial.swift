@@ -108,6 +108,7 @@ extension Polynomial: EuclideanRing where R: Field {
     }
 }
 
+extension Polynomial: Hashable where R: Hashable {}
 extension Polynomial: ExpressibleByIntegerLiteral where R: ExpressibleByIntegerLiteral {}
 
 public struct LaurentPolynomial<R: Ring, X: PolynomialIndeterminate>: PolynomialType {
@@ -135,4 +136,5 @@ public struct LaurentPolynomial<R: Ring, X: PolynomialIndeterminate>: Polynomial
     }
 }
 
+extension LaurentPolynomial: Hashable where R: Hashable {}
 extension LaurentPolynomial: ExpressibleByIntegerLiteral where R: ExpressibleByIntegerLiteral {}

@@ -5,7 +5,9 @@
 //  Created by Taketo Sano on 2019/10/30.
 //
 
-public struct 𝐅₂: Field, FiniteSet, Hashable, ExpressibleByIntegerLiteral {
+public typealias 𝐅₂ = F2
+
+public struct F2: Field, FiniteSet, Hashable, ExpressibleByIntegerLiteral {
     public let representative: UInt8
     
     @inlinable
@@ -59,7 +61,7 @@ public struct 𝐅₂: Field, FiniteSet, Hashable, ExpressibleByIntegerLiteral {
         elements.count { $0.representative == 1 }.isEven ? .zero : .identity
     }
     
-    public static var allElements: [𝐅₂] {
+    public static var allElements: [F2] {
         [.zero, .identity]
     }
     
@@ -76,8 +78,8 @@ public struct 𝐅₂: Field, FiniteSet, Hashable, ExpressibleByIntegerLiteral {
     }
 }
 
-extension 𝐅₂: Randomable {
-    public static func random() -> 𝐅₂ {
+extension F2: Randomable {
+    public static func random() -> F2 {
         .init(Bool.random() ? 0 : 1)
     }
 }

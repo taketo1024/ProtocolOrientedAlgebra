@@ -5,7 +5,7 @@
 //  Created by Taketo Sano on 2021/05/19.
 //
 
-public protocol MultivariatePolynomialIndeterminates: GenericPolynomialIndeterminate where Exponent == MultiIndex<NumberOfIndeterminates> {
+public protocol MultivariatePolynomialIndeterminates: GenericPolynomialIndeterminate where Exponent == IntList<NumberOfIndeterminates> {
     associatedtype NumberOfIndeterminates: SizeType
     static var isFinite: Bool { get }
     static var numberOfIndeterminates: Int { get }
@@ -28,13 +28,13 @@ extension MultivariatePolynomialIndeterminates {
     
     public static func degreeOfMonomial(withExponent e: Exponent) -> Int {
         assert(!isFinite || Exponent.length <= numberOfIndeterminates)
-        return e.indices.enumerated().sum { (i, k) in
+        return e.enumerated().sum { (i, k) in
             k * degreeOfIndeterminate(at: i)
         }
     }
     
     public static func descriptionOfMonomial(withExponent e: Exponent) -> String {
-        let s = e.indices.enumerated().map{ (i, d) in
+        let s = e.enumerated().map{ (i, d) in
             (d != 0) ? Format.power(symbolOfIndeterminate(at: i), d) : ""
         }.joined()
         return s.isEmpty ? "1" : s
@@ -42,7 +42,7 @@ extension MultivariatePolynomialIndeterminates {
 }
 
 public struct BivariatePolynomialIndeterminates<x: PolynomialIndeterminate, y: PolynomialIndeterminate>: MultivariatePolynomialIndeterminates {
-    public typealias Exponent = MultiIndex<_2>
+    public typealias Exponent = IntList<_2>
     public typealias NumberOfIndeterminates = _2
     public static func degreeOfIndeterminate(at i: Int) -> Int {
         switch i {
@@ -61,7 +61,7 @@ public struct BivariatePolynomialIndeterminates<x: PolynomialIndeterminate, y: P
 }
 
 public struct TrivariatePolynomialIndeterminates<x: PolynomialIndeterminate, y: PolynomialIndeterminate, z: PolynomialIndeterminate>: MultivariatePolynomialIndeterminates {
-    public typealias Exponent = MultiIndex<_3>
+    public typealias Exponent = IntList<_3>
     public typealias NumberOfIndeterminates = _3
     public static func degreeOfIndeterminate(at i: Int) -> Int {
         switch i {
@@ -82,7 +82,7 @@ public struct TrivariatePolynomialIndeterminates<x: PolynomialIndeterminate, y: 
 }
 
 public struct EnumeratedPolynomialIndeterminates<x: PolynomialIndeterminate, n: SizeType>: MultivariatePolynomialIndeterminates {
-    public typealias Exponent = MultiIndex<n>
+    public typealias Exponent = IntList<n>
     public typealias NumberOfIndeterminates = n
     public static func degreeOfIndeterminate(at i: Int) -> Int {
         x.degree
@@ -100,7 +100,7 @@ extension MultivariatePolynomialType {
     public static func indeterminate(_ i: Int, exponent: Int = 1) -> Self {
         let l = Indeterminate.isFinite ? Indeterminate.numberOfIndeterminates : i + 1
         let indices = (0 ..< l).map{ $0 == i ? exponent : 0 }
-        let I = MultiIndex<NumberOfIndeterminates>(indices)
+        let I = IntList<NumberOfIndeterminates>(indices)
         return .init(elements: [I : .identity] )
     }
     
@@ -123,7 +123,7 @@ extension MultivariatePolynomialType {
     public func evaluate(by values: [BaseRing]) -> BaseRing {
         assert(!Indeterminate.isFinite || values.count <= Self.numberOfIndeterminates)
         return elements.sum { (I, a) in
-            a * I.indices.enumerated().multiply{ (i, e) in values.count < i ? .zero : values[i].pow(e) }
+            a * I.enumerated().multiply{ (i, e) in values.count < i ? .zero : values[i].pow(e) }
         }
     }
     
@@ -140,7 +140,7 @@ public struct MultivariatePolynomial<R: Ring, xn: MultivariatePolynomialIndeterm
 
     public let elements: [Exponent : R]
     public init(elements: [Exponent : R]) {
-        assert(elements.keys.allSatisfy{ e in e.indices.allSatisfy{ $0 >= 0 } })
+        assert(elements.keys.allSatisfy{ e in e.allSatisfy{ $0 >= 0 } })
         self.elements = elements
     }
     
@@ -228,6 +228,7 @@ extension MultivariatePolynomial where Indeterminate.NumberOfIndeterminates: Fix
     }
 }
 
+extension MultivariatePolynomial: Hashable where R: Hashable {}
 extension MultivariatePolynomial: ExpressibleByIntegerLiteral where R: ExpressibleByIntegerLiteral {}
 
 // MARK: MultivariateLaurentPolynomial
@@ -252,4 +253,4 @@ public struct MultivariateLaurentPolynomial<R: Ring, xn: MultivariatePolynomialI
     }
 }
 
-
+extension MultivariateLaurentPolynomial: Hashable where R: Hashable {}
