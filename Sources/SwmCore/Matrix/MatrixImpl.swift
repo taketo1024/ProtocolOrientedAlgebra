@@ -5,6 +5,8 @@
 //  Created by Taketo Sano on 2019/10/04.
 //
 
+// TODO extract sparse-matrix based computations to SparseMatrixImpl.
+
 public protocol MatrixImpl: Equatable, CustomStringConvertible {
     associatedtype BaseRing: Ring
     typealias Initializer = (Int, Int, BaseRing) -> Void
@@ -315,21 +317,5 @@ extension MatrixImpl {
                 }).joined(separator: ",\t")
             }).joined(separator: "\n\t") + "]"
         }
-    }
-}
-
-public protocol SparseMatrixImpl: MatrixImpl {
-    var numberOfNonZeros: Int { get }
-    var density: Double { get }
-}
-
-extension SparseMatrixImpl {
-    public var isZero: Bool {
-        numberOfNonZeros == 0
-    }
-    
-    public var density: Double {
-        let N = numberOfNonZeros
-        return N > 0 ? Double(N) / Double(size.rows * size.cols) : 0
     }
 }

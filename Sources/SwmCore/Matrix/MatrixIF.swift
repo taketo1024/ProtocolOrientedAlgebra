@@ -524,20 +524,6 @@ extension MatrixIF where n == m, n == _1 {
     }
 }
 
-// MARK: Sparse Matrix
-
-extension MatrixIF where Impl: SparseMatrixImpl {
-    @inlinable
-    public var numberOfNonZeros: Int {
-        impl.numberOfNonZeros
-    }
-    
-    @inlinable
-    public var density: Double {
-        impl.density
-    }
-}
-
 // MARK: Random
 
 extension MatrixIF where BaseRing: Randomable {
